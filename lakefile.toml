@@ -1,0 +1,12 @@
+name = "etcdRefimpl"
+defaultTargets = ["Refimpl"]
+
+# The etcd verification (mit-pdos/etcd-grove, branch `lean`): its specs, and through it Perennial.
+[[require]]
+name = "etcdGrove"
+git = "https://github.com/mit-pdos/etcd-grove"
+rev = "5fb716b5ebcbc6475926285062fcbb76051ecdd7"
+
+[[lean_lib]]
+name = "Refimpl"
+globs = ["Refimpl.+"]
