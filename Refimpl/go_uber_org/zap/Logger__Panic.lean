@@ -31,8 +31,9 @@ theorem zap.Logger.Panic.model_proof :
       [EtcdGrove.zap.loggerRaw := @zap.loggerRaw, EtcdGrove.zapcore.zapEntry := @zapcore.zapEntry] := by
   intro l msg fields
   wp_start
+  iapply (wp_panic _ Φ)
   iapply HΦ
-  ipureintro; trivial
+  ipureintro; rfl
 
 end proof
 

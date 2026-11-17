@@ -57,17 +57,21 @@ initializers that do nothing.
 
 | package | axioms | modelled | notes |
 |---|---|---|---|
-| `go.uber.org/zap`, `zap/zapcore` | 26 (23 function specs, `CheckedEntry.Write`, `opaqueInitsOk` ×2, `initFuncsOk`) | 26 | `Logger.Panic`: see below |
+| `go.uber.org/zap`, `zap/zapcore` | 26 (23 function specs, `CheckedEntry.Write`, `opaqueInitsOk` ×2, `initFuncsOk`) | 26 | `Logger.Panic` spec fixed in etcd-grove: see below |
 
 ### Findings
 
-- **`zap.Logger.Panic`'s spec names a panic value no Go program raises.** Its post is
-  `r = PanicV #msg`, a panic with the bare string. Go's `panic(x)` (Perennial's `go.panic`) panics
-  with an interface value, `PanicV #(interface.mkOk go.string #msg)`, and zap's `WriteThenPanic` does
-  `panic(ce.Message)`. The model meets the spec only with GooseLang's raw `Raise msg`, which no Go
-  source translates to. The proofs that use the spec (mvcc's `keyIndex`, `backend.newBackend`, the
-  apply path) only need that it panics; the fix is to state the interface value (or
-  `∃ p, r = PanicV p`) in etcd-grove's `Spec/go_uber_org/zap/Logger__Panic.lean`.
+- **`zap.Logger.Panic` (fixed in etcd-grove, 2026-11-17, `notes/specs-only/ledger.md`).**
+  - **The panic value.** The spec said `r = PanicV #msg`, a panic with the bare string. No Go program
+    raises that: Go's `panic(x)` (Perennial's `go.panic`) panics with an interface value,
+    `PanicV #(interface.mkOk go.string #msg)`, and zap's `WriteThenPanic` does `panic(ce.Message)`. The
+    model could meet the old spec only with GooseLang's raw `Raise`. The spec now names the interface
+    value, and so do the mvcc `keyIndex` specs that had copied the bare string; the model is Go's
+    `panic(msg)`.
+  - **The premise.** It was `l ≠ null`, which admits loggers for which the axiom is false of real zap. A
+    zero `&zap.Logger{}` panics with a nil-dereference runtime error, not `msg`. A logger built with a
+    custom `WithPanicHook` whose hook returns makes `Panic` return. The premise is now `zapLoggerOk l`,
+    as for the other logging methods, and the mvcc callers pass it on from their index's invariant.
 
 ## Building
 

@@ -5,7 +5,7 @@ defaultTargets = ["Refimpl"]
 [[require]]
 name = "etcdGrove"
 git = "https://github.com/mit-pdos/etcd-grove"
-rev = "5fb716b5ebcbc6475926285062fcbb76051ecdd7"
+rev = "11854184e16f31da948ee71ca437c3d1e7592b12"
 
 [[lean_lib]]
 name = "Refimpl"

@@ -19,8 +19,8 @@ func (ce *CheckedEntry) Write(fields ...Field)         {}
 // every untranslated variable initializer, and zapcore's init(): do nothing
 ```
 
-`Panic` raises `msg` itself, the panic value its spec names (`PanicV #msg`): GooseLang's `Raise`, not
-Go's `panic(msg)`, which panics with an interface value (README, "Findings").
+`Panic` is Go's `panic(msg)`: a panic with `msg` as an `any` (an interface holding the string), the
+value its spec names since etcd-grove's ledger entry of 2026-11-17 (README, "Findings").
 -/
 module
 
@@ -57,9 +57,12 @@ def zap.Logger.discard.impl : val :=
 def zap.Logger.Check.impl : val :=
   LamV "l" (Lam "lvl" (Lam "msg" (Val #(null : Loc))))
 
-/-- `func (l *Logger) Panic(msg string, fields ...Field) { panic(msg) }` -/
+/-- `func (l *Logger) Panic(msg string, fields ...Field) { panic(msg) }`, as goose translates it
+(the string converted to `any`, then `panic`). -/
 def zap.Logger.Panic.impl : val :=
-  LamV "l" (Lam "msg" (Lam "fields" (Raise (Var "msg"))))
+  LamV "l" (Lam "msg" (Lam "fields"
+    (App (App (Val (GoInstruction (FuncResolve go.panic []))) (Val #()))
+      (App (Val (GoInstruction (Convert go.string (go.GoType.InterfaceType [])))) (Var "msg")))))
 
 /-- `for {}`, as a recursive function: never returns. -/
 def hang : val := RecV "hang" BAnon (App (Var "hang") (Val #()))
