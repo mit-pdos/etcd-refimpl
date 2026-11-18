@@ -87,8 +87,21 @@ initializers that do nothing.
 | `go-grpc-middleware/providers/prometheus` | 7 (5 function specs, `promSrvMetrics_persistent`; `promSrvMetrics`/`promSrvMetricsOpt` are the predicates) | 7 | metrics that record nothing; `ServerMetrics` translated in etcd-grove (`2040eeb525`) |
 | `k8s.io/klog/v2` | 8 (6 function specs, `opaqueInitsOk`, `initFuncsOk`) | 8 | logging that does nothing |
 | `k8s.io/component-base/tracing` | 4 (`Start`, `SpanFromContext`, `Span.AddEvent`, `Span.End`) | 4 | spans that record nothing; `Span` translated in etcd-grove (`2040eeb525`) |
+| `go.opentelemetry.io/otel/trace` | 2 function specs (`SpanFromContext`, `WithAttributes`) | 1 | `SpanFromContext` returns the no-op span; `WithAttributes`'s real code is plainly provable: to etcd-grove |
+| `go.opentelemetry.io/otel/attribute` | 4 (`Bool`, `Int`, `Int64`, `String`) | 0 | the real code is plainly provable (a struct literal): to etcd-grove |
+| `k8s.io/utils/trace` | 2 (`New`, `Trace.LogIfLong`) | 2 | a nil trace, logging nothing; `LogIfLong`'s spec is false of the real code: see below |
+| `github.com/xiang90/probing` | 2 (`NewHandler`, `NewProber`) | 2 | an empty `200` handler (relative to net/http's `WriteHeader` spec) and a nil prober |
 
 ### Findings
+
+- **`k8s.io/utils/trace`'s `Trace.LogIfLong` spec is false of the real code** (satisfiable: the model
+  meets it). It holds for every `t : Loc` with no premise (`{{ True }} t.LogIfLong(d) {{ True }}`), but
+  the real `LogIfLong` (k8s.io/utils `be93311217bd`, `trace/trace.go:208`) starts with `t.lock.Lock()`:
+  `var t *trace.Trace; t.LogIfLong(time.Second)` panics with a nil dereference (run with Go 1.27.3),
+  yet the axiom proves it returns. Any location that is not a live `*Trace` is admitted too. Fix in
+  etcd-grove: a predicate of the traces `trace.New` returns (persistent: `Trace` has its own lock),
+  produced by `New`'s spec and required by `LogIfLong`'s; the named hypothesis `Trace.Step` has the
+  same gap.
 
 - **`grpc_prometheus.NewServerMetrics` could not be met in etcd-grove's translation as configured
   (fixed in etcd-grove `2040eeb525`, 2026-11-18; now modelled).** It
