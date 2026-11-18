@@ -45,7 +45,6 @@ PACKAGES = [
     "go.uber.org/zap",
     "go.uber.org/zap/zapcore",
     "github.com/jonboulle/clockwork",
-    "k8s.io/utils/clock",
     "golang.org/x/time/rate",
 ]
 

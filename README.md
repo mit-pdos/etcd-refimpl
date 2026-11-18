@@ -17,8 +17,8 @@ cannot be met by any implementation, writing one here is where that shows up.
 - `go/`: a Go module. `go/third_party/<module>/` is a copy of a library at the version etcd pins
   (`go.uber.org/zap` v1.28.0), replacing it (`go/go.mod`), with the bodies of the functions etcd
   calls replaced by the simplest Go that meets their specs, each marked `// refimpl:`. Where the
-  real body can be proved (`k8s.io/utils/clock`, over Perennial's verified `time`), it is kept:
-  the axioms are then true of the code etcd runs. Every type
+  real code itself can be proved, the proof belongs in etcd-grove instead (the axioms become
+  theorems there), as `k8s.io/utils/clock`'s did. Every type
   and every other declaration is the real library's. It builds with `go build ./...`.
 - `go/goose-config/`: the Goose configuration of those packages: etcd-grove's
   (`Code/**/*.toml`), plus the replaced functions in `translate`.
@@ -78,7 +78,7 @@ initializers that do nothing.
 |---|---|---|---|
 | `go.uber.org/zap`, `zap/zapcore` | 26 (23 function specs, `CheckedEntry.Write`, `opaqueInitsOk` ×2, `initFuncsOk`) | 26 | `Logger.Panic` spec fixed in etcd-grove: see below |
 | `github.com/jonboulle/clockwork` | 8 (`NewRealClock`, the 6 laws of `clockLb`/`stampAt`, `opaqueInitsOk`) | 8 | `stampAt`'s model is `□ P`: see below |
-| `k8s.io/utils/clock` | 8 (`RealClock.Now`/`NewTimer`/`NewTicker`, `realTimer`/`realTicker` `C` and `Stop`, `opaqueInitsOk`) | 8 | the real code, no body replaced: proved over Perennial's verified `time` |
+| `k8s.io/utils/clock` | 8 | moved | **verified in etcd-grove** (`3591db1da2`): the real code proved over Perennial's `time`; the 7 method axioms are theorems there |
 | `golang.org/x/time/rate` | 5 (`Every`, `NewLimiter`, `Limiter.Reserve`/`Wait`, `Reservation.Delay`) | 5 | a limiter that never limits (nil receivers) |
 
 ### Findings
