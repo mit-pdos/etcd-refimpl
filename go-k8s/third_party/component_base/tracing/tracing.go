@@ -31,16 +31,9 @@ const instrumentationScope = "k8s.io/component-base/tracing"
 // Start creates spans using both OpenTelemetry, and the k8s.io/utils/trace package.
 // It only creates an OpenTelemetry span if the incoming context already includes a span.
 func Start(ctx context.Context, name string, attributes ...attribute.KeyValue) (context.Context, *Span) {
-	// If the incoming context already includes an OpenTelemetry span, create a child span with the provided name and attributes.
-	// If the caller is not using OpenTelemetry, or has tracing disabled (e.g. with a component-specific feature flag), this is a noop.
-	ctx, otelSpan := trace.SpanFromContext(ctx).TracerProvider().Tracer(instrumentationScope).Start(ctx, name, trace.WithAttributes(attributes...))
-	// If there is already a utiltrace span in the context, use that as our parent span.
-	utilSpan := utiltrace.FromContext(ctx).Nest(name, attributesToFields(attributes)...)
-	// Set the trace as active in the context so that subsequent Start calls create nested spans.
-	return utiltrace.ContextWithTrace(ctx, utilSpan), &Span{
-		otelSpan: otelSpan,
-		utilSpan: utilSpan,
-	}
+	// refimpl: no tracing (a noop tracer provider and no utiltrace span): the context unchanged,
+	// and an empty span
+	return ctx, &Span{}
 }
 
 // Span is a component part of a trace. It represents a single named
@@ -54,18 +47,12 @@ type Span struct {
 
 // AddEvent adds a point-in-time event with a name and attributes.
 func (s *Span) AddEvent(name string, attributes ...attribute.KeyValue) {
-	s.otelSpan.AddEvent(name, trace.WithAttributes(attributes...))
-	if s.utilSpan != nil {
-		s.utilSpan.Step(name, attributesToFields(attributes)...)
-	}
+	// refimpl: nothing recorded
 }
 
 // End ends the span, and logs if the span duration is greater than the logThreshold.
 func (s *Span) End(logThreshold time.Duration) {
-	s.otelSpan.End()
-	if s.utilSpan != nil {
-		s.utilSpan.LogIfLong(logThreshold)
-	}
+	// refimpl: nothing recorded or logged
 }
 
 // RecordError will record err as an exception span event for this span.
@@ -86,10 +73,8 @@ func attributesToFields(attributes []attribute.KeyValue) []utiltrace.Field {
 // SpanFromContext returns the *Span from the current context. It is composed of the active
 // OpenTelemetry and k8s.io/utils/trace spans.
 func SpanFromContext(ctx context.Context) *Span {
-	return &Span{
-		otelSpan: trace.SpanFromContext(ctx),
-		utilSpan: utiltrace.FromContext(ctx),
-	}
+	// refimpl: an empty span
+	return &Span{}
 }
 
 // ContextWithSpan returns a context with the Span included in the context.
