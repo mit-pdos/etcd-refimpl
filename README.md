@@ -91,6 +91,7 @@ initializers that do nothing.
 | `go.opentelemetry.io/otel/attribute` | 4 (`Bool`, `Int`, `Int64`, `String`) | 0 | the real code is plainly provable (a struct literal): to etcd-grove |
 | `k8s.io/utils/trace` | 2 (`New`, `Trace.LogIfLong`) | 2 | a nil trace, logging nothing; `LogIfLong`'s spec is false of the real code: see below |
 | `github.com/xiang90/probing` | 2 (`NewHandler`, `NewProber`) | 2 | an empty `200` handler (relative to net/http's `WriteHeader` spec) and a nil prober |
+| `github.com/prometheus/client_golang/prometheus` | 14 (7 function specs, `wp_counterOptsLit`, `opaqueInitsOk`, `initFuncsOk`; `counterOpts`/`collectorName`/`nameFree`/`nameUnclaimed` are the predicates) | 13 | a registry that registers nothing, metrics (nil pointers) that record nothing; `wp_counterOptsLit` blocked by an axiomatized type, and `observerSpec` is too general for the real code: see below |
 
 ### Findings
 
@@ -111,6 +112,26 @@ initializers that do nothing.
   `sorry` (an `unsafe.Pointer` conversion is stuck: not a plain type). The axiom is true of the real
   code; what blocks a proof is the translation. Fix in etcd-grove: import prometheus's names in
   `Code/github_com/grpc_ecosystem/go_grpc_middleware/providers/prometheus.toml`.
+- **`prometheus.wp_counterOptsLit` cannot be met in etcd-grove's translation as configured.** It is a
+  Go composite literal `prometheus.CounterOpts{Namespace: …, Subsystem: …, Name: …, Help: …}` (in
+  etcd's `read/metrics.go`), not a call, so no implementation of the package bears on it; and
+  `CounterOpts = Opts` is an axiomatized type whose underlying type is opaque, so the literal has no
+  semantics (it is stuck). `Opts` is axiomatized only for its field `now func() time.Time`: etcd-grove's
+  Goose configuration of prometheus imports nothing. Fix in etcd-grove: `imports = ["!*", "time"]` in
+  `Code/github_com/prometheus/client_golang/prometheus.toml` (checked: `Opts` then translates as a
+  structure); `counterOpts` can then be a definition and `wp_counterOptsLit` a theorem there, of Go's
+  own composite literal. (The real `NewCounter` reads its options, so a proof of it needs the same.
+  The model's `NewCounter` has a blank parameter, which Goose does not allocate.)
+- **`prometheus.observerSpec` is false of the real code (a spec too general, not unsatisfiable).** It
+  says `Observe(f)` returns for every `f : val`. The real `(*histogram).Observe(v float64)` (as every
+  Go function with a named parameter) allocates its parameter first, and allocating a `float64`
+  (`AllocBytes 8`) from a value that is not a 64-bit word is stuck. So the axiom holds of no Goose
+  translation that names the parameter; the model meets it with `Observe(_ float64)` (a blank
+  parameter is not allocated). Every caller passes a float64 (`EtcdServer.Range`/`Txn`,
+  `processInternalRaftRequestOnce`, rafthttp's snapshot sender and handler), so the fix in etcd-grove
+  is `∀ f : w64` (`#f`) in `observerSpec`, as `gaugeSpec`'s `Add` and `GaugeVec.With`'s `Set` already
+  have.
+
 - **`model%` and universe-polymorphic constants (this repository).** `promSrvMetrics` is declared
   with `{GF : BundledGFunctors}` and nothing fixing its universe; `model%` now takes a polymorphic
   constant's model as a constant with the same universe parameters, replaced at each occurrence's
