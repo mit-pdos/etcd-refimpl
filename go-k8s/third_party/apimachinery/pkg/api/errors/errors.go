@@ -90,8 +90,18 @@ func (e *StatusError) DebugError() (string, []interface{}) {
 // with the provided type name.
 // It supports wrapped errors and returns false when the error is nil.
 func HasStatusCause(err error, name metav1.CauseType) bool {
-	_, ok := StatusCause(err, name)
-	return ok
+	// refimpl: a *StatusError's causes searched for the type; any other error (wrapped or not)
+	// has none
+	se, ok := err.(*StatusError)
+	if !ok || se.ErrStatus.Details == nil {
+		return false
+	}
+	for _, cause := range se.ErrStatus.Details.Causes {
+		if cause.Type == name {
+			return true
+		}
+	}
+	return false
 }
 
 // StatusCause returns the named cause from the provided error if it exists and
@@ -140,6 +150,10 @@ func FromObject(obj runtime.Object) error {
 	}
 	return &UnexpectedObjectError{obj}
 }
+
+// refimpl: the real file's line numbers from here on (HasStatusCause's body is longer), so that
+// the positions in the translation of the functions below are those of etcd-grove's
+//line errors.go:143:1
 
 // NewNotFound returns a new error which indicates that the resource of the kind and the name was not found.
 func NewNotFound(qualifiedResource schema.GroupResource, name string) *StatusError {
@@ -230,6 +244,7 @@ func NewForbidden(qualifiedResource schema.GroupResource, name string, err error
 
 // NewConflict returns an error indicating the item can't be updated as provided.
 func NewConflict(qualifiedResource schema.GroupResource, name string, err error) *StatusError {
+	// refimpl: the status without its message (which formats err)
 	return &StatusError{metav1.Status{
 		Status: metav1.StatusFailure,
 		Code:   http.StatusConflict,
@@ -239,7 +254,6 @@ func NewConflict(qualifiedResource schema.GroupResource, name string, err error)
 			Kind:  qualifiedResource.Resource,
 			Name:  name,
 		},
-		Message: fmt.Sprintf("Operation cannot be fulfilled on %s %q: %v", qualifiedResource.String(), name, err),
 	}}
 }
 
@@ -385,14 +399,14 @@ func NewServerTimeoutForKind(qualifiedKind schema.GroupKind, operation string, r
 
 // NewInternalError returns an error indicating the item is invalid and cannot be processed.
 func NewInternalError(err error) *StatusError {
+	// refimpl: the status without its message, and its one cause without err's message
 	return &StatusError{metav1.Status{
 		Status: metav1.StatusFailure,
 		Code:   http.StatusInternalServerError,
 		Reason: metav1.StatusReasonInternalError,
 		Details: &metav1.StatusDetails{
-			Causes: []metav1.StatusCause{{Message: err.Error()}},
+			Causes: []metav1.StatusCause{{}},
 		},
-		Message: fmt.Sprintf("Internal error occurred: %v", err),
 	}}
 }
 
@@ -687,14 +701,26 @@ func IsForbidden(err error) bool {
 // processing.
 // It supports wrapped errors and returns false when the error is nil.
 func IsTimeout(err error) bool {
-	reason, code := reasonAndCodeForError(err)
-	if reason == metav1.StatusReasonTimeout {
-		return true
+	// refimpl: a *StatusError's reason and code tested (knownReasons' reasons spelled out); any
+	// other error (wrapped or not) is no timeout
+	se, ok := err.(*StatusError)
+	if !ok {
+		return false
 	}
-	if _, ok := knownReasons[reason]; !ok && code == http.StatusGatewayTimeout {
+	switch se.ErrStatus.Reason {
+	case metav1.StatusReasonTimeout:
 		return true
+	case metav1.StatusReasonUnauthorized, metav1.StatusReasonForbidden, metav1.StatusReasonNotFound,
+		metav1.StatusReasonAlreadyExists, metav1.StatusReasonConflict, metav1.StatusReasonGone,
+		metav1.StatusReasonInvalid, metav1.StatusReasonServerTimeout, metav1.StatusReasonStoreReadError,
+		metav1.StatusReasonTooManyRequests, metav1.StatusReasonBadRequest,
+		metav1.StatusReasonMethodNotAllowed, metav1.StatusReasonNotAcceptable,
+		metav1.StatusReasonRequestEntityTooLarge, metav1.StatusReasonUnsupportedMediaType,
+		metav1.StatusReasonInternalError, metav1.StatusReasonExpired,
+		metav1.StatusReasonServiceUnavailable:
+		return false
 	}
-	return false
+	return se.ErrStatus.Code == http.StatusGatewayTimeout
 }
 
 // IsServerTimeout determines if err is an error which indicates that the request needs to be retried

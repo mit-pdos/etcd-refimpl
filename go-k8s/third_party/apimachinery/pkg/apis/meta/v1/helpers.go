@@ -24,6 +24,7 @@ import (
 
 	"k8s.io/apimachinery/pkg/fields"
 	"k8s.io/apimachinery/pkg/labels"
+	"k8s.io/apimachinery/pkg/runtime"
 	cbor "k8s.io/apimachinery/pkg/runtime/serializer/cbor/direct"
 	"k8s.io/apimachinery/pkg/selection"
 	"k8s.io/apimachinery/pkg/types"
@@ -34,43 +35,15 @@ import (
 // labels.Selector
 // Note: This function should be kept in sync with the selector methods in pkg/labels/selector.go
 func LabelSelectorAsSelector(ps *LabelSelector) (labels.Selector, error) {
+	// refimpl: only the empty selector is accepted (any other is an error: a NegotiateError, an
+	// error value of an imported package that needs no allocation and no package initialization)
 	if ps == nil {
 		return labels.Nothing(), nil
 	}
-	if len(ps.MatchLabels)+len(ps.MatchExpressions) == 0 {
+	if len(ps.MatchLabels) == 0 && len(ps.MatchExpressions) == 0 {
 		return labels.Everything(), nil
 	}
-	requirements := make([]labels.Requirement, 0, len(ps.MatchLabels)+len(ps.MatchExpressions))
-	for k, v := range ps.MatchLabels {
-		r, err := labels.NewRequirement(k, selection.Equals, []string{v})
-		if err != nil {
-			return nil, err
-		}
-		requirements = append(requirements, *r)
-	}
-	for _, expr := range ps.MatchExpressions {
-		var op selection.Operator
-		switch expr.Operator {
-		case LabelSelectorOpIn:
-			op = selection.In
-		case LabelSelectorOpNotIn:
-			op = selection.NotIn
-		case LabelSelectorOpExists:
-			op = selection.Exists
-		case LabelSelectorOpDoesNotExist:
-			op = selection.DoesNotExist
-		default:
-			return nil, fmt.Errorf("%q is not a valid label selector operator", expr.Operator)
-		}
-		r, err := labels.NewRequirement(expr.Key, op, append([]string(nil), expr.Values...))
-		if err != nil {
-			return nil, err
-		}
-		requirements = append(requirements, *r)
-	}
-	selector := labels.NewSelector()
-	selector = selector.Add(requirements...)
-	return selector, nil
+	return nil, runtime.NegotiateError{ContentType: "label selector"}
 }
 
 // LabelSelectorAsMap converts the LabelSelector api type into a map of strings, ie. the

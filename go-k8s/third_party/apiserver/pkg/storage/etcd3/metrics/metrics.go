@@ -30,7 +30,6 @@ import (
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/apiserver/pkg/features"
 	"k8s.io/apiserver/pkg/storage"
-	storagemetrics "k8s.io/apiserver/pkg/storage/metrics"
 	utilfeature "k8s.io/apiserver/pkg/util/feature"
 	compbasemetrics "k8s.io/component-base/metrics"
 	"k8s.io/component-base/metrics/legacyregistry"
@@ -215,11 +214,7 @@ func DeleteStoreStats(groupResource schema.GroupResource) {
 // RecordEtcdRequest updates and sets the etcd_request_duration_seconds,
 // etcd_request_total, etcd_request_errors_total metrics.
 func RecordEtcdRequest(verb string, groupResource schema.GroupResource, err error, startTime time.Time) {
-	etcdRequestLatency.WithLabelValues(verb, groupResource.Group, groupResource.Resource).Observe(sinceInSeconds(startTime))
-	etcdRequestCounts.WithLabelValues(verb, groupResource.Group, groupResource.Resource).Inc()
-	if err != nil {
-		etcdRequestErrorCounts.WithLabelValues(verb, groupResource.Group, groupResource.Resource, errorReason(err)).Inc()
-	}
+	// refimpl: no metrics
 }
 
 func errorReason(err error) string {
@@ -244,22 +239,17 @@ func errorReason(err error) string {
 
 // RecordListLatency sets the storage_list_duration_seconds metric.
 func RecordListLatency(groupResource schema.GroupResource, streamed bool, startTime time.Time) {
-	streamedLabel := "false"
-	if streamed {
-		streamedLabel = "true"
-	}
-	listLatency.WithLabelValues(streamedLabel, groupResource.Group, groupResource.Resource).Observe(sinceInSeconds(startTime))
+	// refimpl: no metrics
 }
 
 // RecordEtcdEvent updated the etcd_events_received_total metric.
 func RecordEtcdEvent(groupResource schema.GroupResource) {
-	etcdEventsReceivedCounts.WithLabelValues(groupResource.Group, groupResource.Resource).Inc()
+	// refimpl: no metrics
 }
 
 // RecordEtcdBookmark updates the etcd_bookmark_total metric.
 func RecordEtcdBookmark(groupResource schema.GroupResource) {
-	etcdBookmarkCounts.WithLabelValues(groupResource.Group, groupResource.Resource).Inc()
-	etcdBookmarkTotal.WithLabelValues(groupResource.Group, groupResource.Resource).Inc()
+	// refimpl: no metrics
 }
 
 // RecordDecodeError sets the storage_decode_errors metrics.
@@ -295,7 +285,7 @@ func UpdateLeaseObjectCount(count int64) {
 
 // RecordStorageListMetrics notes various metrics of the cost to serve a LIST request.
 func RecordStorageListMetrics(groupResource schema.GroupResource, index string, numFetched, numEvald, numReturned int) {
-	storagemetrics.RecordStorageListMetrics(groupResource, storagemetrics.StorageBackendEtcd, index, numFetched, numEvald, numReturned)
+	// refimpl: no metrics
 }
 
 type Monitor interface {
@@ -378,11 +368,7 @@ func NewOperationLatencyTracker(verb string, groupResource schema.GroupResource)
 
 // Record records latency, request count, and error count if applicable.
 func (t *OperationLatencyTracker) Record(err error, startTime time.Time) {
-	t.latency.Observe(sinceInSeconds(startTime))
-	t.requests.Inc()
-	if err != nil {
-		etcdRequestErrorCounts.WithLabelValues(t.verb, t.groupResource.Group, t.groupResource.Resource, errorReason(err)).Inc()
-	}
+	// refimpl: no metrics
 }
 
 // EtcdMetricsTracker holds pre-materialized metric trackers for etcd3 storage operations.
@@ -392,7 +378,6 @@ type EtcdMetricsTracker struct {
 
 // NewEtcdMetricsTracker initializes pre-materialized metric trackers for a given GroupResource.
 func NewEtcdMetricsTracker(groupResource schema.GroupResource) *EtcdMetricsTracker {
-	return &EtcdMetricsTracker{
-		Get: NewOperationLatencyTracker("get", groupResource),
-	}
+	// refimpl: a tracker whose latency tracker records nothing
+	return &EtcdMetricsTracker{Get: &OperationLatencyTracker{}}
 }

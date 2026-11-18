@@ -94,7 +94,8 @@ var sharedEverythingSelector Selector = internalSelector{}
 
 // Everything returns a selector that matches all labels.
 func Everything() Selector {
-	return sharedEverythingSelector
+	// refimpl: sharedEverythingSelector's value, internalSelector{}, without the package variable
+	return internalSelector(nil)
 }
 
 type nothingSelector struct{}
@@ -114,7 +115,8 @@ var sharedNothingSelector Selector = nothingSelector{}
 
 // Nothing returns a selector that matches no labels
 func Nothing() Selector {
-	return sharedNothingSelector
+	// refimpl: sharedNothingSelector's value without the package variable
+	return nothingSelector{}
 }
 
 // MatchesNothing only returns true for selectors which are definitively determined to match no objects.
@@ -123,7 +125,10 @@ func Nothing() Selector {
 // Note: The current implementation does not check for selector conflict scenarios (e.g., a=a,a!=a).
 // Support for detecting such cases can be added in the future.
 func MatchesNothing(selector Selector) bool {
-	return selector == sharedNothingSelector
+	// refimpl: the comparison with sharedNothingSelector (a nothingSelector{}, and every
+	// nothingSelector is equal to it), without the package variable
+	_, ok := selector.(nothingSelector)
+	return ok
 }
 
 // NewSelector returns a nil selector
