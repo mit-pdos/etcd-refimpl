@@ -79,8 +79,17 @@ initializers that do nothing.
 | `go.uber.org/zap`, `zap/zapcore` | 26 (23 function specs, `CheckedEntry.Write`, `opaqueInitsOk` ×2, `initFuncsOk`) | 26 | `Logger.Panic` spec fixed in etcd-grove: see below |
 | `github.com/jonboulle/clockwork` | 8 (`NewRealClock`, the 6 laws of `clockLb`/`stampAt`, `opaqueInitsOk`) | 8 | `stampAt`'s model is `□ P`: see below |
 | `k8s.io/utils/clock` | 8 (`RealClock.Now`/`NewTimer`/`NewTicker`, `realTimer`/`realTicker` `C` and `Stop`, `opaqueInitsOk`) | 8 | the real code, no body replaced: proved over Perennial's verified `time` |
+| `golang.org/x/time/rate` | 5 (`Every`, `NewLimiter`, `Limiter.Reserve`/`Wait`, `Reservation.Delay`) | 5 | a limiter that never limits (nil receivers) |
 
 ### Findings
+
+- **`model%` left a substitution undone (this repository, fixed 2026-11-18).** Classifying the definitions
+  that mention a replaced constant stopped at a definition's first such constant, so a second one
+  (`rate.reservationOk`, after `rate.limiterOk` in `Limiter.Reserve.spec`) was neither unfolded nor
+  replaced, and the check for leftovers looked only at the statement's own constants. Both fixed
+  (every constant classified; the check follows definitions). Earlier results were not affected: a
+  leftover opaque predicate can only make a proof harder, and its laws are axioms `#model_check`
+  rejects; every earlier model proof still checks.
 
 - **clockwork's `stampAt` (a docstring only).** etcd-grove's `Proof/github_com/jonboulle/clockwork/Defs.lean`
   says the clock axioms have the trivial model `clockLb := True`, `stampAt P T := P`. That model fails

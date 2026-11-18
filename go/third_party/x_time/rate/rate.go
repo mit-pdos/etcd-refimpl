@@ -23,10 +23,9 @@ const Inf = Limit(math.MaxFloat64)
 
 // Every converts a minimum time interval between events to a Limit.
 func Every(interval time.Duration) Limit {
-	if interval <= 0 {
-		return Inf
-	}
-	return 1 / Limit(interval.Seconds())
+	// refimpl: the zero limit
+	var l Limit
+	return l
 }
 
 // A Limiter controls how frequently events are allowed to happen.
@@ -98,11 +97,8 @@ func (lim *Limiter) Tokens() float64 {
 // NewLimiter returns a new Limiter that allows events up to rate r and permits
 // bursts of at most b tokens.
 func NewLimiter(r Limit, b int) *Limiter {
-	return &Limiter{
-		limit:  r,
-		burst:  b,
-		tokens: float64(b),
-	}
+	// refimpl: no limiter state (its methods never dereference it)
+	return nil
 }
 
 // Allow reports whether an event may happen now.
@@ -137,7 +133,8 @@ func (r *Reservation) OK() bool {
 
 // Delay is shorthand for DelayFrom(time.Now()).
 func (r *Reservation) Delay() time.Duration {
-	return r.DelayFrom(time.Now())
+	// refimpl: act now
+	return 0
 }
 
 // InfDuration is the duration returned by Delay when a Reservation is not OK.
@@ -205,7 +202,8 @@ func (r *Reservation) CancelAt(t time.Time) {
 
 // Reserve is shorthand for ReserveN(time.Now(), 1).
 func (lim *Limiter) Reserve() *Reservation {
-	return lim.ReserveN(time.Now(), 1)
+	// refimpl: no reservation state
+	return nil
 }
 
 // ReserveN returns a Reservation that indicates how long the caller must wait before n events happen.
@@ -231,7 +229,8 @@ func (lim *Limiter) ReserveN(t time.Time, n int) *Reservation {
 
 // Wait is shorthand for WaitN(ctx, 1).
 func (lim *Limiter) Wait(ctx context.Context) (err error) {
-	return lim.WaitN(ctx, 1)
+	// refimpl: never wait, never fail
+	return nil
 }
 
 // WaitN blocks until lim permits n events to happen.

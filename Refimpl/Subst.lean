@@ -60,11 +60,11 @@ meta partial def mentions (targets : NameSet) (c : Name) : StateT (NameMap Bool)
   let consts : Array Name := match info with
     | .defnInfo d => d.type.getUsedConstants ++ d.value.getUsedConstants
     | _ => info.type.getUsedConstants
+  -- every constant classified (no early exit): `substModel` unfolds exactly the classified ones
   let mut res := false
   for d in consts do
     if ← mentions targets d then
       res := true
-      break
   modify (·.insert c res)
   return res
 
@@ -86,9 +86,11 @@ meta def substModel (e : Expr) (subst : Array (Name × Expr)) : MetaM Expr := do
     | .const n _ => subst.find? (·.1 == n) |>.map (·.2)
     | _ => none
   let e ← instantiateMVars e
-  if e.getUsedConstants.any targets.contains then
-    throwError "model%: a replaced constant is left in the statement (in the type of a theorem?):\
-      {indentExpr e}"
+  -- no replaced constant left, directly or inside a definition the statement still names
+  let (left, _) ← (e.getUsedConstants.filterM fun c => mentions targets c).run {}
+  unless left.isEmpty do
+    throwError "model%: a replaced constant is left in the statement, through {left} \
+      (in the type of a theorem?):{indentExpr e}"
   check e
   return e
 
