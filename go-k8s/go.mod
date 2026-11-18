@@ -2,9 +2,23 @@ module github.com/mit-pdos/etcd-refimpl/go-k8s
 
 go 1.27.1
 
+// etcd's modules at etcd-grove's pins (examples/k8s/etcd3/go.mod), for the apiserver's packages
+replace go.etcd.io/etcd/api/v3 => github.com/upamanyus/etcd/api/v3 v3.0.0-20261115085855-8c28a4296f16
+
+replace go.etcd.io/etcd/client/pkg/v3 => github.com/upamanyus/etcd/client/pkg/v3 v3.0.0-20261115085855-8c28a4296f16
+
+replace go.etcd.io/etcd/client/v3 => github.com/upamanyus/etcd/client/v3 v3.0.0-20261115085855-8c28a4296f16
+
+replace go.etcd.io/etcd/pkg/v3 => github.com/upamanyus/etcd/pkg/v3 v3.0.0-20261115085855-8c28a4296f16
+
+replace go.etcd.io/etcd/server/v3 => github.com/upamanyus/etcd/server/v3 v3.0.0-20261115085855-8c28a4296f16
+
+replace go.etcd.io/raft/v3 => github.com/upamanyus/etcd/v3 v3.0.0-20261110053807-d2c16c558247
+
 require (
 	github.com/goose-lang/primitive v0.2.2-0.20260212023729-cb7f52217e65
 	go.uber.org/zap v1.28.0
+	k8s.io/api v0.0.0-20261020174351-067c983ccbc3
 	k8s.io/apimachinery v0.0.0-20261021173754-0b7d352f711c
 	k8s.io/apiserver v0.0.0-20261021221356-9c4ec15b8038
 	k8s.io/component-base v0.0.0-20261018214756-cd2c1afd246a
@@ -51,6 +65,7 @@ require (
 	github.com/stretchr/testify v1.12.1 // indirect
 	github.com/x448/float16 v0.8.4 // indirect
 	github.com/xiang90/probing v0.0.0-20221125231312-a49e3df8f510 // indirect
+	go.etcd.io/etcd/api/v3 v3.8.0-alpha.0 // indirect
 	go.opentelemetry.io/auto/sdk v1.2.1 // indirect
 	go.opentelemetry.io/contrib/instrumentation/google.golang.org/grpc/otelgrpc v0.72.0 // indirect
 	go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp v0.72.0 // indirect
@@ -78,7 +93,6 @@ require (
 	google.golang.org/protobuf v1.36.12 // indirect
 	gopkg.in/evanphx/json-patch.v4 v4.13.0 // indirect
 	gopkg.in/inf.v0 v0.9.1 // indirect
-	k8s.io/api v0.0.0-20261020174351-067c983ccbc3 // indirect
 	k8s.io/client-go v0.0.0-20261021054439-569675c57fa3 // indirect
 	k8s.io/kube-openapi v0.0.0-20261014044854-ca3452a79603 // indirect
 	sigs.k8s.io/json v0.0.0-20250730193827-2d320260d730 // indirect
@@ -92,3 +106,9 @@ replace k8s.io/klog/v2 => ./third_party/klog
 replace k8s.io/component-base => ./third_party/component_base
 
 replace k8s.io/utils => ./third_party/k8s_utils
+
+replace k8s.io/apimachinery => ./third_party/apimachinery
+
+replace k8s.io/api => ./third_party/api
+
+replace k8s.io/apiserver => ./third_party/apiserver
