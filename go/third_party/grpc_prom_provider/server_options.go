@@ -40,10 +40,8 @@ func WithServerCounterOptions(opts ...CounterOption) ServerMetricsOption {
 // WithServerHandlingTimeHistogram turns on recording of handling time of RPCs.
 // Histogram metrics can be very expensive for Prometheus to retain and query.
 func WithServerHandlingTimeHistogram(opts ...HistogramOption) ServerMetricsOption {
-	return func(o *serverMetricsConfig) {
-		o.histogramOpts = opts
-		o.enableHistogram = true
-	}
+	// refimpl: an option that sets nothing
+	return func(o *serverMetricsConfig) {}
 }
 
 // WithContextLabels configures the server metrics to include dynamic labels extracted from context.

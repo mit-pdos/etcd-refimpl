@@ -4,6 +4,8 @@
 package prometheus
 
 import (
+	"context"
+
 	"github.com/grpc-ecosystem/go-grpc-middleware/v2/interceptors"
 	"github.com/prometheus/client_golang/prometheus"
 	"google.golang.org/grpc"
@@ -27,55 +29,8 @@ type ServerMetrics struct {
 // NOTE: Remember to register ServerMetrics object by using prometheus registry
 // e.g. prometheus.MustRegister(myServerMetrics).
 func NewServerMetrics(opts ...ServerMetricsOption) *ServerMetrics {
-	var config serverMetricsConfig
-	config.apply(opts)
-
-	// Build label names by combining default labels with context labels
-	defaultLabels := []string{"grpc_type", "grpc_service", "grpc_method"}
-	defaultLabelsWithCode := []string{"grpc_type", "grpc_service", "grpc_method", "grpc_code"}
-
-	startedLabels := append(defaultLabels, config.contextLabels...)
-	handledLabels := append(defaultLabelsWithCode, config.contextLabels...)
-	streamLabels := append(defaultLabels, config.contextLabels...)
-
-	// Create histogram if enabled
-	var serverHandledHistogram *prometheus.HistogramVec
-	if config.enableHistogram {
-		histogramLabels := append(defaultLabels, config.contextLabels...)
-		serverHandledHistogram = prometheus.NewHistogramVec(
-			histogramOptions(config.histogramOpts).apply(prometheus.HistogramOpts{
-				Name:    "grpc_server_handling_seconds",
-				Help:    "Histogram of response latency (seconds) of gRPC that had been application-level handled by the server.",
-				Buckets: prometheus.DefBuckets,
-			}),
-			histogramLabels,
-		)
-	}
-
-	return &ServerMetrics{
-		serverStartedCounter: prometheus.NewCounterVec(
-			config.counterOpts.apply(prometheus.CounterOpts{
-				Name: "grpc_server_started_total",
-				Help: "Total number of RPCs started on the server.",
-			}), startedLabels),
-		serverHandledCounter: prometheus.NewCounterVec(
-			config.counterOpts.apply(prometheus.CounterOpts{
-				Name: "grpc_server_handled_total",
-				Help: "Total number of RPCs completed on the server, regardless of success or failure.",
-			}), handledLabels),
-		serverStreamMsgReceived: prometheus.NewCounterVec(
-			config.counterOpts.apply(prometheus.CounterOpts{
-				Name: "grpc_server_msg_received_total",
-				Help: "Total number of RPC stream messages received on the server.",
-			}), streamLabels),
-		serverStreamMsgSent: prometheus.NewCounterVec(
-			config.counterOpts.apply(prometheus.CounterOpts{
-				Name: "grpc_server_msg_sent_total",
-				Help: "Total number of gRPC stream messages sent by the server.",
-			}), streamLabels),
-		serverHandledHistogram: serverHandledHistogram,
-		contextLabelNames:      config.contextLabels,
-	}
+	// refimpl: metrics that record nothing
+	return &ServerMetrics{}
 }
 
 // Describe sends the super-set of all possible descriptors of metrics
@@ -109,12 +64,7 @@ func (m *ServerMetrics) Collect(ch chan<- prometheus.Metric) {
 // ensure that all metrics exist when collecting and querying.
 // NOTE: This might add significant cardinality and might not be needed in future version of Prometheus (created timestamp).
 func (m *ServerMetrics) InitializeMetrics(server reflection.ServiceInfoProvider) {
-	serviceInfo := server.GetServiceInfo()
-	for serviceName, info := range serviceInfo {
-		for _, mInfo := range info.Methods {
-			m.preRegisterMethod(serviceName, &mInfo)
-		}
-	}
+	// refimpl: no metrics to initialize
 }
 
 // preRegisterMethod is invoked on Register of a Server, allowing all gRPC services labels to be pre-populated.
@@ -148,16 +98,16 @@ func (m *ServerMetrics) preRegisterMethod(serviceName string, mInfo *grpc.Method
 
 // UnaryServerInterceptor is a gRPC server-side interceptor that provides Prometheus monitoring for Unary RPCs.
 func (m *ServerMetrics) UnaryServerInterceptor(opts ...Option) grpc.UnaryServerInterceptor {
-	return interceptors.UnaryServerInterceptor(&reportable{
-		opts:          opts,
-		serverMetrics: m,
-	})
+	// refimpl: a transparent interceptor
+	return func(ctx context.Context, req any, info *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (any, error) {
+		return handler(ctx, req)
+	}
 }
 
 // StreamServerInterceptor is a gRPC server-side interceptor that provides Prometheus monitoring for Streaming RPCs.
 func (m *ServerMetrics) StreamServerInterceptor(opts ...Option) grpc.StreamServerInterceptor {
-	return interceptors.StreamServerInterceptor(&reportable{
-		opts:          opts,
-		serverMetrics: m,
-	})
+	// refimpl: a transparent interceptor
+	return func(srv any, ss grpc.ServerStream, info *grpc.StreamServerInfo, handler grpc.StreamHandler) error {
+		return handler(srv, ss)
+	}
 }

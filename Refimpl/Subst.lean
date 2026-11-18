@@ -83,7 +83,13 @@ meta def substModel (e : Expr) (subst : Array (Name × Expr)) : MetaM Expr := do
   -- constant it has not classified
   let e ← deltaExpand e unfold.contains
   let e := e.replace fun x => match x with
-    | .const n _ => subst.find? (·.1 == n) |>.map (·.2)
+    | .const n us => subst.find? (·.1 == n) |>.map fun (_, v) =>
+        -- a polymorphic constant's model (`mkConst mn [params]`): at this occurrence's levels
+        match v with
+        | .const mn ps => if ps.isEmpty then v else
+            let ns := ps.filterMap fun | .param p => some p | _ => none
+            Lean.mkConst mn (ps.map fun l => l.instantiateParams ns us)
+        | _ => v
     | _ => none
   let e ← instantiateMVars e
   -- no replaced constant left, directly or inside a definition the statement still names
@@ -103,7 +109,19 @@ meta def elabSubst (stx : Syntax) : TermElabM (Array (Name × Expr)) := do
     let n ← realizeGlobalConstNoOverloadWithInfo c
     let info ← getConstInfo n
     unless info.levelParams.isEmpty do
-      throwErrorAt c "model%: {n} is universe polymorphic"
+      -- a universe-polymorphic constant: its model is a constant with as many universe
+      -- parameters, of the same type at them; each occurrence is replaced at its own levels
+      let `(@$m:ident) := t
+        | throwErrorAt t "model%: {n} is universe polymorphic: its model must be `@c`, a constant"
+      let mn ← realizeGlobalConstNoOverloadWithInfo m
+      let minfo ← getConstInfo mn
+      unless minfo.levelParams.length == info.levelParams.length do
+        throwErrorAt t "model%: {mn} has {minfo.levelParams.length} universe parameters, {n} has {info.levelParams.length}"
+      let us := info.levelParams.map Level.param
+      unless ← isDefEq (minfo.type.instantiateLevelParams minfo.levelParams us) info.type do
+        throwErrorAt t "model%: {mn}'s type is not {n}'s"
+      out := out.push (n, Lean.mkConst mn us)
+      continue
     let v ← elabTermEnsuringType t info.type
     synthesizeSyntheticMVarsNoPostponing
     let v ← instantiateMVars v

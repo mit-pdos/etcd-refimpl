@@ -80,8 +80,21 @@ initializers that do nothing.
 | `github.com/jonboulle/clockwork` | 8 (`NewRealClock`, the 6 laws of `clockLb`/`stampAt`, `opaqueInitsOk`) | 8 | `stampAt`'s model is `□ P`: see below |
 | `k8s.io/utils/clock` | 8 | moved | **verified in etcd-grove** (`3591db1da2`): the real code proved over Perennial's `time`; the 7 method axioms are theorems there |
 | `golang.org/x/time/rate` | 5 (`Every`, `NewLimiter`, `Limiter.Reserve`/`Wait`, `Reservation.Delay`) | 5 | a limiter that never limits (nil receivers) |
+| `go-grpc-middleware/providers/prometheus` | 7 (5 function specs, `promSrvMetrics_persistent`; `promSrvMetrics`/`promSrvMetricsOpt` are the predicates) | 6 | `NewServerMetrics` blocked by an axiomatized type: see below |
 
 ### Findings
+
+- **`grpc_prometheus.NewServerMetrics` cannot be met in etcd-grove's translation as configured.** It
+  returns a non-nil `*ServerMetrics`; any Go code doing so allocates a `ServerMetrics`, but etcd-grove's
+  Goose configuration of the package does not import prometheus, whose types the struct's fields name,
+  so the type is axiomatized (`axiom ServerMetrics : Type`) and its allocation's instances are
+  `sorry` (an `unsafe.Pointer` conversion is stuck: not a plain type). The axiom is true of the real
+  code; what blocks a proof is the translation. Fix in etcd-grove: import prometheus's names in
+  `Code/github_com/grpc_ecosystem/go_grpc_middleware/providers/prometheus.toml`.
+- **`model%` and universe-polymorphic constants (this repository).** `promSrvMetrics` is declared
+  with `{GF : BundledGFunctors}` and nothing fixing its universe; `model%` now takes a polymorphic
+  constant's model as a constant with the same universe parameters, replaced at each occurrence's
+  levels.
 
 - **`model%` left a substitution undone (this repository, fixed 2026-11-18).** Classifying the definitions
   that mention a replaced constant stopped at a definition's first such constant, so a second one
