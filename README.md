@@ -92,6 +92,9 @@ initializers that do nothing.
 | `k8s.io/utils/trace` | 2 (`New`, `Trace.LogIfLong`) | 2 | a nil trace, logging nothing; `LogIfLong`'s spec is false of the real code: see below |
 | `github.com/xiang90/probing` | 2 (`NewHandler`, `NewProber`) | 2 | an empty `200` handler (relative to net/http's `WriteHeader` spec) and a nil prober |
 | `github.com/prometheus/client_golang/prometheus` | 12 (7 function specs, `opaqueInitsOk`, `initFuncsOk`; `collectorName`/`nameFree`/`nameUnclaimed` are the predicates) | 11 | a registry that registers nothing, metrics (nil pointers) that record nothing; `HistogramVec.WithLabelValues` is unsatisfiable (`observerSpec`): see below; `Opts` translated in etcd-grove (`2040eeb525`) |
+| `google.golang.org/grpc/status` (and `internal/status`'s `Status.Code`) | 5 | 3 | every code `Unknown`; `Error`, `FromError`: **no implementation meets them**, see below |
+| `google.golang.org/grpc/metadata` | 7 (4 function specs, `incomingOf_cancelCtx`, `opaqueInitsOk`, `initFuncsOk`) | 5 | no context carries metadata; `MD.Get`: grpc's code is provable in etcd-grove; `AppendToOutgoingContext`: **no implementation meets it**, see below |
+| `google.golang.org/grpc/health`, `health/grpc_health_v1` | 9 (4 function specs, `grpcHealthSrv_persistent`, `opaqueInitsOk` ×2, `initFuncsOk` ×2) | 7 | a health server that records nothing; `NewServer` blocked by an axiomatized type, `RegisterHealthServer` by grpc's server model: see below |
 
 ### Findings
 
@@ -129,6 +132,49 @@ initializers that do nothing.
   axiomatized type (its field `now func() time.Time`, with `time` not imported), so the composite
   literal had no semantics, whatever the implementation. etcd-grove now imports `time` in the
   package's Goose configuration; `counterOpts` is a definition and the literal's axiom is gone.
+- **grpc's `status.Error`, `status.FromError` and `metadata.AppendToOutgoingContext` cannot be met by
+  any implementation that returns.** Each post equates an opaque Lean function of a Go value with data
+  the caller chooses, for a value the function allocates or whose method it calls:
+  - `status.Error(c, msg)`: `errDesc err = msg` for every `msg`, where `err` is a `*status.Error` (the
+    post fixes its type), so its value is a location: one the call does not allocate cannot have every
+    `msg` as its description, and one it allocates may be any fresh location;
+  - `status.FromError(err)` with `ok = false`: `errDesc err = m`, where `m` is the precondition's
+    string, which `err.Error()` returns (`errorMsgIs`): the same error value can return `"a"` in one
+    heap and `"b"` in another (an `Error()` that reads a cell);
+  - `metadata.AppendToOutgoingContext(ctx, [k, v])`: `outgoingOf c' = mdAdd (outgoingOf ctx) k v`, for
+    the context `c'` it returns: a fresh `*valueCtx` (returning `ctx` itself would need
+    `outgoingOf ctx = mdAdd (outgoingOf ctx) k v`, false: `mdAdd` appends `v`).
+
+  `errDesc` and `outgoingOf` are fixed Lean functions, the same in every execution, while the location
+  an allocation returns is any fresh one (GooseLang's `Alloc`/`AllocBytes` steps), and the contents of a
+  cell are the initial heap's. A model proof is one proof for every location and every heap, so no
+  definition of `errDesc` or `outgoingOf` makes the post provable, whatever the code (short of code
+  that never returns). The axioms are false of grpc itself in the same way: two runs of
+  `status.Error(c, "a")` and `status.Error(c, "b")` from the same heap may allocate the same location,
+  so by adequacy `errDesc` of one value would be both `"a"` and `"b"`. etcd-grove documents the reading
+  it intends (`status.FromError.spec`'s docstring, `incomingOf_cancelCtx`'s: "the equations are claims
+  about one execution's heap"), but the Lean statements do not say it: the functions do not depend on
+  the execution. A fix in etcd-grove would make the description and the metadata ghost state of the
+  execution (for example a persistent `errDescIs err m` points-to-like fact, given by `status.Error`
+  and read by `FromError`) instead of functions of the value.
+- **Specs over an arbitrary `val` (grpc's health).** `health.Server.SetServingStatus.spec` and
+  `grpc_health_v1.HealthCheckResponse_ServingStatus.String.spec` take the serving status as any `val`,
+  not a `w32`. Goose stores a named parameter or receiver in a variable of its type (`GoAlloc`), which
+  for an `int32` is `AllocBytes 4`, stuck on a `val` that is not a 32-bit literal: the axioms are false
+  of grpc's translated code for such a `val` (no Go program passes one, so nothing unsound follows for
+  Go code). The model's methods leave the parameter unnamed (nothing stored); the specs should take
+  `w32`.
+- **`health.NewServer` cannot be met in etcd-grove's translation as configured**, as
+  `grpc_prometheus.NewServerMetrics` could not: it returns a non-nil `*health.Server`, and etcd-grove's
+  Goose configuration of `health` (`Code/google_golang_org/grpc/health.toml`) translates no types, so
+  `Server` is axiomatized and `&Server{}` is stuck. Fix in etcd-grove: `translate_types = true`, with
+  the imports `Server`'s fields name (`sync`, `google.golang.org/grpc/health/grpc_health_v1`).
+- **`grpc_health_v1.RegisterHealthServer` is not modelled here**: its post is a new `grpcSrvNew` (grpc's
+  server being built, an opaque predicate), which only grpc's own `Server.RegisterService` axiom gives;
+  a model proof may not use it. grpc's body is `srv.testEmbeddedByValue(); s.RegisterService(&Health_ServiceDesc,
+  srv)`, provable in etcd-grove from `Server.RegisterService.spec` once `Health_ServiceDesc`'s
+  initializer is translated; so is `metadata.MD.Get` (`md[strings.ToLower(k)]`, over etcd-grove's
+  `strings.ToLower` spec).
 
 - **`model%` and universe-polymorphic constants (this repository).** `promSrvMetrics` is declared
   with `{GF : BundledGFunctors}` and nothing fixing its universe; `model%` now takes a polymorphic
