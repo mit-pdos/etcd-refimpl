@@ -25,7 +25,7 @@ variable [GooseExts] [GooseSemantics] [GooseInterp]
 variable [go_gctx : GoGlobalContext]
 variable {GF : BundledGFunctors} [hG : HeapGS HasLC.hasLC GF]
 variable [sem : go.Semantics]
-variable [bound : zap.Bound]
+variable [ref : go_uber_org.zap.Refimpl] [refc : go_uber_org.zap.zapcore.Refimpl]
 
 theorem zap.opaqueInitsOk.model_proof :
     model% (type_of% (go_uber_org.zap.opaqueInitsOk (GF := GF) (hG := hG))) with

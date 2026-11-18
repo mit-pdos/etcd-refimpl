@@ -24,14 +24,16 @@ variable [GooseExts] [GooseSemantics] [GooseInterp]
 variable [go_gctx : GoGlobalContext]
 variable {GF : BundledGFunctors} [hG : HeapGS HasLC.hasLC GF]
 variable [sem : go.Semantics]
-variable [bound : zap.Bound]
+variable [ref : go_uber_org.zap.Refimpl] [refc : go_uber_org.zap.zapcore.Refimpl]
+variable [package_sem : go_uber_org.zap.Assumptions]
 
 theorem zap.Logger.Panic.model_proof :
     model% (EtcdGrove.zap.Logger.Panic.spec (GF := GF) (hG := hG)) with
       [EtcdGrove.zap.loggerRaw := @zap.loggerRaw, EtcdGrove.zapcore.zapEntry := @zapcore.zapEntry] := by
   intro l msg fields
   wp_start
-  iapply (wp_panic _ Φ)
+  wp_auto
+  wp_apply (wp_panic (interface.mkOk go.string #msg))
   iapply HΦ
   ipureintro; rfl
 

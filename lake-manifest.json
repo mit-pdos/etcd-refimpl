@@ -7,10 +7,10 @@
    "type": "git",
    "subDir": null,
    "scope": "",
-   "rev": "11854184e16f31da948ee71ca437c3d1e7592b12",
+   "rev": "db06d482153219af6fd314ba007e57e0b23e6151",
    "name": "etcdGrove",
    "manifestFile": "lake-manifest.json",
-   "inputRev": "11854184e16f31da948ee71ca437c3d1e7592b12",
+   "inputRev": "db06d482153219af6fd314ba007e57e0b23e6151",
    "inherited": false,
    "configFile": "lakefile.toml"
   },

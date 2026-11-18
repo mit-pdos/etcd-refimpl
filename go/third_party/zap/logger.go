@@ -22,7 +22,6 @@ package zap
 
 import (
 	"fmt"
-	"io"
 	"os"
 	"strings"
 
@@ -85,12 +84,8 @@ func New(core zapcore.Core, options ...Option) *Logger {
 // Using WithOptions to replace the Core or error output of a no-op Logger can
 // re-enable logging.
 func NewNop() *Logger {
-	return &Logger{
-		core:        zapcore.NewNopCore(),
-		errorOutput: zapcore.AddSync(io.Discard),
-		addStack:    zapcore.FatalLevel + 1,
-		clock:       zapcore.DefaultClock,
-	}
+	// refimpl: a logger with no state.
+	return &Logger{}
 }
 
 // NewProduction builds a sensible production Logger that writes InfoLevel and
@@ -219,7 +214,8 @@ func (log *Logger) Level() zapcore.Level {
 // is enabled. It's a completely optional optimization; in high-performance
 // applications, Check can help avoid allocating a slice to hold fields.
 func (log *Logger) Check(lvl zapcore.Level, msg string) *zapcore.CheckedEntry {
-	return log.check(lvl, msg)
+	// refimpl: no level is enabled.
+	return nil
 }
 
 // Log logs a message at the specified level. The message includes any fields
@@ -235,33 +231,25 @@ func (log *Logger) Log(lvl zapcore.Level, msg string, fields ...Field) {
 // Debug logs a message at DebugLevel. The message includes any fields passed
 // at the log site, as well as any fields accumulated on the logger.
 func (log *Logger) Debug(msg string, fields ...Field) {
-	if ce := log.check(DebugLevel, msg); ce != nil {
-		ce.Write(fields...)
-	}
+	// refimpl: logging does nothing.
 }
 
 // Info logs a message at InfoLevel. The message includes any fields passed
 // at the log site, as well as any fields accumulated on the logger.
 func (log *Logger) Info(msg string, fields ...Field) {
-	if ce := log.check(InfoLevel, msg); ce != nil {
-		ce.Write(fields...)
-	}
+	// refimpl: logging does nothing.
 }
 
 // Warn logs a message at WarnLevel. The message includes any fields passed
 // at the log site, as well as any fields accumulated on the logger.
 func (log *Logger) Warn(msg string, fields ...Field) {
-	if ce := log.check(WarnLevel, msg); ce != nil {
-		ce.Write(fields...)
-	}
+	// refimpl: logging does nothing.
 }
 
 // Error logs a message at ErrorLevel. The message includes any fields passed
 // at the log site, as well as any fields accumulated on the logger.
 func (log *Logger) Error(msg string, fields ...Field) {
-	if ce := log.check(ErrorLevel, msg); ce != nil {
-		ce.Write(fields...)
-	}
+	// refimpl: logging does nothing.
 }
 
 // DPanic logs a message at DPanicLevel. The message includes any fields
@@ -281,9 +269,8 @@ func (log *Logger) DPanic(msg string, fields ...Field) {
 //
 // The logger then panics, even if logging at PanicLevel is disabled.
 func (log *Logger) Panic(msg string, fields ...Field) {
-	if ce := log.check(PanicLevel, msg); ce != nil {
-		ce.Write(fields...)
-	}
+	// refimpl: panic with the message, as zap's default panic hook.
+	panic(msg)
 }
 
 // Fatal logs a message at FatalLevel. The message includes any fields passed
@@ -292,8 +279,8 @@ func (log *Logger) Panic(msg string, fields ...Field) {
 // The logger then calls os.Exit(1), even if logging at FatalLevel is
 // disabled.
 func (log *Logger) Fatal(msg string, fields ...Field) {
-	if ce := log.check(FatalLevel, msg); ce != nil {
-		ce.Write(fields...)
+	// refimpl: never returns (zap exits the process).
+	for {
 	}
 }
 

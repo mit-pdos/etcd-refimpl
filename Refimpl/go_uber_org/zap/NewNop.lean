@@ -24,15 +24,16 @@ variable [GooseExts] [GooseSemantics] [GooseInterp]
 variable [go_gctx : GoGlobalContext]
 variable {GF : BundledGFunctors} [hG : HeapGS HasLC.hasLC GF]
 variable [sem : go.Semantics]
-variable [bound : zap.Bound]
+variable [ref : go_uber_org.zap.Refimpl] [refc : go_uber_org.zap.zapcore.Refimpl]
 variable [package_sem : go_uber_org.zap.Assumptions]
 
 theorem zap.NewNop.model_proof :
     model% (EtcdGrove.zap.NewNop.spec (GF := GF) (hG := hG)) with
       [EtcdGrove.zap.loggerRaw := @zap.loggerRaw, EtcdGrove.zapcore.zapEntry := @zapcore.zapEntry] := by
   wp_start
-  wp_alloc l as Hl
-  icases typedPointsto_not_null_dup _ _ _ $$ Hl with ⟨-, %Hnn⟩
+  wp_alloc res as Hres
+  wp_auto
+  icases typedPointsto_not_null_dup _ _ _ $$ «$r0» with ⟨-, %Hnn⟩
   iapply HΦ
   unfold zap.loggerRaw
   isplit

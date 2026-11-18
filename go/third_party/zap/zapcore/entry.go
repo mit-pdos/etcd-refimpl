@@ -21,12 +21,10 @@
 package zapcore
 
 import (
-	"fmt"
 	"runtime"
 	"strings"
 	"time"
 
-	"go.uber.org/multierr"
 	"go.uber.org/zap/internal/bufferpool"
 	"go.uber.org/zap/internal/exit"
 	"go.uber.org/zap/internal/pool"
@@ -244,52 +242,7 @@ func (ce *CheckedEntry) reset() {
 // the CheckedEntry reference to a pool for immediate re-use. Finally, it
 // executes any required CheckWriteAction.
 func (ce *CheckedEntry) Write(fields ...Field) {
-	if ce == nil {
-		return
-	}
-
-	if ce.dirty {
-		if ce.ErrorOutput != nil {
-			// Make a best effort to detect unsafe re-use of this CheckedEntry.
-			// If the entry is dirty, log an internal error; because the
-			// CheckedEntry is being used after it was returned to the pool,
-			// the message may be an amalgamation from multiple call sites.
-			_, _ = fmt.Fprintf(
-				ce.ErrorOutput,
-				"%v Unsafe CheckedEntry re-use near Entry %+v.\n",
-				ce.Time,
-				ce.Entry,
-			)
-			_ = ce.ErrorOutput.Sync() // ignore error
-		}
-		return
-	}
-	ce.dirty = true
-
-	ent := ce.Entry
-	for i := range ce.before {
-		ent, fields = ce.before[i](ent, fields)
-	}
-
-	var err error
-	for i := range ce.cores {
-		err = multierr.Append(err, ce.cores[i].Write(ent, fields))
-	}
-	if err != nil && ce.ErrorOutput != nil {
-		_, _ = fmt.Fprintf(
-			ce.ErrorOutput,
-			"%v write error: %v\n",
-			ce.Time,
-			err,
-		)
-		_ = ce.ErrorOutput.Sync() // ignore error
-	}
-
-	hook := ce.after
-	if hook != nil {
-		hook.OnWrite(ce, fields)
-	}
-	putCheckedEntry(ce)
+	// refimpl: writes nothing.
 }
 
 // AddCore adds a Core that has agreed to log this CheckedEntry. It's intended to be

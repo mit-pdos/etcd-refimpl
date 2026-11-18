@@ -61,11 +61,8 @@ func Binary(key string, val []byte) Field {
 
 // Bool constructs a field that carries a bool.
 func Bool(key string, val bool) Field {
-	var ival int64
-	if val {
-		ival = 1
-	}
-	return Field{Key: key, Type: zapcore.BoolType, Integer: ival}
+	// refimpl: a field carries nothing.
+	return Field{}
 }
 
 // Boolp constructs a field that carries a *bool. The returned Field will safely
@@ -81,7 +78,8 @@ func Boolp(key string, val *bool) Field {
 // To log opaque binary blobs (which aren't necessarily valid UTF-8), use
 // Binary.
 func ByteString(key string, val []byte) Field {
-	return Field{Key: key, Type: zapcore.ByteStringType, Interface: val}
+	// refimpl: a field carries nothing.
+	return Field{}
 }
 
 // Complex128 constructs a field that carries a complex number. Unlike most
@@ -150,7 +148,8 @@ func Float32p(key string, val *float32) Field {
 
 // Int constructs a field with the given key and value.
 func Int(key string, val int) Field {
-	return Int64(key, int64(val))
+	// refimpl: a field carries nothing.
+	return Field{}
 }
 
 // Intp constructs a field that carries a *int. The returned Field will safely
@@ -164,7 +163,8 @@ func Intp(key string, val *int) Field {
 
 // Int64 constructs a field with the given key and value.
 func Int64(key string, val int64) Field {
-	return Field{Key: key, Type: zapcore.Int64Type, Integer: val}
+	// refimpl: a field carries nothing.
+	return Field{}
 }
 
 // Int64p constructs a field that carries a *int64. The returned Field will safely
@@ -178,7 +178,8 @@ func Int64p(key string, val *int64) Field {
 
 // Int32 constructs a field with the given key and value.
 func Int32(key string, val int32) Field {
-	return Field{Key: key, Type: zapcore.Int32Type, Integer: int64(val)}
+	// refimpl: a field carries nothing.
+	return Field{}
 }
 
 // Int32p constructs a field that carries a *int32. The returned Field will safely
@@ -220,7 +221,8 @@ func Int8p(key string, val *int8) Field {
 
 // String constructs a field with the given key and value.
 func String(key string, val string) Field {
-	return Field{Key: key, Type: zapcore.StringType, String: val}
+	// refimpl: a field carries nothing.
+	return Field{}
 }
 
 // Stringp constructs a field that carries a *string. The returned Field will safely
@@ -234,7 +236,8 @@ func Stringp(key string, val *string) Field {
 
 // Uint constructs a field with the given key and value.
 func Uint(key string, val uint) Field {
-	return Uint64(key, uint64(val))
+	// refimpl: a field carries nothing.
+	return Field{}
 }
 
 // Uintp constructs a field that carries a *uint. The returned Field will safely
@@ -248,7 +251,8 @@ func Uintp(key string, val *uint) Field {
 
 // Uint64 constructs a field with the given key and value.
 func Uint64(key string, val uint64) Field {
-	return Field{Key: key, Type: zapcore.Uint64Type, Integer: int64(val)}
+	// refimpl: a field carries nothing.
+	return Field{}
 }
 
 // Uint64p constructs a field that carries a *uint64. The returned Field will safely
@@ -262,7 +266,8 @@ func Uint64p(key string, val *uint64) Field {
 
 // Uint32 constructs a field with the given key and value.
 func Uint32(key string, val uint32) Field {
-	return Field{Key: key, Type: zapcore.Uint32Type, Integer: int64(val)}
+	// refimpl: a field carries nothing.
+	return Field{}
 }
 
 // Uint32p constructs a field that carries a *uint32. The returned Field will safely
@@ -339,7 +344,8 @@ func Namespace(key string) Field {
 // Stringer constructs a field with the given key and the output of the value's
 // String method. The Stringer's String method is called lazily.
 func Stringer(key string, val fmt.Stringer) Field {
-	return Field{Key: key, Type: zapcore.StringerType, Interface: val}
+	// refimpl: a field carries nothing.
+	return Field{}
 }
 
 // Time constructs a Field with the given key and value. The encoder
@@ -365,7 +371,8 @@ func Timep(key string, val *time.Time) Field {
 // expensive (relatively speaking); this function both makes an allocation and
 // takes about two microseconds.
 func Stack(key string) Field {
-	return StackSkip(key, 1) // skip Stack
+	// refimpl: a field carries nothing.
+	return Field{}
 }
 
 // StackSkip constructs a field similarly to Stack, but also skips the given
@@ -381,7 +388,8 @@ func StackSkip(key string, skip int) Field {
 // Duration constructs a field with the given key and value. The encoder
 // controls how the duration is serialized.
 func Duration(key string, val time.Duration) Field {
-	return Field{Key: key, Type: zapcore.DurationType, Integer: int64(val)}
+	// refimpl: a field carries nothing.
+	return Field{}
 }
 
 // Durationp constructs a field that carries a *time.Duration. The returned Field will safely

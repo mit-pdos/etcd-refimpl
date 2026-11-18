@@ -31,7 +31,8 @@ var _errArrayElemPool = pool.New(func() *errArrayElem {
 
 // Error is shorthand for the common idiom NamedError("error", err).
 func Error(err error) Field {
-	return NamedError("error", err)
+	// refimpl: a field carries nothing.
+	return Field{}
 }
 
 // NamedError constructs a field that lazily stores err.Error() under the

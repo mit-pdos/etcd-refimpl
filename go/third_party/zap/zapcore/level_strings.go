@@ -39,8 +39,5 @@ var (
 )
 
 func init() {
-	for level, color := range _levelToColor {
-		_levelToLowercaseColorString[level] = color.Add(level.String())
-		_levelToCapitalColorString[level] = color.Add(level.CapitalString())
-	}
+	// refimpl: the level strings' colours are not set (nothing etcd calls reads them).
 }

@@ -6,6 +6,7 @@ module
 
 public import Refimpl.go_uber_org.zap.Impl
 public import Spec.go_uber_org.zap.Stringer
+public import Perennial.GeneratedProof.fmt
 
 @[expose] public section
 
@@ -24,13 +25,17 @@ variable [GooseExts] [GooseSemantics] [GooseInterp]
 variable [go_gctx : GoGlobalContext]
 variable {GF : BundledGFunctors} [hG : HeapGS HasLC.hasLC GF]
 variable [sem : go.Semantics]
-variable [bound : zap.Bound]
+variable [ref : go_uber_org.zap.Refimpl] [refc : go_uber_org.zap.zapcore.Refimpl]
+variable [package_sem : go_uber_org.zap.Assumptions] [fmt_sem : _root_.Perennial.fmt.Assumptions]
 
+include fmt_sem in
 theorem zap.Stringer.model_proof :
     model% (EtcdGrove.zap.Stringer.spec (GF := GF) (hG := hG)) with
       [EtcdGrove.zap.loggerRaw := @zap.loggerRaw, EtcdGrove.zapcore.zapEntry := @zapcore.zapEntry] := by
   intro k v
   wp_start
+  wp_alloc r as Hr
+  wp_auto
   iapply HΦ
   ipureintro; trivial
 

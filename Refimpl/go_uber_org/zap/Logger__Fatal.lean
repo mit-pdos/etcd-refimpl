@@ -24,14 +24,18 @@ variable [GooseExts] [GooseSemantics] [GooseInterp]
 variable [go_gctx : GoGlobalContext]
 variable {GF : BundledGFunctors} [hG : HeapGS HasLC.hasLC GF]
 variable [sem : go.Semantics]
-variable [bound : zap.Bound]
+variable [ref : go_uber_org.zap.Refimpl] [refc : go_uber_org.zap.zapcore.Refimpl]
+variable [package_sem : go_uber_org.zap.Assumptions]
 
 theorem zap.Logger.Fatal.model_proof :
     model% (EtcdGrove.zap.Logger.Fatal.spec (GF := GF) (hG := hG)) with
       [EtcdGrove.zap.loggerRaw := @zap.loggerRaw, EtcdGrove.zapcore.zapEntry := @zapcore.zapEntry] := by
   intro l msg fields
   wp_start
-  iapply wp_hang
+  wp_auto
+  wp_for
+  wp_for_post
+  iframe
 
 end proof
 

@@ -195,7 +195,8 @@ func (os objectValues[T, P]) MarshalLogArray(arr zapcore.ArrayEncoder) error {
 
 // Strings constructs a field that carries a slice of strings.
 func Strings(key string, ss []string) Field {
-	return Array(key, stringArray(ss))
+	// refimpl: a field carries nothing.
+	return Field{}
 }
 
 // Stringers constructs a field with the given key, holding a list of the

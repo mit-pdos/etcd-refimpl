@@ -67,6 +67,9 @@ namespace Model
   zapcore.initFuncsOk.model_proof
   zapcore.opaqueInitsOk.model_proof
 
+#bound_check go_uber_org.zap.Refimpl
+#bound_check go_uber_org.zap.zapcore.Refimpl
+
 end Model
 end EtcdGrove
 end Perennial

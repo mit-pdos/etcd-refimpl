@@ -12,21 +12,35 @@ cannot be met by any implementation, writing one here is where that shows up.
 
 ## Layout
 
-One directory per Go package, as in etcd-grove (`Refimpl/<go package path>/`):
+**The reference implementations are Go**, translated by etcd-grove's own Goose:
 
-- `Impl.lean`: the package's model:
-  - the reference implementation of each axiomatized function, as GooseLang code (each with the Go
-    it stands for in its docstring);
-  - definitions of the opaque predicates and values the axioms are written in (in zap,
-    `zap.loggerRaw`, `zapcore.zapEntry`, the untranslated initializers `X.init`);
-  - `<pkg>.Bound`, the class binding the package's function and method names to that code
-    (`FuncUnfold`/`MethodUnfold`, the facts the generated `Assumptions` give for translated code).
+- `go/`: a Go module. `go/third_party/<module>/` is a copy of a library at the version etcd pins
+  (`go.uber.org/zap` v1.28.0), replacing it (`go/go.mod`), with the bodies of the functions etcd
+  calls replaced by the simplest Go that meets their specs, each marked `// refimpl:`. Every type
+  and every other declaration is the real library's. It builds with `go build ./...`.
+- `go/goose-config/`: the Goose configuration of those packages: etcd-grove's
+  (`Code/**/*.toml`), plus the replaced functions in `translate`.
+- `etc/goose-refimpl.py` runs the pinned Goose (built from the pinned Perennial) on `go/` with the
+  etcd project's `-lean-root` arguments, and compares the output with etcd-grove's checked-in
+  names-only translation of each package. It must be a **pure superset**: every line of etcd-grove's
+  translation unchanged (the reference implementation is a drop-in replacement of the package
+  etcd-grove assumes). What it adds, the translated bodies and their `FuncUnfold`/`MethodUnfold`
+  bindings, is written to `Refimpl/Gen/<pkg>.lean`: the bodies (`X.impl`) verbatim, and one class
+  `<pkg>.Refimpl` binding the names to them. Generated: never edit; `--check` exits 1 if stale.
+
+Then one directory per Go package (`Refimpl/<go package path>/`):
+
+- `Impl.lean`: what is not code: definitions of the opaque predicates the axioms are written in
+  (in zap, `zap.loggerRaw`, `zapcore.zapEntry`), and of the untranslated package-variable
+  initializers `X.init` (data axioms of etcd-grove's translation, which a translated initializer
+  could not replace without redeclaring them).
 - `<fn>.lean`, one per axiomatized function (the name of etcd-grove's spec file,
   `Spec/<pkg>/<fn>.lean`): `theorem <fn>.model_proof`, the spec, read in the model, proved of the
-  reference implementation, under `[<pkg>.Bound]`.
+  translated reference implementation, under `[<pkg>.Refimpl]` (and the package's type
+  `Assumptions`).
 - `Init.lean`: the package-initialization axioms (`opaqueInitsOk`, `initFuncsOk`), read in the
-  model, as theorems.
-- `Results.lean`: `#model_check` of every model proof of the package.
+  model, as theorems (zapcore's `init()` is Go too).
+- `Results.lean`: `#model_check` of every model proof, and `#bound_check` of the binding classes.
 
 ## How a spec is read in the model
 
@@ -46,7 +60,10 @@ and claim nothing.
 
 etcd-grove's axioms are stated for every Go semantics (`[sem : go.Semantics]`), in which a
 names-only function's code is unconstrained. The model proofs take one more hypothesis,
-`[<pkg>.Bound]`, saying that the function names are bound to the reference implementation. Each
+`[<pkg>.Refimpl]`, saying that the function names are bound to the reference implementation's
+Goose translation. `#bound_check` refuses such a class if it binds a name some translated package's
+`Assumptions` already binds to a real body (that hypothesis would contradict the real binding, and a
+proof under it would show nothing). Each
 proof therefore shows that the axiom is *satisfiable*: it holds of a program in which the library is
 the reference implementation. It does not show that the axiom holds of the real library, and the
 real Go code is not checked here. The models are deliberately the simplest implementations that
@@ -76,10 +93,13 @@ initializers that do nothing.
 ## Building
 
 `lakefile.toml` requires etcd-grove at a pinned commit. A plain `lake build` clones it and builds
-it from scratch (hours). To build against an existing, built checkout of etcd-grove at that commit:
+it from scratch (hours): don't. Build against an existing, built checkout of etcd-grove at that commit,
+with Lake's artifact cache on:
 
 ```sh
+export LAKE_ARTIFACT_CACHE=true LAKE_RESTORE_ARTIFACTS=true
 etc/link-local.sh /path/to/etcd-grove
+etc/goose-refimpl.py --check   # the Go reference implementations translate to Refimpl/Gen/
 lake build
 ```
 
