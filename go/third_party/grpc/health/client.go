@@ -28,7 +28,6 @@ import (
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/connectivity"
 	healthpb "google.golang.org/grpc/health/grpc_health_v1"
-	"google.golang.org/grpc/internal"
 	"google.golang.org/grpc/internal/backoff"
 	"google.golang.org/grpc/status"
 )
@@ -49,7 +48,7 @@ var (
 )
 
 func init() {
-	internal.HealthCheckFunc = clientHealthCheck
+	// refimpl: registers nothing
 }
 
 const healthCheckMethod = "/grpc.health.v1.Health/Watch"

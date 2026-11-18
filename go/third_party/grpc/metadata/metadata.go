@@ -26,12 +26,10 @@ import (
 	"fmt"
 	"sort"
 	"strings"
-
-	"google.golang.org/grpc/internal"
 )
 
 func init() {
-	internal.FromOutgoingContextRaw = fromOutgoingContextRaw
+	// refimpl: registers nothing
 }
 
 // DecodeKeyValue returns k, v, nil.

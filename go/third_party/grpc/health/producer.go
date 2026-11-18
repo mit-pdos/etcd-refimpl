@@ -31,8 +31,7 @@ import (
 )
 
 func init() {
-	producerBuilderSingleton = &producerBuilder{}
-	internal.RegisterClientHealthCheckListener = registerClientSideHealthCheckListener
+	// refimpl: registers nothing
 }
 
 type producerBuilder struct{}

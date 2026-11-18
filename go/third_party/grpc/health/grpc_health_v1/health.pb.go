@@ -325,7 +325,9 @@ var file_grpc_health_v1_health_proto_depIdxs = []int32{
 	0, // [0:3] is the sub-list for field type_name
 }
 
-func init() { file_grpc_health_v1_health_proto_init() }
+func init() {
+	// refimpl: registers no descriptor
+}
 func file_grpc_health_v1_health_proto_init() {
 	if File_grpc_health_v1_health_proto != nil {
 		return
