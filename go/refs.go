@@ -9,4 +9,8 @@ import (
 	_ "go.opentelemetry.io/otel/trace"
 	_ "go.uber.org/zap"
 	_ "golang.org/x/time/rate"
+	_ "google.golang.org/grpc/health"
+	_ "google.golang.org/grpc/health/grpc_health_v1"
+	_ "google.golang.org/grpc/metadata"
+	_ "google.golang.org/grpc/status"
 )
