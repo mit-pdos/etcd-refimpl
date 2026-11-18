@@ -5,6 +5,8 @@ go 1.26.0
 require (
 	github.com/grpc-ecosystem/go-grpc-middleware/providers/prometheus v1.1.0
 	github.com/jonboulle/clockwork v0.5.0
+	github.com/xiang90/probing v0.0.0-20221125231312-a49e3df8f510
+	go.opentelemetry.io/otel/trace v1.47.0
 	go.uber.org/zap v1.28.0
 	golang.org/x/time v0.16.0
 )
@@ -18,6 +20,7 @@ require (
 	github.com/prometheus/client_model v0.6.2 // indirect
 	github.com/prometheus/common v0.70.1 // indirect
 	github.com/prometheus/procfs v0.21.1 // indirect
+	go.opentelemetry.io/otel v1.47.0 // indirect
 	go.uber.org/multierr v1.10.0 // indirect
 	golang.org/x/net v0.57.0 // indirect
 	golang.org/x/sys v0.47.0 // indirect
@@ -34,3 +37,7 @@ replace github.com/jonboulle/clockwork => ./third_party/clockwork
 replace golang.org/x/time => ./third_party/x_time
 
 replace github.com/grpc-ecosystem/go-grpc-middleware/providers/prometheus => ./third_party/grpc_prom_provider
+
+replace go.opentelemetry.io/otel/trace => ./third_party/otel_trace
+
+replace github.com/xiang90/probing => ./third_party/probing
