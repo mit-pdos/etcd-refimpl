@@ -99,10 +99,8 @@ func Errorf(c codes.Code, format string, a ...any) error {
 
 // Code returns the status code contained in s.
 func (s *Status) Code() codes.Code {
-	if s == nil || s.s == nil {
-		return codes.OK
-	}
-	return codes.Code(s.s.Code)
+	// refimpl: every status's code is Unknown
+	return codes.Unknown
 }
 
 // Message returns the message contained in s.

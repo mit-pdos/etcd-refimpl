@@ -69,8 +69,9 @@ func (x HealthCheckResponse_ServingStatus) Enum() *HealthCheckResponse_ServingSt
 	return p
 }
 
-func (x HealthCheckResponse_ServingStatus) String() string {
-	return protoimpl.X.EnumStringOf(x.Descriptor(), protoreflect.EnumNumber(x))
+func (HealthCheckResponse_ServingStatus) String() string {
+	// refimpl: no name (unnamed receiver: nothing is stored)
+	return ""
 }
 
 func (HealthCheckResponse_ServingStatus) Descriptor() protoreflect.EnumDescriptor {

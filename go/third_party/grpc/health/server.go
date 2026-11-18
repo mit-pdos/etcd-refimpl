@@ -51,10 +51,8 @@ type Server struct {
 
 // NewServer returns a new Server.
 func NewServer() *Server {
-	return &Server{
-		statusMap: map[string]healthpb.HealthCheckResponse_ServingStatus{"": healthpb.HealthCheckResponse_SERVING},
-		updates:   make(map[string]map[healthgrpc.Health_WatchServer]chan healthpb.HealthCheckResponse_ServingStatus),
-	}
+	// refimpl: a server that records nothing
+	return &Server{}
 }
 
 // Check implements `service Health`.
@@ -133,15 +131,8 @@ func (s *Server) Watch(in *healthpb.HealthCheckRequest, stream healthgrpc.Health
 
 // SetServingStatus is called when need to reset the serving status of a service
 // or insert a new service entry into the statusMap.
-func (s *Server) SetServingStatus(service string, servingStatus healthpb.HealthCheckResponse_ServingStatus) {
-	s.mu.Lock()
-	defer s.mu.Unlock()
-	if s.shutdown {
-		logger.Infof("health: status changing for %s to %v is ignored because health service is shutdown", service, servingStatus)
-		return
-	}
-
-	s.setServingStatusLocked(service, servingStatus)
+func (*Server) SetServingStatus(string, healthpb.HealthCheckResponse_ServingStatus) {
+	// refimpl: records nothing (unnamed parameters: nothing is stored)
 }
 
 func (s *Server) setServingStatusLocked(service string, servingStatus healthpb.HealthCheckResponse_ServingStatus) {

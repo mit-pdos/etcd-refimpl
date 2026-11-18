@@ -1,0 +1,5 @@
+# Names only: the type `Status` (of which `grpc/status.Status` is an alias, for
+# `client/v3/leasing`); nothing is translated with a body.
+# refimpl: and the body of Status.Code
+translate = ["!*", "Status.Code"]
+imports = ["!*"]

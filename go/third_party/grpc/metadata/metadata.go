@@ -266,19 +266,8 @@ func AppendToOutgoingContext(ctx context.Context, kv ...string) context.Context 
 //
 // All keys in the returned MD are lowercase.
 func FromIncomingContext(ctx context.Context) (MD, bool) {
-	md, ok := ctx.Value(mdIncomingKey{}).(MD)
-	if !ok {
-		return nil, false
-	}
-	out := make(MD, len(md))
-	for k, v := range md {
-		// We need to manually convert all keys to lower case, because MD is a
-		// map, and there's no guarantee that the MD attached to the context is
-		// created using our helper functions.
-		key := strings.ToLower(k)
-		out[key] = copyOf(v)
-	}
-	return out, true
+	// refimpl: no context carries incoming metadata
+	return nil, false
 }
 
 // ValueFromIncomingContext returns the metadata value corresponding to the metadata
@@ -329,35 +318,8 @@ func fromOutgoingContextRaw(ctx context.Context) (MD, [][]string, bool) {
 //
 // All keys in the returned MD are lowercase.
 func FromOutgoingContext(ctx context.Context) (MD, bool) {
-	raw, ok := ctx.Value(mdOutgoingKey{}).(rawMD)
-	if !ok {
-		return nil, false
-	}
-
-	mdSize := len(raw.md)
-	for i := range raw.added {
-		mdSize += len(raw.added[i]) / 2
-	}
-
-	out := make(MD, mdSize)
-	for k, v := range raw.md {
-		// We need to manually convert all keys to lower case, because MD is a
-		// map, and there's no guarantee that the MD attached to the context is
-		// created using our helper functions.
-		key := strings.ToLower(k)
-		out[key] = copyOf(v)
-	}
-	for _, added := range raw.added {
-		if len(added)%2 == 1 {
-			panic(fmt.Sprintf("metadata: FromOutgoingContext got an odd number of input pairs for metadata: %d", len(added)))
-		}
-
-		for i := 0; i < len(added); i += 2 {
-			key := strings.ToLower(added[i])
-			out[key] = append(out[key], added[i+1])
-		}
-	}
-	return out, ok
+	// refimpl: no context carries outgoing metadata
+	return nil, false
 }
 
 type rawMD struct {
