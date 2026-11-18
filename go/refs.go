@@ -4,4 +4,5 @@ package refs
 import (
 	_ "github.com/jonboulle/clockwork"
 	_ "go.uber.org/zap"
+	_ "k8s.io/utils/clock"
 )
