@@ -203,6 +203,20 @@ def body_imports(defs, path):
     return sorted(mods)
 
 
+def translation_files(out, path, pkg):
+    """The files of a package's translation, relative to Code/: `<path>.lean`, and the chunks Goose
+    splits a large package into (`<path>/chunk<i>.lean`, which the main file imports); the same
+    files as etcd-grove's."""
+    def chunks(root):
+        d = os.path.join(root, path)
+        return sorted(os.path.join(path, f) for f in os.listdir(d)
+                      if re.fullmatch(r"chunk\d+\.lean", f)) if os.path.isdir(d) else []
+    ours, theirs = chunks(out), chunks(os.path.join(GROVE, "Code"))
+    if ours != theirs:
+        sys.exit(f"goose-refimpl: {pkg}: the translation's chunks {ours} are not etcd-grove's {theirs}")
+    return [path + ".lean"] + ours
+
+
 def generate(pkg, path, defs, fields):
     ns = module_of(path)
     out = [
@@ -246,11 +260,15 @@ def main():
                            check=True, env=env)
         for pkg in PACKAGES:
             path = pkg_path(pkg)
-            with open(os.path.join(GROVE, "Code", path + ".lean")) as f:
-                old = f.readlines()
-            with open(os.path.join(tmp, PACKAGES[pkg], "Code", path + ".lean")) as f:
-                new = f.readlines()
-            defs, fields = extract(old, new, pkg)
+            defs, fields = [], []
+            for rel in translation_files(os.path.join(tmp, PACKAGES[pkg], "Code"), path, pkg):
+                with open(os.path.join(GROVE, "Code", rel)) as f:
+                    old = f.readlines()
+                with open(os.path.join(tmp, PACKAGES[pkg], "Code", rel)) as f:
+                    new = f.readlines()
+                d, fl = extract(old, new, pkg)
+                defs += d
+                fields += fl
             if not fields:
                 sys.exit(f"goose-refimpl: {pkg}: no body translated (is its goose-config's translate list set?)")
             text = generate(pkg, path, defs, fields)

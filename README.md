@@ -20,8 +20,11 @@ cannot be met by any implementation, writing one here is where that shows up.
   real code itself can be proved, the proof belongs in etcd-grove instead (the axioms become
   theorems there), as `k8s.io/utils/clock`'s did. Every type
   and every other declaration is the real library's. It builds with `go build ./...`.
+  Where a body grows and would move the functions after it that etcd-grove translates with their
+  bodies (whose docstrings give their positions), a `//line` directive restores the real file's line
+  numbers below it (apimachinery's `api/errors/errors.go`).
 - `go-k8s/`: the same for the packages of etcd-grove's `k8s-apiserver` Goose project (klog,
-  component-base's `tracing`), a module of its own because that project's dependencies are pinned
+  component-base's `tracing`, apimachinery, api, apiserver), a module of its own because that project's dependencies are pinned
   at other versions (its `go.mod` is `examples/k8s/etcd3/go.mod`'s, as is its `go.sum`), as etcd-grove
   keeps the two projects in separate Go modules.
 - `go/goose-config/` (`go-k8s/goose-config/`): the Goose configuration of those packages: etcd-grove's
@@ -95,6 +98,11 @@ initializers that do nothing.
 | `google.golang.org/grpc/status` (and `internal/status`'s `Status.Code`) | 5 | 3 | every code `Unknown`; `Error`, `FromError`: **no implementation meets them**, see below |
 | `google.golang.org/grpc/metadata` | 7 (4 function specs, `incomingOf_cancelCtx`, `opaqueInitsOk`, `initFuncsOk`) | 5 | no context carries metadata; `MD.Get`: grpc's code is provable in etcd-grove; `AppendToOutgoingContext`: **no implementation meets it**, see below |
 | `google.golang.org/grpc/health`, `health/grpc_health_v1` | 9 (4 function specs, `grpcHealthSrv_persistent`, `opaqueInitsOk` ×2, `initFuncsOk` ×2) | 5 | a health server that records nothing; `SetServingStatus`, `ServingStatus.String`: **no implementation meets them**; `NewServer` blocked by an axiomatized type, `RegisterHealthServer` by grpc's server model: see below |
+| `k8s.io/apimachinery/pkg/api/errors` | 4 (`HasStatusCause`, `IsTimeout`, `NewConflict`, `NewInternalError`) | 4 | the checks read a `*StatusError` only; the constructors leave out the message |
+| `k8s.io/apimachinery/pkg/labels` | 1 (`Everything`) | 1 | the shared selectors without their package variables; `Empty`/`Matches` are the real code |
+| `k8s.io/apimachinery/pkg/apis/meta/v1` | 2 (`LabelSelectorAsSelector`, the predicate `labels.reqsValid`) | 2 | only the empty selector is accepted (`reqsValid`: no pair, no requirement) |
+| `k8s.io/api/core/v1`, `apps/v1` | 6 (`Resource` ×2, `DeepCopyObject` of `Node`, `Pod`, `ControllerRevision`, `DaemonSet`) | 2 | `DeepCopyObject` not modelled: see below |
+| `k8s.io/apiserver/pkg/storage/etcd3/metrics` | 7 (`NewEtcdMetricsTracker`, `OperationLatencyTracker.Record`, 5 `Record*`) | 6 | no metrics; `NewEtcdMetricsTracker` blocked by an axiomatized type: see below |
 
 ### Findings
 
@@ -106,6 +114,35 @@ initializers that do nothing.
   etcd-grove: a predicate of the traces `trace.New` returns (persistent: `Trace` has its own lock),
   produced by `New`'s spec and required by `LogIfLong`'s; the named hypothesis `Trace.Step` has the
   same gap.
+
+- **The k8s API types' `DeepCopyObject` (core/v1 `Node`, `Pod`; apps/v1 `ControllerRevision`,
+  `DaemonSet`): not modelled.** The spec gives the caller a new object owned whole (`l' ↦ v'` and
+  `kd.*.own v' (DFrac.own 1) d`, every slice and map reached fresh) with the original's deep value,
+  so any implementation is a complete deep copy over the 166 struct types of etcd-grove's
+  `Proof/k8s_io/api/Deep.lean`: the real, generated `DeepCopyInto` is already the simplest one. Its
+  proof is mechanical and belongs in etcd-grove, generated alongside `Deep.lean`
+  (`etc/gen-k8s-deep.py`), with the deep copies translated with their bodies; the axioms are believed
+  true.
+- **`metrics.NewEtcdMetricsTracker` cannot be met in etcd-grove's translation as configured.** It
+  returns a tracker whose `Get` is a non-nil `*OperationLatencyTracker`; any Go code doing so
+  allocates an `OperationLatencyTracker`, a type etcd-grove's translation axiomatizes (its fields name
+  `schema.GroupResource` and component-base's `metrics.ObserverMetric`/`CounterMetric`, and the
+  package's configuration imports neither), so the allocation is stuck on `sorry` instances, as
+  `ServerMetrics`'s was. Fix in etcd-grove: import `k8s.io/apimachinery/pkg/runtime/schema` and
+  `k8s.io/component-base/metrics` in `Code/k8s_io/apiserver/pkg/storage/etcd3/metrics.toml`, with
+  component-base's `metrics.toml` translating the two interface types (it has no `translate_types`).
+  The Go reference implementation and its translation are here already.
+- **The apierrors specs after etcd-grove's `apierrors-fix` (2026-11-17) are satisfiable.** The
+  soundness review of 2026-11-17 refuted `HasStatusCause` (a view built after the call,
+  `notes/hasstatuscause-later-view.md`) and the constructors' preconditions
+  (`notes/axiom-review/apierrors-fix.md`); the texts this repository proves are the fixed ones. The
+  models of `HasStatusCause` and `IsTimeout` rest on `apiErrOk` holding the details read-only: an error
+  has one view (`apiErrAt_agree`, `Refimpl/k8s_io/apimachinery/pkg/api/errors/View.lean`), so the
+  answer computed from the view held is every view's.
+- **`labels.reqsValid` is uninterpreted, so `LabelSelectorAsSelector`'s spec is met by a function that
+  rejects every non-empty selector.** The model is that function. The spec says nothing of which
+  selectors the real code accepts (`SelDefs.lean` documents it in prose: the four operators, and
+  `labels.NewRequirement`'s syntax checks); a caller can only learn it from an error.
 
 - **`grpc_prometheus.NewServerMetrics` could not be met in etcd-grove's translation as configured
   (fixed in etcd-grove `2040eeb525`, 2026-11-18; now modelled).** It
