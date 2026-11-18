@@ -29,6 +29,7 @@ public import Proof.go_uber_org.zap.PkgInit
 public import Proof.go_uber_org.zap.zapcore.Init
 public import Spec.go_uber_org.zap.Defs
 public import Refimpl.Subst
+public import Refimpl.Common
 public import Refimpl.Gen.go_uber_org.zap
 public import Refimpl.Gen.go_uber_org.zap.zapcore
 
@@ -43,14 +44,6 @@ namespace EtcdGrove
 namespace Model
 
 open Iris Iris.BI go_uber_org
-
-section code
-variable [GooseExts] [GoGlobalContext]
-
-/-- An initializer that does nothing: every untranslated `X.init`, and `zapcore`'s `init()`. -/
-def initNoop : val := LamV BAnon (Val #())
-
-end code
 
 section defs
 variable [GooseExts] [GooseSemantics] [GooseInterp]

@@ -75,8 +75,14 @@ initializers that do nothing.
 | package | axioms | modelled | notes |
 |---|---|---|---|
 | `go.uber.org/zap`, `zap/zapcore` | 26 (23 function specs, `CheckedEntry.Write`, `opaqueInitsOk` ×2, `initFuncsOk`) | 26 | `Logger.Panic` spec fixed in etcd-grove: see below |
+| `github.com/jonboulle/clockwork` | 8 (`NewRealClock`, the 6 laws of `clockLb`/`stampAt`, `opaqueInitsOk`) | 8 | `stampAt`'s model is `□ P`: see below |
 
 ### Findings
+
+- **clockwork's `stampAt` (a docstring only).** etcd-grove's `Proof/github_com/jonboulle/clockwork/Defs.lean`
+  says the clock axioms have the trivial model `clockLb := True`, `stampAt P T := P`. That model fails
+  `stampAt_persistent`, which makes every stamp persistent, for a `P` that is not. The axioms are
+  satisfiable all the same, with `stampAt P T := □ P` (this repository's model); no axiom changes.
 
 - **`zap.Logger.Panic` (fixed in etcd-grove, 2026-11-17, `notes/specs-only/ledger.md`).**
   - **The panic value.** The spec said `r = PanicV #msg`, a panic with the bare string. No Go program

@@ -31,7 +31,10 @@ func NewRealClock() Clock {
 type realClock struct{}
 
 func (rc *realClock) After(d time.Duration) <-chan time.Time {
-	return time.After(d)
+	// refimpl: a channel holding one time, at once (time.After's fires no earlier than d later)
+	ch := make(chan time.Time, 1)
+	ch <- time.Time{}
+	return ch
 }
 
 func (rc *realClock) Sleep(d time.Duration) {
@@ -39,7 +42,8 @@ func (rc *realClock) Sleep(d time.Duration) {
 }
 
 func (rc *realClock) Now() time.Time {
-	return time.Now()
+	// refimpl: the zero time (the spec says nothing of the value)
+	return time.Time{}
 }
 
 func (rc *realClock) Since(t time.Time) time.Duration {
