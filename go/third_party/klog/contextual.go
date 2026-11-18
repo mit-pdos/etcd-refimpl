@@ -175,13 +175,9 @@ func TODO() Logger {
 // better receive a logger via its parameters. TODO can be used as a temporary
 // solution for such code.
 func Background() Logger {
-	if logging.loggerOptions.contextualLogger {
-		// Is non-nil because logging.loggerOptions.contextualLogger is
-		// only true if a logger was set.
-		return logging.logger.Logger
-	}
-
-	return klogLogger
+	// refimpl: the zero logger
+	var l Logger
+	return l
 }
 
 // LoggerWithValues returns logger.WithValues(...kv) when

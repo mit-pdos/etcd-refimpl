@@ -50,9 +50,7 @@ var (
 )
 
 func init() {
-	if h, err := os.Hostname(); err == nil {
-		host = shortHostname(h)
-	}
+	// refimpl: no host name
 }
 
 // shortHostname returns its argument, truncating at the first period.
