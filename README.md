@@ -20,10 +20,14 @@ cannot be met by any implementation, writing one here is where that shows up.
   real code itself can be proved, the proof belongs in etcd-grove instead (the axioms become
   theorems there), as `k8s.io/utils/clock`'s did. Every type
   and every other declaration is the real library's. It builds with `go build ./...`.
-- `go/goose-config/`: the Goose configuration of those packages: etcd-grove's
+- `go-k8s/`: the same for the packages of etcd-grove's `k8s-apiserver` Goose project (klog,
+  component-base's `tracing`), a module of its own because that project's dependencies are pinned
+  at other versions (its `go.mod` is `examples/k8s/etcd3/go.mod`'s, as is its `go.sum`), as etcd-grove
+  keeps the two projects in separate Go modules.
+- `go/goose-config/` (`go-k8s/goose-config/`): the Goose configuration of those packages: etcd-grove's
   (`Code/**/*.toml`), plus the replaced functions in `translate`.
-- `etc/goose-refimpl.py` runs the pinned Goose (built from the pinned Perennial) on `go/` with the
-  etcd project's `-lean-root` arguments, and compares the output with etcd-grove's checked-in
+- `etc/goose-refimpl.py` runs the pinned Goose (built from the pinned Perennial) on each module
+  with its project's `-lean-root` arguments and Go toolchain (etcd-grove's `etc/goose.py`), and compares the output with etcd-grove's checked-in
   names-only translation of each package. It must be a **pure superset**: every line of etcd-grove's
   translation unchanged (the reference implementation is a drop-in replacement of the package
   etcd-grove assumes). What it adds, the translated bodies and their `FuncUnfold`/`MethodUnfold`

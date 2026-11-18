@@ -7,13 +7,11 @@ require (
 	github.com/jonboulle/clockwork v0.5.0
 	go.uber.org/zap v1.28.0
 	golang.org/x/time v0.16.0
-	k8s.io/klog/v2 v2.140.0
 )
 
 require (
 	github.com/beorn7/perks v1.0.1 // indirect
 	github.com/cespare/xxhash/v2 v2.3.0 // indirect
-	github.com/go-logr/logr v1.4.4 // indirect
 	github.com/grpc-ecosystem/go-grpc-middleware/v2 v2.3.4 // indirect
 	github.com/munnerz/goautoneg v0.0.0-20191010083416-a7dc8b61c822 // indirect
 	github.com/prometheus/client_golang v1.24.1 // indirect
@@ -36,5 +34,3 @@ replace github.com/jonboulle/clockwork => ./third_party/clockwork
 replace golang.org/x/time => ./third_party/x_time
 
 replace github.com/grpc-ecosystem/go-grpc-middleware/providers/prometheus => ./third_party/grpc_prom_provider
-
-replace k8s.io/klog/v2 => ./third_party/klog
