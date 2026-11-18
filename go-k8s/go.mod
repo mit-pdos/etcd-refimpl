@@ -9,6 +9,7 @@ require (
 	k8s.io/apiserver v0.0.0-20261021221356-9c4ec15b8038
 	k8s.io/component-base v0.0.0-20261018214756-cd2c1afd246a
 	k8s.io/klog/v2 v2.140.0
+	k8s.io/utils v0.0.0-20260626114624-be93311217bd
 )
 
 require (
@@ -80,7 +81,6 @@ require (
 	k8s.io/api v0.0.0-20261020174351-067c983ccbc3 // indirect
 	k8s.io/client-go v0.0.0-20261021054439-569675c57fa3 // indirect
 	k8s.io/kube-openapi v0.0.0-20261014044854-ca3452a79603 // indirect
-	k8s.io/utils v0.0.0-20260626114624-be93311217bd // indirect
 	sigs.k8s.io/json v0.0.0-20250730193827-2d320260d730 // indirect
 	sigs.k8s.io/randfill v1.0.0 // indirect
 	sigs.k8s.io/structured-merge-diff/v7 v7.0.0 // indirect
@@ -90,3 +90,5 @@ require (
 replace k8s.io/klog/v2 => ./third_party/klog
 
 replace k8s.io/component-base => ./third_party/component_base
+
+replace k8s.io/utils => ./third_party/k8s_utils

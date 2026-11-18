@@ -5,4 +5,5 @@ package refs
 import (
 	_ "k8s.io/component-base/tracing"
 	_ "k8s.io/klog/v2"
+	_ "k8s.io/utils/trace"
 )
