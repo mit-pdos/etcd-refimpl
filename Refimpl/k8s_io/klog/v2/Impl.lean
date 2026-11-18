@@ -1,7 +1,7 @@
 /-
 A model of klog's trust boundary (`k8s.io/klog/v2`, names-only in etcd-grove's translation).
 
-The reference implementation is Go: `go/third_party/klog`, klog v2.140.0 (the k8s project's pin)
+The reference implementation is Go: `go-k8s/third_party/klog`, klog v2.140.0 (the k8s project's pin)
 with the bodies of the functions the proofs call replaced (each marked `// refimpl:`): logging that
 does nothing.
 
