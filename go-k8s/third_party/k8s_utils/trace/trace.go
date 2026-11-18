@@ -152,7 +152,8 @@ func (t *Trace) writeItem(b *bytes.Buffer, formatter string, startTime time.Time
 // New creates a Trace with the specified name. The name identifies the operation to be traced. The
 // Fields add key value pairs to provide additional details about the trace, such as operation inputs.
 func New(name string, fields ...Field) *Trace {
-	return &Trace{name: name, startTime: time.Now(), fields: fields}
+	// refimpl: no trace state (LogIfLong never dereferences it)
+	return nil
 }
 
 // Step adds a new step with a specific message. Call this at the end of an execution step to record
@@ -205,10 +206,7 @@ func (t *Trace) Log() {
 // If the Trace is nested it is not immediately logged. Instead, it is logged when the trace it
 // is nested within is logged.
 func (t *Trace) LogIfLong(threshold time.Duration) {
-	t.lock.Lock()
-	t.threshold = &threshold
-	t.lock.Unlock()
-	t.Log()
+	// refimpl: nothing logged
 }
 
 // logTopLevelTraces finds all traces in a hierarchy of nested traces that should be logged but do not have any

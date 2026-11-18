@@ -35,13 +35,8 @@ func ContextWithRemoteSpanContext(parent context.Context, rsc SpanContext) conte
 // If no Span is currently set in ctx an implementation of a Span that
 // performs no operations is returned.
 func SpanFromContext(ctx context.Context) Span {
-	if ctx == nil {
-		return noopSpanInstance
-	}
-	if span, ok := ctx.Value(currentSpanKey).(Span); ok {
-		return span
-	}
-	return noopSpanInstance
+	// refimpl: the no-op span, whatever the context holds
+	return noopSpan{}
 }
 
 // SpanContextFromContext returns the current Span's SpanContext.

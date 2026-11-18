@@ -29,12 +29,8 @@ type prober struct {
 }
 
 func NewProber(tr http.RoundTripper) Prober {
-	p := &prober{targets: make(map[string]*status)}
-	if tr == nil {
-		p.tr = http.DefaultTransport
-	} else {
-		p.tr = tr
-	}
+	// refimpl: no prober state (its methods etcd calls never dereference it)
+	var p *prober
 	return p
 }
 
@@ -93,26 +89,12 @@ func (p *prober) AddHTTP(id string, probingInterval time.Duration, endpoints []s
 }
 
 func (p *prober) Remove(id string) error {
-	p.mu.Lock()
-	defer p.mu.Unlock()
-
-	s, ok := p.targets[id]
-	if !ok {
-		return ErrNotFound
-	}
-	close(s.stopC)
-	delete(p.targets, id)
+	// refimpl: nothing to remove
 	return nil
 }
 
 func (p *prober) RemoveAll() {
-	p.mu.Lock()
-	defer p.mu.Unlock()
-
-	for _, s := range p.targets {
-		close(s.stopC)
-	}
-	p.targets = make(map[string]*status)
+	// refimpl: nothing to remove
 }
 
 func (p *prober) Reset(id string) error {

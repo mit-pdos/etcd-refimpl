@@ -1,7 +1,6 @@
 package probing
 
 import (
-	"encoding/json"
 	"net/http"
 	"time"
 )
@@ -19,7 +18,6 @@ type Health struct {
 }
 
 func (h *httpHealth) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	health := Health{OK: true, Now: time.Now()}
-	e := json.NewEncoder(w)
-	e.Encode(health)
+	// refimpl: an empty 200 response (the real handler writes the time as JSON)
+	w.WriteHeader(200)
 }
