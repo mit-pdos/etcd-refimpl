@@ -14,7 +14,6 @@
 package prometheus
 
 import (
-	"errors"
 	"math"
 	"sync/atomic"
 	"time"
@@ -84,21 +83,10 @@ type CounterVecOpts struct {
 // performance. (It is common to have an Inc call in very hot execution paths.)
 // Both internal tracking values are added up in the Write method. This has to
 // be taken into account when it comes to precision and overflow behavior.
-func NewCounter(opts CounterOpts) Counter {
-	desc := V2.NewDesc(
-		BuildFQName(opts.Namespace, opts.Subsystem, opts.Name),
-		opts.Help,
-		UnconstrainedLabels(nil),
-		opts.ConstLabels,
-		WithUnit(opts.Unit),
-	)
-	if opts.now == nil {
-		opts.now = time.Now
-	}
-	result := &counter{desc: desc, labelPairs: desc.constLabelPairs, now: opts.now}
-	result.init(result) // Init self-collection.
-	result.createdTs = timestamppb.New(opts.now())
-	return result
+func NewCounter(_ CounterOpts) Counter {
+	// refimpl: a counter that counts nothing (the methods below never dereference it); the
+	// options are not read (a blank parameter: etcd-grove's translation leaves `Opts` axiomatized)
+	return (*counter)(nil)
 }
 
 type counter struct {
@@ -125,23 +113,7 @@ func (c *counter) Desc() *Desc {
 }
 
 func (c *counter) Add(v float64) {
-	if v < 0 {
-		panic(errors.New("counter cannot decrease in value"))
-	}
-
-	ival := uint64(v)
-	if float64(ival) == v {
-		atomic.AddUint64(&c.valInt, ival)
-		return
-	}
-
-	for {
-		oldBits := atomic.LoadUint64(&c.valBits)
-		newBits := math.Float64bits(math.Float64frombits(oldBits) + v)
-		if atomic.CompareAndSwapUint64(&c.valBits, oldBits, newBits) {
-			return
-		}
-	}
+	// refimpl: counts nothing
 }
 
 func (c *counter) AddWithExemplar(v float64, e Labels) {
@@ -150,7 +122,7 @@ func (c *counter) AddWithExemplar(v float64, e Labels) {
 }
 
 func (c *counter) Inc() {
-	atomic.AddUint64(&c.valInt, 1)
+	// refimpl: counts nothing
 }
 
 func (c *counter) get() float64 {
@@ -281,11 +253,8 @@ func (v *CounterVec) GetMetricWith(labels Labels) (Counter, error) {
 //
 //	myVec.WithLabelValues("404", "GET").Add(42)
 func (v *CounterVec) WithLabelValues(lvs ...string) Counter {
-	c, err := v.GetMetricWithLabelValues(lvs...)
-	if err != nil {
-		panic(err)
-	}
-	return c
+	// refimpl: the counter of `NewCounter`, whatever the labels
+	return (*counter)(nil)
 }
 
 // With works as GetMetricWith, but panics where GetMetricWithLabels would have

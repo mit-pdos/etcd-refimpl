@@ -53,6 +53,7 @@ PACKAGES = {
     "github.com/grpc-ecosystem/go-grpc-middleware/providers/prometheus": "etcd",
     "go.opentelemetry.io/otel/trace": "etcd",
     "github.com/xiang90/probing": "etcd",
+    "github.com/prometheus/client_golang/prometheus": "etcd",
     "k8s.io/klog/v2": "k8s-apiserver",
     "k8s.io/component-base/tracing": "k8s-apiserver",
     "k8s.io/utils/trace": "k8s-apiserver",

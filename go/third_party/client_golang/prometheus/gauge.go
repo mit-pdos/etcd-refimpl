@@ -105,7 +105,7 @@ func (g *gauge) Desc() *Desc {
 }
 
 func (g *gauge) Set(val float64) {
-	atomic.StoreUint64(&g.valBits, math.Float64bits(val))
+	// refimpl: records nothing
 }
 
 func (g *gauge) SetToCurrentTime() {
@@ -113,21 +113,15 @@ func (g *gauge) SetToCurrentTime() {
 }
 
 func (g *gauge) Inc() {
-	g.Add(1)
+	// refimpl: records nothing
 }
 
 func (g *gauge) Dec() {
-	g.Add(-1)
+	// refimpl: records nothing
 }
 
 func (g *gauge) Add(val float64) {
-	for {
-		oldBits := atomic.LoadUint64(&g.valBits)
-		newBits := math.Float64bits(math.Float64frombits(oldBits) + val)
-		if atomic.CompareAndSwapUint64(&g.valBits, oldBits, newBits) {
-			return
-		}
-	}
+	// refimpl: records nothing
 }
 
 func (g *gauge) Sub(val float64) {
@@ -235,11 +229,8 @@ func (v *GaugeVec) GetMetricWith(labels Labels) (Gauge, error) {
 //
 //	myVec.WithLabelValues("404", "GET").Add(42)
 func (v *GaugeVec) WithLabelValues(lvs ...string) Gauge {
-	g, err := v.GetMetricWithLabelValues(lvs...)
-	if err != nil {
-		panic(err)
-	}
-	return g
+	// refimpl: a gauge that records nothing (its methods never dereference it)
+	return (*gauge)(nil)
 }
 
 // With works as GetMetricWith, but panics where GetMetricWithLabels would have
@@ -247,11 +238,8 @@ func (v *GaugeVec) WithLabelValues(lvs ...string) Gauge {
 //
 //	myVec.With(prometheus.Labels{"code": "404", "method": "GET"}).Add(42)
 func (v *GaugeVec) With(labels Labels) Gauge {
-	g, err := v.GetMetricWith(labels)
-	if err != nil {
-		panic(err)
-	}
-	return g
+	// refimpl: a gauge that records nothing (its methods never dereference it)
+	return (*gauge)(nil)
 }
 
 // CurryWith returns a vector curried with the provided labels, i.e. the

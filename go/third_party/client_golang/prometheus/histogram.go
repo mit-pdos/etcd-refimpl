@@ -767,8 +767,9 @@ func (h *histogram) Desc() *Desc {
 	return h.desc
 }
 
-func (h *histogram) Observe(v float64) {
-	h.observe(v, h.findBucket(v))
+func (h *histogram) Observe(_ float64) {
+	// refimpl: records nothing; the parameter is blank, so not allocated (etcd-grove's
+	// observerSpec passes any value, not only a float64: README, Findings)
 }
 
 // ObserveWithExemplar should not be called in a high-frequency setting
@@ -1261,11 +1262,8 @@ func (v *HistogramVec) GetMetricWith(labels Labels) (Observer, error) {
 //
 //	myVec.WithLabelValues("404", "GET").Observe(42.21)
 func (v *HistogramVec) WithLabelValues(lvs ...string) Observer {
-	h, err := v.GetMetricWithLabelValues(lvs...)
-	if err != nil {
-		panic(err)
-	}
-	return h
+	// refimpl: a histogram that records nothing (its Observe never dereferences it)
+	return (*histogram)(nil)
 }
 
 // With works as GetMetricWith but panics where GetMetricWithLabels would have

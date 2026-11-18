@@ -58,8 +58,7 @@ var (
 )
 
 func init() {
-	MustRegister(NewProcessCollector(ProcessCollectorOpts{}))
-	MustRegister(NewGoCollector())
+	// refimpl: registers nothing (the model's registry is empty)
 }
 
 // NewRegistry creates a new vanilla Registry without any Collectors
@@ -165,7 +164,8 @@ type Gatherer interface {
 // Register is a shortcut for DefaultRegisterer.Register(c). See there for more
 // details.
 func Register(c Collector) error {
-	return DefaultRegisterer.Register(c)
+	// refimpl: registers nothing
+	return nil
 }
 
 // MustRegister registers the provided Collectors with the DefaultRegisterer and
@@ -174,7 +174,7 @@ func Register(c Collector) error {
 // MustRegister is a shortcut for DefaultRegisterer.MustRegister(cs...). See
 // there for more details.
 func MustRegister(cs ...Collector) {
-	DefaultRegisterer.MustRegister(cs...)
+	// refimpl: registers nothing
 }
 
 // Unregister removes the registration of the provided Collector from the
