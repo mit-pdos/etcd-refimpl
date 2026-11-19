@@ -113,6 +113,103 @@ initializers that do nothing.
 | `k8s.io/apiserver/pkg/storage/etcd3/metrics` | 10 (`NewEtcdMetricsTracker`, `OperationLatencyTracker.Record`, 6 `Record*`, `opaqueInitsOk`, `errorsNewVarsInit`) | 10 | no metrics; `ErrTransactionConflict` is Go's `errors.New`; `NewEtcdMetricsTracker` met since etcd-grove `4fcdd2aa9d` translates `OperationLatencyTracker`: see below |
 | `k8s.io/component-base/metrics` | 3 (`HistogramVec.WithContext`, `opaqueInitsOk`, `initFuncsOk`; `vecLabels`, `histCtxOk` are its vocabulary) | 3 | nil wrappers and observers that record nothing; the `init()` records no process start time |
 
+### Package initialization
+
+The packages whose only modelled axioms are the initialization axioms etcd-grove's `etc/gen-init.py`
+generates (`Refimpl/<pkg>/Init.lean`; packages with function models are in the table above):
+
+- `opaqueInitsOk`: every listed untranslated initializer `X.init` is `initNoop`. This is sound with
+  respect to etcd-grove's other axioms: `gen-init.py` leaves out of the list every variable a spec
+  relies on, whose initializer has an axiom of its own (`X_init`, giving its value: rpctypes' gRPC
+  errors, the server's prometheus metrics, ...), which these models do not cover.
+- `errorsNewVarsInit`: each `var X = errors.New(msg)` is Go's (`Refimpl/ErrorsNewVar.lean`).
+- `initFuncsOk`: the package's `init()`s are Go, translated from a copy of the package's source
+  (`go/third_party/`, `go-k8s/third_party/`) with empty bodies (`// refimpl:`, the line count kept).
+
+| package | axioms | modelled | notes |
+|---|---|---|---|
+| `bufio` | `opaqueInitsOk` (1 var) | 1/1 |  |
+| `crypto/tls` | `opaqueInitsOk` (50 vars) | 1/1 |  |
+| `encoding/base64` | `opaqueInitsOk` (2 vars) | 1/1 |  |
+| `encoding/hex` | `opaqueInitsOk` (1 var) | 1/1 |  |
+| `encoding/json` | `opaqueInitsOk` (4 vars), `initFuncsOk` (1 `init()`) | 1/2 |  |
+| `github.com/Masterminds/semver/v3` | `opaqueInitsOk` (11 vars), `initFuncsOk` (2 `init()`) | 1/2 |  |
+| `github.com/dustin/go-humanize` | `opaqueInitsOk` (35 vars), `initFuncsOk` (1 `init()`) | 1/2 |  |
+| `github.com/go-logr/logr` | `opaqueInitsOk` (5 vars) | 1/1 |  |
+| `github.com/spf13/pflag` | `opaqueInitsOk` (3 vars) | 1/1 |  |
+| `go.etcd.io/etcd/api/v3/authpb` | `opaqueInitsOk` (4 vars), `initFuncsOk` (1 `init()`) | 1/2 |  |
+| `go.etcd.io/etcd/api/v3/etcdserverpb` | `opaqueInitsOk` (24 vars), `initFuncsOk` (3 `init()`) | 1/2 |  |
+| `go.etcd.io/etcd/api/v3/membershippb` | `opaqueInitsOk` (3 vars), `initFuncsOk` (1 `init()`) | 1/2 |  |
+| `go.etcd.io/etcd/api/v3/mvccpb` | `opaqueInitsOk` (6 vars), `initFuncsOk` (1 `init()`) | 1/2 |  |
+| `go.etcd.io/etcd/api/v3/v3rpc/rpctypes` | `opaqueInitsOk` (96 vars) | 1/1 |  |
+| `go.etcd.io/etcd/api/v3/version` | `opaqueInitsOk` (13 vars), `initFuncsOk` (1 `init()`) | 1/2 |  |
+| `go.etcd.io/etcd/client/pkg/v3/logutil` | `opaqueInitsOk` (3 vars) | 1/1 |  |
+| `go.etcd.io/etcd/client/pkg/v3/transport` | `opaqueInitsOk` (1 var) | 1/1 |  |
+| `go.etcd.io/etcd/client/pkg/v3/types` | `opaqueInitsOk` (2 vars) | 1/1 |  |
+| `go.etcd.io/etcd/client/v3` | `opaqueInitsOk` (7 vars), `initFuncsOk` (1 `init()`) | 1/2 |  |
+| `go.etcd.io/etcd/pkg/v3/featuregate` | `opaqueInitsOk` (3 vars) | 1/1 |  |
+| `go.etcd.io/etcd/pkg/v3/ioutil` | `opaqueInitsOk` (2 vars) | 1/1 |  |
+| `go.etcd.io/etcd/server/v3/auth` | `opaqueInitsOk` (9 vars), `initFuncsOk` (1 `init()`) | 1/2 |  |
+| `go.etcd.io/etcd/server/v3/etcdserver` | `opaqueInitsOk` (9 vars), `initFuncsOk` (3 `init()`) | 1/2 |  |
+| `go.etcd.io/etcd/server/v3/etcdserver/api` | `opaqueInitsOk` (1 var), `initFuncsOk` (1 `init()`) | 1/2 |  |
+| `go.etcd.io/etcd/server/v3/etcdserver/api/membership` | `opaqueInitsOk` (4 vars), `errorsNewVarsInit` (6 vars), `initFuncsOk` (1 `init()`) | 2/3 |  |
+| `go.etcd.io/etcd/server/v3/etcdserver/api/rafthttp` | `opaqueInitsOk` (4 vars), `errorsNewVarsInit` (6 vars), `initFuncsOk` (1 `init()`) | 2/3 |  |
+| `go.etcd.io/etcd/server/v3/etcdserver/api/snap` | `opaqueInitsOk` (6 vars), `initFuncsOk` (1 `init()`) | 1/2 |  |
+| `go.etcd.io/etcd/server/v3/etcdserver/api/v3discovery` | `opaqueInitsOk` (7 vars) | 1/1 |  |
+| `go.etcd.io/etcd/server/v3/etcdserver/api/v3rpc` | `opaqueInitsOk` (2 vars), `initFuncsOk` (1 `init()`) | 1/2 |  |
+| `go.etcd.io/etcd/server/v3/etcdserver/apply` | `initFuncsOk` (1 `init()`) | 0/1 |  |
+| `go.etcd.io/etcd/server/v3/etcdserver/errors` | `errorsNewVarsInit` (23 vars) | 1/1 |  |
+| `go.etcd.io/etcd/server/v3/etcdserver/txn` | `opaqueInitsOk` (2 vars), `initFuncsOk` (1 `init()`) | 1/2 |  |
+| `go.etcd.io/etcd/server/v3/etcdserver/version` | `opaqueInitsOk` (3 vars) | 1/1 |  |
+| `go.etcd.io/etcd/server/v3/features` | `opaqueInitsOk` (1 var) | 1/1 |  |
+| `go.etcd.io/etcd/server/v3/lease` | `opaqueInitsOk` (6 vars), `initFuncsOk` (1 `init()`) | 1/2 |  |
+| `go.etcd.io/etcd/server/v3/lease/leasehttp` | `opaqueInitsOk` (3 vars) | 1/1 |  |
+| `go.etcd.io/etcd/server/v3/lease/leasepb` | `opaqueInitsOk` (3 vars), `initFuncsOk` (1 `init()`) | 1/2 |  |
+| `go.etcd.io/etcd/server/v3/storage` | `opaqueInitsOk` (3 vars), `initFuncsOk` (1 `init()`) | 1/2 |  |
+| `go.etcd.io/etcd/server/v3/storage/backend` | `opaqueInitsOk` (4 vars), `initFuncsOk` (1 `init()`) | 1/2 |  |
+| `go.etcd.io/etcd/server/v3/storage/mvcc` | `opaqueInitsOk` (9 vars), `initFuncsOk` (1 `init()`) | 1/2 |  |
+| `go.etcd.io/etcd/server/v3/storage/schema` | `opaqueInitsOk` (19 vars), `initFuncsOk` (1 `init()`) | 1/2 |  |
+| `go.etcd.io/etcd/server/v3/storage/wal` | `initFuncsOk` (1 `init()`) | 0/1 |  |
+| `go.etcd.io/etcd/server/v3/storage/wal/walpb` | `opaqueInitsOk` (3 vars), `initFuncsOk` (1 `init()`) | 1/2 |  |
+| `golang.org/x/crypto/bcrypt` | `opaqueInitsOk` (5 vars) | 1/1 |  |
+| `golang.org/x/sys/unix` | `opaqueInitsOk` (11 vars) | 1/1 |  |
+| `google.golang.org/grpc` | `opaqueInitsOk` (37 vars), `initFuncsOk` (6 `init()`) | 1/2 |  |
+| `google.golang.org/grpc/credentials` | `opaqueInitsOk` (3 vars) | 1/1 |  |
+| `google.golang.org/grpc/grpclog` | `opaqueInitsOk` (1 var), `initFuncsOk` (1 `init()`) | 1/2 |  |
+| `google.golang.org/grpc/reflection` | `opaqueInitsOk` (1 var) | 1/1 |  |
+| `hash/crc32` | `opaqueInitsOk` (3 vars) | 1/1 |  |
+| `internal/bytealg` | `initFuncsOk` (1 `init()`) | 0/1 |  |
+| `internal/runtime/sys` | `opaqueInitsOk` (3 vars) | 1/1 |  |
+| `k8s.io/apimachinery/pkg/api/meta` | `opaqueInitsOk` (24 vars) | 1/1 |  |
+| `k8s.io/apimachinery/pkg/api/validate/content` | `opaqueInitsOk` (10 vars) | 1/1 |  |
+| `k8s.io/apimachinery/pkg/apis/meta/v1/unstructured` | `opaqueInitsOk` (7 vars) | 1/1 |  |
+| `k8s.io/apimachinery/pkg/conversion` | `opaqueInitsOk` (1 var) | 1/1 |  |
+| `k8s.io/apimachinery/pkg/fields` | `opaqueInitsOk` (2 vars) | 1/1 |  |
+| `k8s.io/apimachinery/pkg/runtime` | `opaqueInitsOk` (27 vars) | 1/1 |  |
+| `k8s.io/apimachinery/pkg/runtime/schema` | `opaqueInitsOk` (1 var) | 1/1 |  |
+| `k8s.io/apimachinery/pkg/util/errors` | `opaqueInitsOk` (1 var) | 1/1 |  |
+| `k8s.io/apimachinery/pkg/util/runtime` | `opaqueInitsOk` (3 vars) | 1/1 |  |
+| `k8s.io/apimachinery/pkg/util/validation/field` | `opaqueInitsOk` (2 vars) | 1/1 |  |
+| `k8s.io/apimachinery/pkg/util/version` | `opaqueInitsOk` (2 vars) | 1/1 |  |
+| `k8s.io/apimachinery/pkg/util/wait` | `opaqueInitsOk` (8 vars) | 1/1 |  |
+| `k8s.io/apimachinery/pkg/watch` | `opaqueInitsOk` (6 vars) | 1/1 |  |
+| `k8s.io/apiserver/pkg/audit` | `opaqueInitsOk` (6 vars), `initFuncsOk` (2 `init()`) | 1/2 |  |
+| `k8s.io/apiserver/pkg/endpoints/request` | `opaqueInitsOk` (5 vars) | 1/1 |  |
+| `k8s.io/apiserver/pkg/features` | `opaqueInitsOk` (1 var) | 1/1 |  |
+| `k8s.io/apiserver/pkg/storage/feature` | `opaqueInitsOk` (3 vars) | 1/1 |  |
+| `k8s.io/apiserver/pkg/storage/value` | `opaqueInitsOk` (6 vars), `initFuncsOk` (1 `init()`) | 1/2 |  |
+| `k8s.io/apiserver/pkg/util/flowcontrol` | `opaqueInitsOk` (3 vars) | 1/1 |  |
+| `k8s.io/component-base/featuregate` | `opaqueInitsOk` (6 vars) | 1/1 |  |
+| `k8s.io/utils/clock` | `opaqueInitsOk` (2 vars) | 1/1 |  |
+| `math/rand` | `opaqueInitsOk` (9 vars) | 1/1 |  |
+| `net` | `opaqueInitsOk` (78 vars) | 1/1 |  |
+| `net/http` | `opaqueInitsOk` (116 vars), `initFuncsOk` (2 `init()`) | 1/2 |  |
+| `net/url` | `opaqueInitsOk` (3 vars) | 1/1 |  |
+| `path` | `opaqueInitsOk` (1 var) | 1/1 |  |
+| `path/filepath` | `opaqueInitsOk` (3 vars) | 1/1 |  |
+| `reflect` | `opaqueInitsOk` (7 vars) | 1/1 |  |
+| `runtime` | `opaqueInitsOk` (94 vars), `initFuncsOk` (9 `init()`) | 1/2 |  |
+
 ### Findings
 
 - **`otelgrpc.NewServerHandler` cannot be met in etcd-grove's translation as configured**, as
