@@ -17,16 +17,19 @@ func (HealthCheckResponse_ServingStatus) String() string { return "" }
 func init()                                              {}
 ```
 
-The parameters `SetServingStatus` and `String` ignore are unnamed: their specs take the serving
-status as any `val`, and Goose stores a named parameter in a typed variable, which is stuck on a
-`val` that is not an `int32` (README, "Findings").
-
 The model: `grpcHealthSrv := True`; the untranslated package-variable initializers are `initNoop`.
 
-Not modelled: `NewServer` (etcd-grove's translation leaves `health.Server` an axiomatized type, so
-no implementation's `&Server{}` can be proved), and `RegisterHealthServer` (its spec changes the
-server's `grpcSrvNew`, an opaque predicate of grpc's server, which only `Server.RegisterService`'s
-axiom gives; grpc's own body, a call to it, is provable in etcd-grove).
+None of the four function specs is proved (README, "Findings"):
+- `SetServingStatus` and `ServingStatus.String` are met by no implementation: their specs take the
+  serving status as any `val`, a panic outcome `PanicV p` included, and an application to `PanicV p`
+  unwinds to `PanicV p`, which is not the `RET` the post names. (The Go above leaves the parameters
+  unnamed, so that the bodies would hold for every non-panic `val`.)
+- `NewServer`: `health.Server` is still an axiomatized type in etcd-grove's translation (its field
+  `updates` names `grpc_health_v1.Health_WatchServer`, an alias from another package, which Goose's
+  `translate_types` refuses), so `&Server{}` is stuck.
+- `RegisterHealthServer`: its spec changes the server's `grpcSrvNew`, an opaque predicate of grpc's
+  server, which only `Server.RegisterService`'s axiom gives; grpc's own body, a call to it, is
+  provable in etcd-grove.
 -/
 module
 

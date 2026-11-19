@@ -1,6 +1,7 @@
 module
 
 public import Refimpl.google_golang_org.grpc.status.Impl
+public import GeneratedProof.google_golang_org.grpc.codes
 public import Spec.google_golang_org.grpc.status.Errorf
 
 @[expose] public section
@@ -20,6 +21,7 @@ variable [GooseExts] [GooseSemantics] [GooseInterp]
 variable [go_gctx : GoGlobalContext]
 variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
+variable [codes_sem : google_golang_org.grpc.codes.Assumptions]
 variable [ref : google_golang_org.grpc.status.Refimpl]
 variable [package_sem : google_golang_org.grpc.status.Assumptions]
 

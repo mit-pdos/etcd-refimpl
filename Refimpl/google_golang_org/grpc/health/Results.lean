@@ -1,12 +1,9 @@
 /-
-grpc `health`'s and `health/grpc_health_v1`'s axioms proved in the model (`#model_check`; not
-`NewServer` nor `RegisterHealthServer`: see `Impl.lean`), and the binding classes checked against
-etcd-grove's translated bodies.
+grpc `health`'s and `health/grpc_health_v1`'s axioms proved in the model (`#model_check`): the law
+and the package initializers. Not the four function specs: see `Impl.lean`.
 -/
 module
 
-public import Refimpl.google_golang_org.grpc.health.Server__SetServingStatus
-public import Refimpl.google_golang_org.grpc.health.grpc_health_v1.HealthCheckResponse_ServingStatus__String
 public import Refimpl.google_golang_org.grpc.health.Laws
 public import Refimpl.google_golang_org.grpc.health.Init
 
@@ -17,8 +14,6 @@ namespace EtcdGrove
 namespace Model
 
 #model_check
-  health.Server.SetServingStatus.model_proof
-  grpc_health_v1.HealthCheckResponse_ServingStatus.String.model_proof
   health.grpcHealthSrv_persistent.model_proof
   health.opaqueInitsOk.model_proof
   health.initFuncsOk.model_proof

@@ -2,6 +2,7 @@ module
 
 public import Refimpl.google_golang_org.grpc.metadata.Impl
 public import Spec.google_golang_org.grpc.metadata.FromOutgoingContext
+public import Perennial.GeneratedProof.context
 
 @[expose] public section
 

@@ -2,6 +2,7 @@ module
 
 public import Refimpl.google_golang_org.grpc.metadata.Impl
 public import Spec.google_golang_org.grpc.metadata.FromIncomingContext
+public import Perennial.GeneratedProof.context
 
 @[expose] public section
 
@@ -20,6 +21,7 @@ variable [GooseExts] [GooseSemantics] [GooseInterp]
 variable [go_gctx : GoGlobalContext]
 variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
+variable [context_sem : _root_.Perennial.context.Assumptions]
 variable [ref : google_golang_org.grpc.metadata.Refimpl]
 variable [package_sem : google_golang_org.grpc.metadata.Assumptions]
 

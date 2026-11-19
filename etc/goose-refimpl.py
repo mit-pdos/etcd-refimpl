@@ -114,8 +114,22 @@ def module_of(path):
 FIELD = re.compile(r"^  (\S+) : (FuncUnfold|MethodUnfold) (.*)$")
 
 
+def split_attrs(lines):
+    """`attribute [instance] A` (its first entry on the line) as `attribute [instance]` and `  A`, so
+    that entries added before the first one are an insertion, not a change of that line."""
+    out = []
+    for line in lines:
+        m = re.match(r"^attribute \[instance\] (\S.*)$", line.rstrip("\n"))
+        if m:
+            out += ["attribute [instance]\n", "  " + m.group(1) + "\n"]
+        else:
+            out.append(line)
+    return out
+
+
 def extract(old, new, pkg):
     """The impl definitions and the binding fields `new` adds to `old` (lists of lines)."""
+    old, new = split_attrs(old), split_attrs(new)
     sm = difflib.SequenceMatcher(a=old, b=new, autojunk=False)
     defs, fields = [], []
     for tag, i1, i2, j1, j2 in sm.get_opcodes():

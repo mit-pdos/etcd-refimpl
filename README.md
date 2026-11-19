@@ -94,7 +94,7 @@ initializers that do nothing.
 | `github.com/prometheus/client_golang/prometheus` | 12 (7 function specs, `opaqueInitsOk`, `initFuncsOk`; `collectorName`/`nameFree`/`nameUnclaimed` are the predicates) | 11 | a registry that registers nothing, metrics (nil pointers) that record nothing; `HistogramVec.WithLabelValues` is unsatisfiable (`observerSpec`): see below; `Opts` translated in etcd-grove (`2040eeb525`) |
 | `google.golang.org/grpc/status` (and `internal/status`'s `Status.Code`) | 5 | 3 | every code `Unknown`; `Error`, `FromError`: **no implementation meets them**, see below |
 | `google.golang.org/grpc/metadata` | 7 (4 function specs, `incomingOf_cancelCtx`, `opaqueInitsOk`, `initFuncsOk`) | 5 | no context carries metadata; `MD.Get`: grpc's code is provable in etcd-grove; `AppendToOutgoingContext`: **no implementation meets it**, see below |
-| `google.golang.org/grpc/health`, `health/grpc_health_v1` | 9 (4 function specs, `grpcHealthSrv_persistent`, `opaqueInitsOk` ×2, `initFuncsOk` ×2) | 7 | a health server that records nothing; `NewServer` blocked by an axiomatized type, `RegisterHealthServer` by grpc's server model: see below |
+| `google.golang.org/grpc/health`, `health/grpc_health_v1` | 9 (4 function specs, `grpcHealthSrv_persistent`, `opaqueInitsOk` ×2, `initFuncsOk` ×2) | 5 | a health server that records nothing; `SetServingStatus`, `ServingStatus.String`: **no implementation meets them**; `NewServer` blocked by an axiomatized type, `RegisterHealthServer` by grpc's server model: see below |
 
 ### Findings
 
@@ -157,18 +157,25 @@ initializers that do nothing.
   the execution. A fix in etcd-grove would make the description and the metadata ghost state of the
   execution (for example a persistent `errDescIs err m` points-to-like fact, given by `status.Error`
   and read by `FromError`) instead of functions of the value.
-- **Specs over an arbitrary `val` (grpc's health).** `health.Server.SetServingStatus.spec` and
-  `grpc_health_v1.HealthCheckResponse_ServingStatus.String.spec` take the serving status as any `val`,
-  not a `w32`. Goose stores a named parameter or receiver in a variable of its type (`GoAlloc`), which
-  for an `int32` is `AllocBytes 4`, stuck on a `val` that is not a 32-bit literal: the axioms are false
-  of grpc's translated code for such a `val` (no Go program passes one, so nothing unsound follows for
-  Go code). The model's methods leave the parameter unnamed (nothing stored); the specs should take
-  `w32`.
+- **grpc health's `Server.SetServingStatus` and `HealthCheckResponse_ServingStatus.String` cannot be met
+  by any implementation.** Their specs take the serving status as any `val`, not a `w32`. A `val` may be
+  a panic outcome `PanicV p`, and an application to one unwinds to `PanicV p` in one pure step
+  (GooseLang's `Unwinds`, Perennial's `pure_unwind`), whatever the function: the result is not the
+  `RET #()` (`RET #s`) the post names. `String`'s precondition is `True`, so its axiom, at
+  `st := PanicV p`, gives a WP no execution satisfies (by adequacy, `False`); `SetServingStatus`'s
+  does the same under `grpcHealthSrv hs`, which `health.NewServer`'s axiom gives. (Short of a panic,
+  the real code is stuck too on a `val` that is not an `int32`: Goose stores a named parameter with
+  `GoAlloc`, `AllocBytes 4` for an `int32`.) Fix in etcd-grove: quantify over `w32`. The Go model
+  (`go/third_party/grpc`) leaves the parameters unnamed, so that it meets the fixed specs.
 - **`health.NewServer` cannot be met in etcd-grove's translation as configured**, as
-  `grpc_prometheus.NewServerMetrics` could not: it returns a non-nil `*health.Server`, and etcd-grove's
-  Goose configuration of `health` (`Code/google_golang_org/grpc/health.toml`) translates no types, so
-  `Server` is axiomatized and `&Server{}` is stuck. Fix in etcd-grove: `translate_types = true`, with
-  the imports `Server`'s fields name (`sync`, `google.golang.org/grpc/health/grpc_health_v1`).
+  `grpc_prometheus.NewServerMetrics` could not: it returns a non-nil `*health.Server`, and `Server` is
+  an axiomatized type, so `&Server{}` is stuck. etcd-grove `2040eeb525` turned on `translate_types` for
+  `health` (importing `sync` and `grpc_health_v1`), but Goose still axiomatizes `Server`: its field
+  `updates map[string]map[healthgrpc.Health_WatchServer]chan ...` names `Health_WatchServer`, an alias
+  (of the generic `grpc.ServerStreamingServer[HealthCheckResponse]`) declared in another package
+  (`GOOSE_TYPES_LOG`: "alias from another package google.golang.org/grpc/health/grpc_health_v1; needs
+  import google.golang.org/grpc"; with `google.golang.org/grpc` imported too, still "alias from another
+  package"). The fix is in Goose (Perennial): translate a field type that is another package's alias.
 - **`grpc_health_v1.RegisterHealthServer` is not modelled here**: its post is a new `grpcSrvNew` (grpc's
   server being built, an opaque predicate), which only grpc's own `Server.RegisterService` axiom gives;
   a model proof may not use it. grpc's body is `srv.testEmbeddedByValue(); s.RegisterService(&Health_ServiceDesc,
