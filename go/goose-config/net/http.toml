@@ -1,0 +1,9 @@
+# Types and names only: function and method bodies are axiomatized. (2026-10-23, rafthttp stage 4)
+# The method and status constants translated: the pipeline's protocol reads their values.
+translate = ["!*", "Method*", "Status*", "!StatusText",
+  # etcd-refimpl: the reference implementation's init()s
+  "init.0", "init.1"]
+imports = ["!*"]
+
+# translate the definitions of all type declarations goose supports
+translate_types = true

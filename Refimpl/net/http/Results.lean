@@ -13,6 +13,9 @@ namespace Model
 
 #model_check
   net_http.opaqueInitsOk.model_proof
+  net_http.initFuncsOk.model_proof
+
+#bound_check _root_.Perennial.net.http.Refimpl
 
 end Model
 end EtcdGrove

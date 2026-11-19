@@ -13,6 +13,9 @@ namespace Model
 
 #model_check
   encoding_json.opaqueInitsOk.model_proof
+  encoding_json.initFuncsOk.model_proof
+
+#bound_check _root_.Perennial.encoding.json.Refimpl
 
 end Model
 end EtcdGrove

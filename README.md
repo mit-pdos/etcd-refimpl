@@ -27,6 +27,11 @@ cannot be met by any implementation, writing one here is where that shows up.
   component-base's `tracing`, apimachinery, api, apiserver), a module of its own because that project's dependencies are pinned
   at other versions (its `go.mod` is `examples/k8s/etcd3/go.mod`'s, as is its `go.sum`), as etcd-grove
   keeps the two projects in separate Go modules.
+- `stdlib/src/`: the same for standard-library packages etcd-grove translates (`net/http`,
+  `encoding/json`, `internal/bytealg`): copies of the pinned toolchain's (go1.27.3) files, at their
+  `GOROOT` paths, modified. A `go.mod` cannot replace the standard library, so
+  `etc/goose-refimpl.py` translates with a `GOROOT` that is the toolchain's, symlinked, with these
+  files in place of its own.
 - `go/goose-config/` (`go-k8s/goose-config/`): the Goose configuration of those packages: etcd-grove's
   (`Code/**/*.toml`), plus the replaced functions in `translate`.
 - `etc/goose-refimpl.py` runs the pinned Goose (built from the pinned Perennial) on each module
@@ -139,7 +144,7 @@ generates (`Refimpl/<pkg>/Init.lean`; packages with function models are in the t
 | `crypto/tls` | `opaqueInitsOk` (50 vars) | 1/1 |  |
 | `encoding/base64` | `opaqueInitsOk` (2 vars) | 1/1 |  |
 | `encoding/hex` | `opaqueInitsOk` (1 var) | 1/1 |  |
-| `encoding/json` | `opaqueInitsOk` (4 vars), `initFuncsOk` (1 `init()`) | 1/2 |  |
+| `encoding/json` | `opaqueInitsOk` (4 vars), `initFuncsOk` (1 `init()`) | 2/2 |  |
 | `github.com/Masterminds/semver/v3` | `opaqueInitsOk` (11 vars), `initFuncsOk` (2 `init()`) | 2/2 |  |
 | `github.com/dustin/go-humanize` | `opaqueInitsOk` (35 vars), `initFuncsOk` (1 `init()`) | 2/2 |  |
 | `github.com/go-logr/logr` | `opaqueInitsOk` (5 vars) | 1/1 |  |
@@ -185,7 +190,7 @@ generates (`Refimpl/<pkg>/Init.lean`; packages with function models are in the t
 | `google.golang.org/grpc/grpclog` | `opaqueInitsOk` (1 var), `initFuncsOk` (1 `init()`) | 2/2 |  |
 | `google.golang.org/grpc/reflection` | `opaqueInitsOk` (1 var) | 1/1 |  |
 | `hash/crc32` | `opaqueInitsOk` (3 vars) | 1/1 |  |
-| `internal/bytealg` | `initFuncsOk` (1 `init()`) | 0/1 |  |
+| `internal/bytealg` | `initFuncsOk` (1 `init()`) | 1/1 |  |
 | `internal/runtime/sys` | `opaqueInitsOk` (3 vars) | 1/1 |  |
 | `k8s.io/apimachinery/pkg/api/meta` | `opaqueInitsOk` (24 vars) | 1/1 |  |
 | `k8s.io/apimachinery/pkg/api/validate/content` | `opaqueInitsOk` (10 vars) | 1/1 |  |
@@ -210,14 +215,25 @@ generates (`Refimpl/<pkg>/Init.lean`; packages with function models are in the t
 | `k8s.io/utils/clock` | `opaqueInitsOk` (2 vars) | 1/1 |  |
 | `math/rand` | `opaqueInitsOk` (9 vars) | 1/1 |  |
 | `net` | `opaqueInitsOk` (78 vars) | 1/1 |  |
-| `net/http` | `opaqueInitsOk` (116 vars), `initFuncsOk` (2 `init()`) | 1/2 |  |
+| `net/http` | `opaqueInitsOk` (116 vars), `initFuncsOk` (2 `init()`) | 2/2 |  |
 | `net/url` | `opaqueInitsOk` (3 vars) | 1/1 |  |
 | `path` | `opaqueInitsOk` (1 var) | 1/1 |  |
 | `path/filepath` | `opaqueInitsOk` (3 vars) | 1/1 |  |
 | `reflect` | `opaqueInitsOk` (7 vars) | 1/1 |  |
-| `runtime` | `opaqueInitsOk` (94 vars), `initFuncsOk` (9 `init()`) | 1/2 |  |
+| `runtime` | `opaqueInitsOk` (94 vars), `initFuncsOk` (9 `init()`) | 1/2 | `initFuncsOk` blocked: Perennial translates `runtime` from another Go release (Findings) |
 
 ### Findings
+
+- **`runtime`'s `initFuncsOk` is not modelled: Perennial's translation of `runtime` is of another Go
+  release than the toolchain etcd-grove pins.** etcd-grove's `runtime` axioms (`opaqueInitsOk`,
+  `initFuncsOk` over `init.«0»`..`init.«8»`) are about Perennial's `Perennial/Code/runtime`, which is
+  not in etcd-grove's `Code/`, so the pure-superset comparison does not apply; and translating
+  go1.27.3's `runtime` (etcd-grove's `GO_TOOLCHAIN`) with Perennial's configuration gives a different
+  translation, not a superset: Perennial's has struct fields go1.27.3 does not (`_panic.gopanicFP`,
+  `memRecordCycle`'s `alloc_bytes`), which go1.26's `runtime` has. Both releases have nine `init()`s
+  on linux/amd64, so the axiom's list is right for either. A model needs `etc/goose-refimpl.py` to
+  compare against Perennial's chunked translation, from the toolchain Perennial translated `runtime`
+  with. (`runtime`'s `opaqueInitsOk` is modelled: it needs no Go.)
 
 - **`otelgrpc.NewServerHandler` cannot be met in etcd-grove's translation as configured**, as
   `grpc_prometheus.NewServerMetrics` could not: any Go body returns a `stats.Handler`, and Goose
