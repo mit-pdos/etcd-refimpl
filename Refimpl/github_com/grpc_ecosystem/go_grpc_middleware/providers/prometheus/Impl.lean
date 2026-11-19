@@ -25,12 +25,10 @@ func WithServerHandlingTimeHistogram(opts ...HistogramOption) ServerMetricsOptio
 }
 ```
 
-The predicates: `promSrvMetrics := True`, `promSrvMetricsOpt := True`. `NewServerMetrics` is not
-proved yet: etcd-grove's translation leaves `ServerMetrics` an axiomatized type (its fields name
-prometheus's types, a package its Goose configuration does not import), whose allocation's
-instances are `sorry`, so no implementation's `&ServerMetrics{}` can be proved, and an
-`unsafe.Pointer` conversion to `*ServerMetrics` is stuck (not a plain type). Translating the type
-in etcd-grove (importing prometheus's names) makes it provable.
+The predicates: `promSrvMetrics := True`, `promSrvMetricsOpt := True`. `NewServerMetrics`'s
+`&ServerMetrics{}` needs `ServerMetrics` translated: etcd-grove's Goose configuration imports
+prometheus's names for its field types (until then the type was axiomatized, its allocation's
+instances `sorry`).
 -/
 module
 
