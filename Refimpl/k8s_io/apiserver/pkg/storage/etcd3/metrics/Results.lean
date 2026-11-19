@@ -13,6 +13,7 @@ public import Refimpl.k8s_io.apiserver.pkg.storage.etcd3.metrics.RecordStorageLi
 public import Refimpl.k8s_io.apiserver.pkg.storage.etcd3.metrics.OperationLatencyTracker__Record
 public import Refimpl.k8s_io.apiserver.pkg.storage.etcd3.metrics.RecordDecodeError
 public import Refimpl.k8s_io.apiserver.pkg.storage.etcd3.metrics.NewEtcdMetricsTracker
+public import Refimpl.k8s_io.apiserver.pkg.storage.etcd3.metrics.Init
 
 @[expose] public section
 
@@ -29,6 +30,8 @@ namespace Model
   metrics.OperationLatencyTracker.Record.model_proof
   metrics.RecordDecodeError.model_proof
   metrics.NewEtcdMetricsTracker.model_proof
+  metrics.opaqueInitsOk.model_proof
+  metrics.errorsNewVarsInit.model_proof
 
 #bound_check k8s_io.apiserver.pkg.storage.etcd3.metrics.Refimpl
 

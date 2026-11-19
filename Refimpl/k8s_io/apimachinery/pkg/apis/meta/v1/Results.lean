@@ -6,6 +6,7 @@ class checked against etcd-grove's own translated bodies (`#bound_check`).
 module
 
 public import Refimpl.k8s_io.apimachinery.pkg.apis.«meta».v1.LabelSelectorAsSelector
+public import Refimpl.k8s_io.apimachinery.pkg.apis.«meta».v1.Init
 
 @[expose] public section
 
@@ -15,6 +16,8 @@ namespace Model
 
 #model_check
   labels.LabelSelectorAsSelector.model_proof
+  metav1.opaqueInitsOk.model_proof
+  metav1.initFuncsOk.model_proof
 
 #bound_check k8s_io.apimachinery.pkg.apis.«meta».v1.Refimpl
 

@@ -6,6 +6,7 @@ module
 
 public import Refimpl.k8s_io.utils.trace.New
 public import Refimpl.k8s_io.utils.trace.Trace__LogIfLong
+public import Refimpl.k8s_io.utils.trace.Init
 
 @[expose] public section
 
@@ -16,6 +17,7 @@ namespace Model
 #model_check
   trace.New.model_proof
   trace.Trace.LogIfLong.model_proof
+  trace.opaqueInitsOk.model_proof
 
 #bound_check k8s_io.utils.trace.Refimpl
 

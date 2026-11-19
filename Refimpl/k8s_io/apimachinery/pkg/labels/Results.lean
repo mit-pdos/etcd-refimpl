@@ -7,6 +7,7 @@ apimachinery/pkg/apis/meta/v1/`).
 module
 
 public import Refimpl.k8s_io.apimachinery.pkg.labels.Everything
+public import Refimpl.k8s_io.apimachinery.pkg.labels.Init
 
 @[expose] public section
 
@@ -16,6 +17,7 @@ namespace Model
 
 #model_check
   labels.Everything.model_proof
+  labels.opaqueInitsOk.model_proof
 
 #bound_check k8s_io.apimachinery.pkg.labels.Refimpl
 

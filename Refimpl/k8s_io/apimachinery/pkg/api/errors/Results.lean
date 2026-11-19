@@ -9,6 +9,7 @@ public import Refimpl.k8s_io.apimachinery.pkg.api.errors.HasStatusCause
 public import Refimpl.k8s_io.apimachinery.pkg.api.errors.IsTimeout
 public import Refimpl.k8s_io.apimachinery.pkg.api.errors.NewConflict
 public import Refimpl.k8s_io.apimachinery.pkg.api.errors.NewInternalError
+public import Refimpl.k8s_io.apimachinery.pkg.api.errors.Init
 
 @[expose] public section
 
@@ -21,6 +22,7 @@ namespace Model
   apierrors.IsTimeout.model_proof
   apierrors.NewConflict.model_proof
   apierrors.NewInternalError.model_proof
+  apierrors.opaqueInitsOk.model_proof
 
 #bound_check k8s_io.apimachinery.pkg.api.errors.Refimpl
 

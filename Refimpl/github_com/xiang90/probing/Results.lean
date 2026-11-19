@@ -7,6 +7,7 @@ module
 
 public import Refimpl.github_com.xiang90.probing.NewHandler
 public import Refimpl.github_com.xiang90.probing.NewProber
+public import Refimpl.github_com.xiang90.probing.Init
 
 @[expose] public section
 
@@ -17,6 +18,7 @@ namespace Model
 #model_check
   probing.NewHandler.model_proof
   probing.NewProber.model_proof
+  probing.opaqueInitsOk.model_proof
 
 #bound_check github_com.xiang90.probing.Refimpl
 

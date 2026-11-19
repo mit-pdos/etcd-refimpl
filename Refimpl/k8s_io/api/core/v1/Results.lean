@@ -5,6 +5,7 @@ the binding class checked against etcd-grove's own translated bodies (`#bound_ch
 module
 
 public import Refimpl.k8s_io.api.core.v1.Resource
+public import Refimpl.k8s_io.api.core.v1.Init
 
 @[expose] public section
 
@@ -14,6 +15,7 @@ namespace Model
 
 #model_check
   corev1.Resource.model_proof
+  corev1.opaqueInitsOk.model_proof
 
 #bound_check k8s_io.api.core.v1.Refimpl
 

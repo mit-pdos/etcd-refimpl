@@ -47,8 +47,13 @@ Then one directory per Go package (`Refimpl/<go package path>/`):
   `Spec/<pkg>/<fn>.lean`): `theorem <fn>.model_proof`, the spec, read in the model, proved of the
   translated reference implementation, under `[<pkg>.Refimpl]` (and the package's type
   `Assumptions`).
-- `Init.lean`: the package-initialization axioms (`opaqueInitsOk`, `initFuncsOk`), read in the
-  model, as theorems (zapcore's `init()` is Go too).
+- `Init.lean`: the package-initialization axioms (`opaqueInitsOk`, `initFuncsOk`,
+  `errorsNewVarsInit`), read in the model, as theorems. The untranslated initializers are `initNoop`;
+  the `init()`s are Go, translated, and where the real one writes a package variable (which a
+  `{{ True }}` triple does not own) or calls code etcd-grove does not translate, its body is replaced
+  by an empty one; a `var X = errors.New(msg)` is Go's, written as Goose would translate it
+  (`Refimpl/ErrorsNewVar.lean`: `go.GlobalAlloc`, then Perennial's `errors.New`). A package with only
+  an `opaqueInitsOk` needs no Go (its directory has `Init.lean` and `Results.lean` alone).
 - `Results.lean`: `#model_check` of every model proof, and `#bound_check` of the binding classes.
 
 ## How a spec is read in the model
@@ -90,21 +95,39 @@ initializers that do nothing.
 | `go-grpc-middleware/providers/prometheus` | 7 (5 function specs, `promSrvMetrics_persistent`; `promSrvMetrics`/`promSrvMetricsOpt` are the predicates) | 7 | metrics that record nothing; `ServerMetrics` translated in etcd-grove (`2040eeb525`) |
 | `k8s.io/klog/v2` | 8 (6 function specs, `opaqueInitsOk`, `initFuncsOk`) | 8 | logging that does nothing |
 | `k8s.io/component-base/tracing` | 4 (`Start`, `SpanFromContext`, `Span.AddEvent`, `Span.End`) | 4 | spans that record nothing; `Span` translated in etcd-grove (`2040eeb525`) |
-| `go.opentelemetry.io/otel/trace` | 1 function spec (`SpanFromContext`) | 1 | `SpanFromContext` returns the no-op span; `WithAttributes` **verified in etcd-grove** (`4fcdd2aa9d`: the real body translated, its axiom a theorem) |
-| `go.opentelemetry.io/otel/attribute` | 4 (`Bool`, `Int`, `Int64`, `String`) | moved | **verified in etcd-grove** (`4fcdd2aa9d`): the real code translated, the 4 axioms are theorems there |
-| `k8s.io/utils/trace` | 2 (`New`, `Trace.LogIfLong`; the predicate `trace.fromNew`) | 2 | a nil trace, logging nothing; `fromNew := True`. `LogIfLong`'s spec, false of the real code, fixed in etcd-grove `4fcdd2aa9d`: see below |
-| `github.com/xiang90/probing` | 2 (`NewHandler`, `NewProber`) | 2 | an empty `200` handler (relative to net/http's `WriteHeader` spec) and a nil prober |
+| `go.opentelemetry.io/otel/trace` | 2 (`SpanFromContext`, `opaqueInitsOk`) | 2 | `SpanFromContext` returns the no-op span; `WithAttributes` **verified in etcd-grove** (`4fcdd2aa9d`: the real body translated, its axiom a theorem) |
+| `go.opentelemetry.io/otel/attribute` | 5 (`Bool`, `Int`, `Int64`, `String`, `opaqueInitsOk`) | 1 + moved | the 4 functions **verified in etcd-grove** (`4fcdd2aa9d`): the real code translated, the 4 axioms are theorems there |
+| `go.opentelemetry.io/otel/codes` | 1 (`opaqueInitsOk`) | 1 | |
+| `go.opentelemetry.io/contrib/instrumentation/google.golang.org/grpc/otelgrpc` | 2 (`NewServerHandler`, `opaqueInitsOk`; `grpcStatsHandlerOk` is the predicate) | 1 | `NewServerHandler` blocked by an untranslated type (`stats.Handler`): see below |
+| `google.golang.org/grpc/codes` | 2 (`opaqueInitsOk`, `initFuncsOk`) | 2 | the `init()` sets no `internal.CanonicalString` hook |
+| `k8s.io/utils/trace` | 3 (`New`, `Trace.LogIfLong`, `opaqueInitsOk`; the predicate `trace.fromNew`) | 3 | a nil trace, logging nothing; `fromNew := True`. `LogIfLong`'s spec, false of the real code, fixed in etcd-grove `4fcdd2aa9d`: see below |
+| `github.com/xiang90/probing` | 3 (`NewHandler`, `NewProber`, `opaqueInitsOk`) | 3 | an empty `200` handler (relative to net/http's `WriteHeader` spec) and a nil prober |
 | `github.com/prometheus/client_golang/prometheus` | 12 (7 function specs, `opaqueInitsOk`, `initFuncsOk`; `collectorName`/`nameFree`/`nameUnclaimed` are the predicates) | 12 | a registry that registers nothing, metrics (nil pointers) that record nothing; `HistogramVec.WithLabelValues` was unsatisfiable (`observerSpec`), fixed in etcd-grove `4fcdd2aa9d`: see below; `Opts` translated in etcd-grove (`2040eeb525`) |
 | `google.golang.org/grpc/status` (and `internal/status`'s `Status.Code`) | 5 | 3 | every code `Unknown`; `Error`, `FromError`: **no implementation meets them**, see below |
 | `google.golang.org/grpc/metadata` | 6 (3 function specs, `incomingOf_cancelCtx`, `opaqueInitsOk`, `initFuncsOk`) | 5 | no context carries metadata; `MD.Get` **verified in etcd-grove** (`4fcdd2aa9d`); `AppendToOutgoingContext`: **no implementation meets it**, see below |
 | `google.golang.org/grpc/health`, `health/grpc_health_v1` | 9 (4 function specs, `grpcHealthSrv_persistent`, `opaqueInitsOk` ×2, `initFuncsOk` ×2) | 7 | a health server that records nothing; `SetServingStatus`, `ServingStatus.String` met since etcd-grove `4fcdd2aa9d` (a `w32` status); `NewServer` blocked by an axiomatized type, `RegisterHealthServer` by grpc's server model: see below |
-| `k8s.io/apimachinery/pkg/api/errors` | 4 (`HasStatusCause`, `IsTimeout`, `NewConflict`, `NewInternalError`) | 4 | the checks read a `*StatusError` only; the constructors leave out the message |
-| `k8s.io/apimachinery/pkg/labels` | 1 (`Everything`) | 1 | the shared selectors without their package variables; `Empty`/`Matches` are the real code |
-| `k8s.io/apimachinery/pkg/apis/meta/v1` | 2 (`LabelSelectorAsSelector`, the predicate `labels.reqsValid`) | 2 | only the empty selector is accepted (`reqsValid`: no pair, no requirement) |
-| `k8s.io/api/core/v1`, `apps/v1` | 5 (`Resource` ×2, `DeepCopyObject` of `Node`, `Pod`, `DaemonSet`) | 2 | `DeepCopyObject` not modelled: see below; `ControllerRevision.DeepCopyObject` **verified in etcd-grove** (`4fcdd2aa9d`) |
-| `k8s.io/apiserver/pkg/storage/etcd3/metrics` | 8 (`NewEtcdMetricsTracker`, `OperationLatencyTracker.Record`, 6 `Record*`) | 8 | no metrics; `NewEtcdMetricsTracker` met since etcd-grove `4fcdd2aa9d` translates `OperationLatencyTracker`: see below |
+| `k8s.io/apimachinery/pkg/api/errors` | 5 (`HasStatusCause`, `IsTimeout`, `NewConflict`, `NewInternalError`, `opaqueInitsOk`) | 5 | the checks read a `*StatusError` only; the constructors leave out the message |
+| `k8s.io/apimachinery/pkg/labels` | 2 (`Everything`, `opaqueInitsOk`) | 2 | the shared selectors without their package variables; `Empty`/`Matches` are the real code |
+| `k8s.io/apimachinery/pkg/apis/meta/v1` | 4 (`LabelSelectorAsSelector`, the predicate `labels.reqsValid`, `opaqueInitsOk`, `initFuncsOk`) | 4 | only the empty selector is accepted (`reqsValid`: no pair, no requirement); the two `init()`s register nothing in the package's scheme |
+| `k8s.io/api/core/v1`, `apps/v1` | 7 (`Resource` ×2, `DeepCopyObject` of `Node`, `Pod`, `DaemonSet`, `opaqueInitsOk` ×2) | 4 | `DeepCopyObject` not modelled: see below; `ControllerRevision.DeepCopyObject` **verified in etcd-grove** (`4fcdd2aa9d`) |
+| `k8s.io/apiserver/pkg/storage/etcd3/metrics` | 10 (`NewEtcdMetricsTracker`, `OperationLatencyTracker.Record`, 6 `Record*`, `opaqueInitsOk`, `errorsNewVarsInit`) | 10 | no metrics; `ErrTransactionConflict` is Go's `errors.New`; `NewEtcdMetricsTracker` met since etcd-grove `4fcdd2aa9d` translates `OperationLatencyTracker`: see below |
+| `k8s.io/component-base/metrics` | 3 (`HistogramVec.WithContext`, `opaqueInitsOk`, `initFuncsOk`; `vecLabels`, `histCtxOk` are its vocabulary) | 3 | nil wrappers and observers that record nothing; the `init()` records no process start time |
 
 ### Findings
+
+- **`otelgrpc.NewServerHandler` cannot be met in etcd-grove's translation as configured**, as
+  `grpc_prometheus.NewServerMetrics` could not: any Go body returns a `stats.Handler`, and Goose
+  allocates the result (`GoAlloc stats.Handler.ty`, then `Convert` into it), but etcd-grove does not
+  translate grpc's `stats` package at all, so the translated body names
+  `google_golang_org.grpc.stats.Handler.ty`, which does not exist (the generated module does not
+  compile; with the type declared but not translated, the allocation would be stuck). The Go
+  reference implementation is here (`go/third_party/otelgrpc`, v0.71.0, etcd's pin): it returns a nil
+  handler, which grpc's `StatsHandler` option ignores (`server.go`: "ignoring nil parameter in
+  grpc.StatsHandler ServerOption"), so the model of `grpcStatsHandlerOk h` would be "`h` is the nil
+  interface", under which grpc's `StatsHandler` axiom, the predicate's only consumer, holds of the
+  real grpc. Not in `etc/goose-refimpl.py`'s packages until the fix in etcd-grove: translate the types of
+  `google.golang.org/grpc/stats` (names only, `translate_types`) and import it in
+  `Code/go_opentelemetry_io/contrib/instrumentation/google_golang_org/grpc/otelgrpc.toml`.
 
 - **`k8s.io/utils/trace`'s `Trace.LogIfLong` spec was false of the real code (fixed in etcd-grove
   `4fcdd2aa9d`: `Step` and `LogIfLong` require `trace.fromNew t`, which `New` gives; modelled as
