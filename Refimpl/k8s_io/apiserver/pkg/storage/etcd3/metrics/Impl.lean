@@ -11,6 +11,7 @@ func RecordEtcdRequest(verb string, groupResource schema.GroupResource, err erro
 func RecordListLatency(groupResource schema.GroupResource, streamed bool, startTime time.Time)          {}
 func RecordEtcdEvent(groupResource schema.GroupResource)                                              {}
 func RecordEtcdBookmark(groupResource schema.GroupResource)                                           {}
+func RecordDecodeError(groupResource schema.GroupResource)                                            {}
 func RecordStorageListMetrics(groupResource schema.GroupResource, index string, numFetched, numEvald, numReturned int) {}
 func (t *OperationLatencyTracker) Record(err error, startTime time.Time)                              {}
 func NewEtcdMetricsTracker(groupResource schema.GroupResource) *EtcdMetricsTracker {
@@ -18,10 +19,9 @@ func NewEtcdMetricsTracker(groupResource schema.GroupResource) *EtcdMetricsTrack
 }
 ```
 
-`NewEtcdMetricsTracker` is not proved: it allocates an `OperationLatencyTracker`, a type etcd-grove's
-translation axiomatizes (its fields name `schema` and component-base's `metrics` types, which the
-package's Goose configuration does not import), so the allocation is stuck on the type's `sorry`
-instances (see the README). The specs have no opaque predicate.
+`NewEtcdMetricsTracker` is proved since etcd-grove `4fcdd2aa9d`, which translates
+`OperationLatencyTracker` as a struct (it was axiomatized, its allocation stuck: README, "Findings").
+The specs have no opaque predicate.
 -/
 module
 

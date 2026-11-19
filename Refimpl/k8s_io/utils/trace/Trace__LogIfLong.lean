@@ -26,7 +26,8 @@ variable [time_sem : _root_.Perennial.time.Assumptions]
 
 include time_sem in
 theorem trace.Trace.LogIfLong.model_proof :
-    model% (EtcdGrove.trace.Trace.LogIfLong.spec (GF := GF) (hG := hG)) with [] := by
+    model% (EtcdGrove.trace.Trace.LogIfLong.spec (GF := GF) (hG := hG)) with
+      [EtcdGrove.trace.fromNew := trace.fromNew] := by
   intro t d
   wp_start
   wp_auto

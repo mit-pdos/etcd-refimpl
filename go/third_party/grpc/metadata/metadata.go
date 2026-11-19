@@ -26,6 +26,8 @@ import (
 	"fmt"
 	"sort"
 	"strings"
+	// refimpl: no import of google.golang.org/grpc/internal (init registers nothing); this
+	// line keeps the line numbers etcd-grove's translation cites
 )
 
 func init() {

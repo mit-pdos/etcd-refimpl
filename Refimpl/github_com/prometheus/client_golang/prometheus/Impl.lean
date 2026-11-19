@@ -27,9 +27,9 @@ func init()                                                  {}  // registry.go'
 ```
 
 (Go calls a method on a nil pointer: the bodies never dereference their receivers.)
-`HistogramVec.WithLabelValues` is not proved: its `observerSpec` says `Observe(f)` returns for
-every value `f`, a panic outcome `PanicV p` included, and applying any function to `PanicV p`
-unwinds to `PanicV p`, which is not `#()`: no implementation meets it (README, Findings).
+`HistogramVec.WithLabelValues` is proved since etcd-grove `4fcdd2aa9d`, whose `observerSpec`
+quantifies over a 64-bit word `f` (it was any value, a panic outcome included, which no
+implementation could meet: README, Findings).
 
 The predicates hold of everything: `collectorName := True`, `nameFree := True`,
 `nameUnclaimed := True`. (`counterOpts` is a definition in etcd-grove, over the translated `Opts`.)

@@ -12,10 +12,12 @@ func (t *Trace) LogIfLong(threshold time.Duration) {}
 
 (`Trace`'s type is axiomatized in etcd-grove's translation, which imports neither `sync` nor
 `klog`: no allocation of one. Go calls a method on a nil pointer: `LogIfLong` never dereferences
-its receiver.) The package's specs have no opaque predicate.
+its receiver.)
 
-The real `LogIfLong` locks `t.lock`: it panics on a nil `t`, which its spec (any `t`, no premise)
-admits (README, "Findings").
+The specs' one opaque predicate, `trace.fromNew t` (a trace `New` returned, which `Step` and
+`LogIfLong` require since etcd-grove `4fcdd2aa9d`: the real `LogIfLong` locks `t.lock`, so a nil
+`t` panics), is `True` here: every trace this `New` returns is `nil`, which this `LogIfLong`
+accepts.
 -/
 module
 
@@ -23,3 +25,17 @@ public import Spec.k8s_io.utils.trace.New
 public import Spec.k8s_io.utils.trace.Trace__LogIfLong
 public import Refimpl.Subst
 public import Refimpl.Gen.k8s_io.utils.trace
+
+@[expose] public section
+
+namespace Perennial
+namespace EtcdGrove
+namespace Model
+
+/-- `trace.fromNew`: every location (the model's `New` returns `nil`, and its `LogIfLong` takes
+any receiver). -/
+def trace.fromNew (_t : Loc) : Prop := True
+
+end Model
+end EtcdGrove
+end Perennial

@@ -76,6 +76,17 @@ noncomputable def RecordEtcdBookmark.impl [GooseExts] [GoGlobalContext] : val :=
   (Val #()))))
   (Val #())))
 
+/-- RecordDecodeError sets the storage_decode_errors metrics.
+
+    go: metrics.go:256:6 -/
+noncomputable def RecordDecodeError.impl [GooseExts] [GoGlobalContext] : val :=
+  (LamV "groupResource"
+  (Seq (App (Val exceptionDo)
+  (Let "groupResource" (App (Val (GoInstruction (GoAlloc _root_.Perennial.k8s_io.apimachinery.pkg.runtime.schema.GroupResource.ty))) (Var "groupResource"))
+  (App (Val doExecute)
+  (Val #()))))
+  (Val #())))
+
 /-- RecordStorageListMetrics notes various metrics of the cost to serve a LIST request.
 
     go: metrics.go:287:6 -/
@@ -135,6 +146,7 @@ class Refimpl [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctio
   RecordListLatency_unfold : FuncUnfold RecordListLatency [] RecordListLatency.impl
   RecordEtcdEvent_unfold : FuncUnfold RecordEtcdEvent [] RecordEtcdEvent.impl
   RecordEtcdBookmark_unfold : FuncUnfold RecordEtcdBookmark [] RecordEtcdBookmark.impl
+  RecordDecodeError_unfold : FuncUnfold RecordDecodeError [] RecordDecodeError.impl
   RecordStorageListMetrics_unfold : FuncUnfold RecordStorageListMetrics [] RecordStorageListMetrics.impl
   NewEtcdMetricsTracker_unfold : FuncUnfold NewEtcdMetricsTracker [] NewEtcdMetricsTracker.impl
 
@@ -144,6 +156,7 @@ attribute [instance]
   Refimpl.RecordListLatency_unfold
   Refimpl.RecordEtcdEvent_unfold
   Refimpl.RecordEtcdBookmark_unfold
+  Refimpl.RecordDecodeError_unfold
   Refimpl.RecordStorageListMetrics_unfold
   Refimpl.NewEtcdMetricsTracker_unfold
 

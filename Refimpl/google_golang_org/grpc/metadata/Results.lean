@@ -1,6 +1,6 @@
 /-
-grpc `metadata`'s axioms proved in the model (`#model_check`; `MD.Get` belongs in etcd-grove, and
-`AppendToOutgoingContext` is not met by any implementation: README "Findings"), and the binding
+grpc `metadata`'s axioms proved in the model (`#model_check`; `AppendToOutgoingContext` is not met
+by any implementation: README "Findings"), and the binding
 class checked against etcd-grove's translated bodies.
 -/
 module

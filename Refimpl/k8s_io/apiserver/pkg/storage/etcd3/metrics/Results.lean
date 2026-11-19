@@ -11,6 +11,8 @@ public import Refimpl.k8s_io.apiserver.pkg.storage.etcd3.metrics.RecordEtcdEvent
 public import Refimpl.k8s_io.apiserver.pkg.storage.etcd3.metrics.RecordEtcdBookmark
 public import Refimpl.k8s_io.apiserver.pkg.storage.etcd3.metrics.RecordStorageListMetrics
 public import Refimpl.k8s_io.apiserver.pkg.storage.etcd3.metrics.OperationLatencyTracker__Record
+public import Refimpl.k8s_io.apiserver.pkg.storage.etcd3.metrics.RecordDecodeError
+public import Refimpl.k8s_io.apiserver.pkg.storage.etcd3.metrics.NewEtcdMetricsTracker
 
 @[expose] public section
 
@@ -25,6 +27,8 @@ namespace Model
   metrics.RecordEtcdBookmark.model_proof
   metrics.RecordStorageListMetrics.model_proof
   metrics.OperationLatencyTracker.Record.model_proof
+  metrics.RecordDecodeError.model_proof
+  metrics.NewEtcdMetricsTracker.model_proof
 
 #bound_check k8s_io.apiserver.pkg.storage.etcd3.metrics.Refimpl
 

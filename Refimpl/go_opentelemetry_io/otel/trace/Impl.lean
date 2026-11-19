@@ -18,8 +18,8 @@ func (noopSpan) AddEvent(string, ...EventOption)   {}  // otel's
 untranslated in etcd-grove, so the reference implementation builds the same value in place.) The
 spec's predicates (`trace.isSpan`, `trace.spanCtxOk`) are definitions, not opaque: nothing to model.
 
-`trace.WithAttributes`, the package's other function axiom, is not modelled here: the real code
-(`return attributeOption(attributes)`) is plainly provable in etcd-grove (README, "Status").
+`trace.WithAttributes` is no longer an axiom: etcd-grove `4fcdd2aa9d` translates its real body and
+proves it (README, "Status").
 -/
 module
 

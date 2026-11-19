@@ -1,6 +1,5 @@
 /-
-prometheus's axioms proved in the model (`#model_check`; `HistogramVec.WithLabelValues` is not, and
-cannot be: see `Impl.lean`), and the binding class checked against etcd-grove's translated bodies
+prometheus's axioms proved in the model (`#model_check`), and the binding class checked against etcd-grove's translated bodies
 (`#bound_check`).
 -/
 module
@@ -8,6 +7,7 @@ module
 public import Refimpl.github_com.prometheus.client_golang.prometheus.CounterVec__WithLabelValues
 public import Refimpl.github_com.prometheus.client_golang.prometheus.GaugeVec__With
 public import Refimpl.github_com.prometheus.client_golang.prometheus.GaugeVec__WithLabelValues
+public import Refimpl.github_com.prometheus.client_golang.prometheus.HistogramVec__WithLabelValues
 public import Refimpl.github_com.prometheus.client_golang.prometheus.MustRegister
 public import Refimpl.github_com.prometheus.client_golang.prometheus.NewCounter
 public import Refimpl.github_com.prometheus.client_golang.prometheus.Register
@@ -23,6 +23,7 @@ namespace Model
   prometheus.CounterVec.WithLabelValues.model_proof
   prometheus.GaugeVec.With.model_proof
   prometheus.GaugeVec.WithLabelValues.model_proof
+  prometheus.HistogramVec.WithLabelValues.model_proof
   prometheus.MustRegister.model_proof
   prometheus.NewCounter.model_proof
   prometheus.Register.model_proof

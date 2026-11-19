@@ -23,11 +23,12 @@ variable [ref : k8s_io.utils.trace.Refimpl]
 variable [package_sem : k8s_io.utils.trace.Assumptions]
 
 theorem trace.New.model_proof :
-    model% (EtcdGrove.trace.New.spec (GF := GF) (hG := hG)) with [] := by
+    model% (EtcdGrove.trace.New.spec (GF := GF) (hG := hG)) with
+      [EtcdGrove.trace.fromNew := trace.fromNew] := by
   intro name fields
   wp_start
   wp_auto
-  iapply HΦ; itrivial
+  iapply HΦ; ipureintro; trivial
 
 end proof
 

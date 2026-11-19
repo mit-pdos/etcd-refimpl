@@ -90,24 +90,25 @@ initializers that do nothing.
 | `go-grpc-middleware/providers/prometheus` | 7 (5 function specs, `promSrvMetrics_persistent`; `promSrvMetrics`/`promSrvMetricsOpt` are the predicates) | 7 | metrics that record nothing; `ServerMetrics` translated in etcd-grove (`2040eeb525`) |
 | `k8s.io/klog/v2` | 8 (6 function specs, `opaqueInitsOk`, `initFuncsOk`) | 8 | logging that does nothing |
 | `k8s.io/component-base/tracing` | 4 (`Start`, `SpanFromContext`, `Span.AddEvent`, `Span.End`) | 4 | spans that record nothing; `Span` translated in etcd-grove (`2040eeb525`) |
-| `go.opentelemetry.io/otel/trace` | 2 function specs (`SpanFromContext`, `WithAttributes`) | 1 | `SpanFromContext` returns the no-op span; `WithAttributes`'s real code is plainly provable: to etcd-grove |
-| `go.opentelemetry.io/otel/attribute` | 4 (`Bool`, `Int`, `Int64`, `String`) | 0 | the real code is plainly provable (a struct literal): to etcd-grove |
-| `k8s.io/utils/trace` | 2 (`New`, `Trace.LogIfLong`) | 2 | a nil trace, logging nothing; `LogIfLong`'s spec is false of the real code: see below |
+| `go.opentelemetry.io/otel/trace` | 1 function spec (`SpanFromContext`) | 1 | `SpanFromContext` returns the no-op span; `WithAttributes` **verified in etcd-grove** (`4fcdd2aa9d`: the real body translated, its axiom a theorem) |
+| `go.opentelemetry.io/otel/attribute` | 4 (`Bool`, `Int`, `Int64`, `String`) | moved | **verified in etcd-grove** (`4fcdd2aa9d`): the real code translated, the 4 axioms are theorems there |
+| `k8s.io/utils/trace` | 2 (`New`, `Trace.LogIfLong`; the predicate `trace.fromNew`) | 2 | a nil trace, logging nothing; `fromNew := True`. `LogIfLong`'s spec, false of the real code, fixed in etcd-grove `4fcdd2aa9d`: see below |
 | `github.com/xiang90/probing` | 2 (`NewHandler`, `NewProber`) | 2 | an empty `200` handler (relative to net/http's `WriteHeader` spec) and a nil prober |
-| `github.com/prometheus/client_golang/prometheus` | 12 (7 function specs, `opaqueInitsOk`, `initFuncsOk`; `collectorName`/`nameFree`/`nameUnclaimed` are the predicates) | 11 | a registry that registers nothing, metrics (nil pointers) that record nothing; `HistogramVec.WithLabelValues` is unsatisfiable (`observerSpec`): see below; `Opts` translated in etcd-grove (`2040eeb525`) |
+| `github.com/prometheus/client_golang/prometheus` | 12 (7 function specs, `opaqueInitsOk`, `initFuncsOk`; `collectorName`/`nameFree`/`nameUnclaimed` are the predicates) | 12 | a registry that registers nothing, metrics (nil pointers) that record nothing; `HistogramVec.WithLabelValues` was unsatisfiable (`observerSpec`), fixed in etcd-grove `4fcdd2aa9d`: see below; `Opts` translated in etcd-grove (`2040eeb525`) |
 | `google.golang.org/grpc/status` (and `internal/status`'s `Status.Code`) | 5 | 3 | every code `Unknown`; `Error`, `FromError`: **no implementation meets them**, see below |
-| `google.golang.org/grpc/metadata` | 7 (4 function specs, `incomingOf_cancelCtx`, `opaqueInitsOk`, `initFuncsOk`) | 5 | no context carries metadata; `MD.Get`: grpc's code is provable in etcd-grove; `AppendToOutgoingContext`: **no implementation meets it**, see below |
-| `google.golang.org/grpc/health`, `health/grpc_health_v1` | 9 (4 function specs, `grpcHealthSrv_persistent`, `opaqueInitsOk` ×2, `initFuncsOk` ×2) | 5 | a health server that records nothing; `SetServingStatus`, `ServingStatus.String`: **no implementation meets them**; `NewServer` blocked by an axiomatized type, `RegisterHealthServer` by grpc's server model: see below |
+| `google.golang.org/grpc/metadata` | 6 (3 function specs, `incomingOf_cancelCtx`, `opaqueInitsOk`, `initFuncsOk`) | 5 | no context carries metadata; `MD.Get` **verified in etcd-grove** (`4fcdd2aa9d`); `AppendToOutgoingContext`: **no implementation meets it**, see below |
+| `google.golang.org/grpc/health`, `health/grpc_health_v1` | 9 (4 function specs, `grpcHealthSrv_persistent`, `opaqueInitsOk` ×2, `initFuncsOk` ×2) | 7 | a health server that records nothing; `SetServingStatus`, `ServingStatus.String` met since etcd-grove `4fcdd2aa9d` (a `w32` status); `NewServer` blocked by an axiomatized type, `RegisterHealthServer` by grpc's server model: see below |
 | `k8s.io/apimachinery/pkg/api/errors` | 4 (`HasStatusCause`, `IsTimeout`, `NewConflict`, `NewInternalError`) | 4 | the checks read a `*StatusError` only; the constructors leave out the message |
 | `k8s.io/apimachinery/pkg/labels` | 1 (`Everything`) | 1 | the shared selectors without their package variables; `Empty`/`Matches` are the real code |
 | `k8s.io/apimachinery/pkg/apis/meta/v1` | 2 (`LabelSelectorAsSelector`, the predicate `labels.reqsValid`) | 2 | only the empty selector is accepted (`reqsValid`: no pair, no requirement) |
-| `k8s.io/api/core/v1`, `apps/v1` | 6 (`Resource` ×2, `DeepCopyObject` of `Node`, `Pod`, `ControllerRevision`, `DaemonSet`) | 2 | `DeepCopyObject` not modelled: see below |
-| `k8s.io/apiserver/pkg/storage/etcd3/metrics` | 7 (`NewEtcdMetricsTracker`, `OperationLatencyTracker.Record`, 5 `Record*`) | 6 | no metrics; `NewEtcdMetricsTracker` blocked by an axiomatized type: see below |
+| `k8s.io/api/core/v1`, `apps/v1` | 5 (`Resource` ×2, `DeepCopyObject` of `Node`, `Pod`, `DaemonSet`) | 2 | `DeepCopyObject` not modelled: see below; `ControllerRevision.DeepCopyObject` **verified in etcd-grove** (`4fcdd2aa9d`) |
+| `k8s.io/apiserver/pkg/storage/etcd3/metrics` | 8 (`NewEtcdMetricsTracker`, `OperationLatencyTracker.Record`, 6 `Record*`) | 8 | no metrics; `NewEtcdMetricsTracker` met since etcd-grove `4fcdd2aa9d` translates `OperationLatencyTracker`: see below |
 
 ### Findings
 
-- **`k8s.io/utils/trace`'s `Trace.LogIfLong` spec is false of the real code** (satisfiable: the model
-  meets it). It holds for every `t : Loc` with no premise (`{{ True }} t.LogIfLong(d) {{ True }}`), but
+- **`k8s.io/utils/trace`'s `Trace.LogIfLong` spec was false of the real code (fixed in etcd-grove
+  `4fcdd2aa9d`: `Step` and `LogIfLong` require `trace.fromNew t`, which `New` gives; modelled as
+  `True`)** (satisfiable: the model met it). It holds for every `t : Loc` with no premise (`{{ True }} t.LogIfLong(d) {{ True }}`), but
   the real `LogIfLong` (k8s.io/utils `be93311217bd`, `trace/trace.go:208`) starts with `t.lock.Lock()`:
   `var t *trace.Trace; t.LogIfLong(time.Second)` panics with a nil dereference (run with Go 1.27.3),
   yet the axiom proves it returns. Any location that is not a live `*Trace` is admitted too. Fix in
@@ -115,15 +116,18 @@ initializers that do nothing.
   produced by `New`'s spec and required by `LogIfLong`'s; the named hypothesis `Trace.Step` has the
   same gap.
 
-- **The k8s API types' `DeepCopyObject` (core/v1 `Node`, `Pod`; apps/v1 `ControllerRevision`,
-  `DaemonSet`): not modelled.** The spec gives the caller a new object owned whole (`l' ↦ v'` and
+- **The k8s API types' `DeepCopyObject` (core/v1 `Node`, `Pod`; apps/v1 `DaemonSet`): not modelled**
+  (`ControllerRevision`'s is a theorem in etcd-grove `4fcdd2aa9d`, over deepcopy-gen's code
+  translated with generated proofs; the other three are still axioms there). The spec gives the caller a new object owned whole (`l' ↦ v'` and
   `kd.*.own v' (DFrac.own 1) d`, every slice and map reached fresh) with the original's deep value,
   so any implementation is a complete deep copy over the 166 struct types of etcd-grove's
   `Proof/k8s_io/api/Deep.lean`: the real, generated `DeepCopyInto` is already the simplest one. Its
   proof is mechanical and belongs in etcd-grove, generated alongside `Deep.lean`
   (`etc/gen-k8s-deep.py`), with the deep copies translated with their bodies; the axioms are believed
   true.
-- **`metrics.NewEtcdMetricsTracker` cannot be met in etcd-grove's translation as configured.** It
+- **`metrics.NewEtcdMetricsTracker` could not be met in etcd-grove's translation as configured
+  (fixed in etcd-grove `4fcdd2aa9d`, which imports `schema` and component-base's `metrics`; now
+  modelled).** It
   returns a tracker whose `Get` is a non-nil `*OperationLatencyTracker`; any Go code doing so
   allocates an `OperationLatencyTracker`, a type etcd-grove's translation axiomatizes (its fields name
   `schema.GroupResource` and component-base's `metrics.ObserverMetric`/`CounterMetric`, and the
@@ -151,7 +155,8 @@ initializers that do nothing.
   `sorry` (an `unsafe.Pointer` conversion is stuck: not a plain type). The axiom is true of the real
   code; what blocks a proof is the translation. Fix in etcd-grove: import prometheus's names in
   `Code/github_com/grpc_ecosystem/go_grpc_middleware/providers/prometheus.toml`.
-- **`prometheus.HistogramVec.WithLabelValues` cannot be met by any implementation (`observerSpec`).**
+- **`prometheus.HistogramVec.WithLabelValues` could not be met by any implementation (`observerSpec`;
+  fixed in etcd-grove `4fcdd2aa9d`, `∀ f : w64`; now modelled).**
   Its post gives `observerSpec oi`, which says `{{ True }} methods oi.ty "Observe" oi.v f {{ RET #(); True }}`
   for every `f : val`. Take `f := PanicV p`, a panic outcome: GooseLang evaluates an application's
   argument first, and a panic in that position unwinds the application (`Unwinds`, the `AppRCtx`
@@ -193,8 +198,8 @@ initializers that do nothing.
   the execution. A fix in etcd-grove would make the description and the metadata ghost state of the
   execution (for example a persistent `errDescIs err m` points-to-like fact, given by `status.Error`
   and read by `FromError`) instead of functions of the value.
-- **grpc health's `Server.SetServingStatus` and `HealthCheckResponse_ServingStatus.String` cannot be met
-  by any implementation.** Their specs take the serving status as any `val`, not a `w32`. A `val` may be
+- **grpc health's `Server.SetServingStatus` and `HealthCheckResponse_ServingStatus.String` could not be
+  met by any implementation (fixed in etcd-grove `4fcdd2aa9d`, the status a `w32`; now modelled).** Their specs take the serving status as any `val`, not a `w32`. A `val` may be
   a panic outcome `PanicV p`, and an application to one unwinds to `PanicV p` in one pure step
   (GooseLang's `Unwinds`, Perennial's `pure_unwind`), whatever the function: the result is not the
   `RET #()` (`RET #s`) the post names. `String`'s precondition is `True`, so its axiom, at
@@ -216,8 +221,19 @@ initializers that do nothing.
   server being built, an opaque predicate), which only grpc's own `Server.RegisterService` axiom gives;
   a model proof may not use it. grpc's body is `srv.testEmbeddedByValue(); s.RegisterService(&Health_ServiceDesc,
   srv)`, provable in etcd-grove from `Server.RegisterService.spec` once `Health_ServiceDesc`'s
-  initializer is translated; so is `metadata.MD.Get` (`md[strings.ToLower(k)]`, over etcd-grove's
-  `strings.ToLower` spec).
+  initializer is translated. (`metadata.MD.Get`, `md[strings.ToLower(k)]`, is now proved there:
+  `4fcdd2aa9d`.)
+
+- **Perennial: no `go.NotInterface` instance for the predeclared types.** Resolving a method on a
+  value receiver of a named non-struct type (`HealthCheckResponse_ServingStatus`, an `int32`) needs
+  `go.NotInterface` of its underlying type; Perennial has instances for the type constructors
+  (`go.Named`, `go.PointerType`, ...) but `go.int32` is a plain `def`, which instance search does not
+  unfold, so `wp_auto` makes no progress. The model proof supplies `haveI : go.NotInterface go.int32
+  := ⟨trivial⟩`; the general fix is an instance per predeclared type in Perennial
+  (`Golang/Theory/PostLifting.lean`).
+- **`metrics.RecordDecodeError` was not modelled (this repository, fixed with the `4fcdd2aa9d` pin).**
+  The row counted 7 axioms; etcd-grove has 8 (`RecordDecodeError` had been missed). Its model records
+  nothing, like the other `Record*`.
 
 - **`model%` and universe-polymorphic constants (this repository).** `promSrvMetrics` is declared
   with `{GF : BundledGFunctors}` and nothing fixing its universe; `model%` now takes a polymorphic

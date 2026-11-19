@@ -254,7 +254,7 @@ func RecordEtcdBookmark(groupResource schema.GroupResource) {
 
 // RecordDecodeError sets the storage_decode_errors metrics.
 func RecordDecodeError(groupResource schema.GroupResource) {
-	decodeErrorCounts.WithLabelValues(groupResource.Group, groupResource.Resource).Inc()
+	// refimpl: records nothing
 }
 
 // Reset resets the etcd_request_duration_seconds metric.

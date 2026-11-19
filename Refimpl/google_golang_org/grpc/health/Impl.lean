@@ -19,11 +19,10 @@ func init()                                              {}
 
 The model: `grpcHealthSrv := True`; the untranslated package-variable initializers are `initNoop`.
 
-None of the four function specs is proved (README, "Findings"):
-- `SetServingStatus` and `ServingStatus.String` are met by no implementation: their specs take the
-  serving status as any `val`, a panic outcome `PanicV p` included, and an application to `PanicV p`
-  unwinds to `PanicV p`, which is not the `RET` the post names. (The Go above leaves the parameters
-  unnamed, so that the bodies would hold for every non-panic `val`.)
+Two of the four function specs are proved: `SetServingStatus` and `ServingStatus.String`, since
+etcd-grove `4fcdd2aa9d`, whose specs take the serving status as a `w32` (they took any `val`, a panic
+outcome `PanicV p` included, to which an application unwinds: no implementation could meet them;
+README, "Findings"). The other two are not:
 - `NewServer`: `health.Server` is still an axiomatized type in etcd-grove's translation (its field
   `updates` names `grpc_health_v1.Health_WatchServer`, an alias from another package, which Goose's
   `translate_types` refuses), so `&Server{}` is stuck.

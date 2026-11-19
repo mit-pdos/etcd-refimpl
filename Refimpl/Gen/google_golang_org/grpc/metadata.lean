@@ -20,8 +20,7 @@ noncomputable section
 
 namespace google_golang_org.grpc.metadata
 
-
-/-- go: metadata.go:31:6 -/
+/-- go: metadata.go:33:6 -/
 noncomputable def init.«0».impl [GooseExts] [GoGlobalContext] : val :=
   (LamV BAnon
   (Seq (App (Val exceptionDo)
@@ -29,11 +28,12 @@ noncomputable def init.«0».impl [GooseExts] [GoGlobalContext] : val :=
   (Val #())))
   (Val #())))
 
+
 /-- FromIncomingContext returns the incoming metadata in ctx if it exists.
 
     All keys in the returned MD are lowercase.
 
-    go: metadata.go:266:6 -/
+    go: metadata.go:268:6 -/
 noncomputable def FromIncomingContext.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV "ctx"
   (Let "$res0" (App (Val (GoInstruction (GoAlloc MD.ty))) (App (Val (GoInstruction (GoZeroVal MD.ty))) (Val #())))
@@ -56,7 +56,7 @@ noncomputable def FromIncomingContext.impl [GooseExts] [GoGlobalContext] : val :
 
     All keys in the returned MD are lowercase.
 
-    go: metadata.go:318:6 -/
+    go: metadata.go:320:6 -/
 noncomputable def FromOutgoingContext.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV "ctx"
   (Let "$res0" (App (Val (GoInstruction (GoAlloc MD.ty))) (App (Val (GoInstruction (GoZeroVal MD.ty))) (Val #())))
