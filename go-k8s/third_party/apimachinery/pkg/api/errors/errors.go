@@ -701,8 +701,8 @@ func IsForbidden(err error) bool {
 // processing.
 // It supports wrapped errors and returns false when the error is nil.
 func IsTimeout(err error) bool {
-	// refimpl: a *StatusError's reason and code tested (knownReasons' reasons spelled out); any
-	// other error (wrapped or not) is no timeout
+	// refimpl: a *StatusError's reason and code tested (knownReasons' reasons spelled out, one case
+	// each); any other error (wrapped or not) is no timeout
 	se, ok := err.(*StatusError)
 	if !ok {
 		return false
@@ -710,14 +710,41 @@ func IsTimeout(err error) bool {
 	switch se.ErrStatus.Reason {
 	case metav1.StatusReasonTimeout:
 		return true
-	case metav1.StatusReasonUnauthorized, metav1.StatusReasonForbidden, metav1.StatusReasonNotFound,
-		metav1.StatusReasonAlreadyExists, metav1.StatusReasonConflict, metav1.StatusReasonGone,
-		metav1.StatusReasonInvalid, metav1.StatusReasonServerTimeout, metav1.StatusReasonStoreReadError,
-		metav1.StatusReasonTooManyRequests, metav1.StatusReasonBadRequest,
-		metav1.StatusReasonMethodNotAllowed, metav1.StatusReasonNotAcceptable,
-		metav1.StatusReasonRequestEntityTooLarge, metav1.StatusReasonUnsupportedMediaType,
-		metav1.StatusReasonInternalError, metav1.StatusReasonExpired,
-		metav1.StatusReasonServiceUnavailable:
+	case metav1.StatusReasonUnauthorized:
+		return false
+	case metav1.StatusReasonForbidden:
+		return false
+	case metav1.StatusReasonNotFound:
+		return false
+	case metav1.StatusReasonAlreadyExists:
+		return false
+	case metav1.StatusReasonConflict:
+		return false
+	case metav1.StatusReasonGone:
+		return false
+	case metav1.StatusReasonInvalid:
+		return false
+	case metav1.StatusReasonServerTimeout:
+		return false
+	case metav1.StatusReasonStoreReadError:
+		return false
+	case metav1.StatusReasonTooManyRequests:
+		return false
+	case metav1.StatusReasonBadRequest:
+		return false
+	case metav1.StatusReasonMethodNotAllowed:
+		return false
+	case metav1.StatusReasonNotAcceptable:
+		return false
+	case metav1.StatusReasonRequestEntityTooLarge:
+		return false
+	case metav1.StatusReasonUnsupportedMediaType:
+		return false
+	case metav1.StatusReasonInternalError:
+		return false
+	case metav1.StatusReasonExpired:
+		return false
+	case metav1.StatusReasonServiceUnavailable:
 		return false
 	}
 	return se.ErrStatus.Code == http.StatusGatewayTimeout

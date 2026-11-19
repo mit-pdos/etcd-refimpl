@@ -143,7 +143,6 @@ initializers that do nothing.
   rejects every non-empty selector.** The model is that function. The spec says nothing of which
   selectors the real code accepts (`SelDefs.lean` documents it in prose: the four operators, and
   `labels.NewRequirement`'s syntax checks); a caller can only learn it from an error.
-
 - **`grpc_prometheus.NewServerMetrics` could not be met in etcd-grove's translation as configured
   (fixed in etcd-grove `2040eeb525`, 2026-11-18; now modelled).** It
   returns a non-nil `*ServerMetrics`; any Go code doing so allocates a `ServerMetrics`, but etcd-grove's

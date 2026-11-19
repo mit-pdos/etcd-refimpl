@@ -34,6 +34,8 @@ public import Refimpl.Subst
 public import Refimpl.Common
 public import Refimpl.k8s_io.apimachinery.pkg.labels.Impl
 public import Refimpl.Gen.k8s_io.apimachinery.pkg.apis.«meta».v1
+public import GeneratedProof.k8s_io.apimachinery.pkg.apis.«meta».v1
+public import GeneratedProof.k8s_io.apimachinery.pkg.runtime
 
 @[expose] public section
 

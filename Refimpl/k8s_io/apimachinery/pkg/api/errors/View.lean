@@ -57,7 +57,7 @@ theorem apiErrAt_agree (err : GoInterface) (w1 w2 : ApiErrView) :
     iintro ⟨%l1, %He1, Hl1, Hd1⟩ ⟨%l2, %He2, Hl2, Hd2⟩
     rw [He1] at He2
     simp only [interface.mkOk, GoInterface.ok.injEq, GoInterfaceOk.mk.injEq, true_and] at He2
-    have Hl : l1 = l2 := by simpa using He2
+    have Hl : l1 = l2 := go.intoVal_inj (by simpa using He2)
     subst Hl
     ihave %Hst := typedPointsto_agree_wand $$ Hl1 Hl2
     simp only [k8s_io.apimachinery.pkg.api.errors.StatusError.mk.injEq] at Hst
@@ -92,7 +92,8 @@ theorem apiErrAt_answer {A : Type} (f : ApiErrView → A) (err : GoInterface) (w
 /-- The precondition, as a view: a `*StatusError` with its status and causes, or a plain error. -/
 theorem apiErrOk_view (err : GoInterface) :
     apiErrOk (GF := GF) err ⊢
-      (∃ (l : Loc) (st : k8s_io.apimachinery.pkg.apis.«meta».v1.Status) cs,
+      (∃ (l : Loc) (st : k8s_io.apimachinery.pkg.apis.«meta».v1.Status)
+        (cs : List k8s_io.apimachinery.pkg.apis.«meta».v1.StatusCause),
         ⌜err = interface.mkOk
           (go.GoType.PointerType k8s_io.apimachinery.pkg.api.errors.StatusError.ty) #l⌝ ∗
         l ↦□ k8s_io.apimachinery.pkg.api.errors.StatusError.mk st ∗ statusDetailsAt st cs ∗

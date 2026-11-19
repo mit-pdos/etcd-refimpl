@@ -32,7 +32,7 @@ func IsTimeout(err error) bool {
 	switch se.ErrStatus.Reason {
 	case metav1.StatusReasonTimeout:
 		return true
-	case /* knownReasons' 18 other reasons */:
+	case metav1.StatusReasonUnauthorized:  // and so on: one case each for knownReasons' 18 others
 		return false
 	}
 	return se.ErrStatus.Code == http.StatusGatewayTimeout

@@ -29,3 +29,5 @@ public import Spec.k8s_io.apiserver.pkg.storage.etcd3.metrics.RecordEtcdRequest
 public import Refimpl.Subst
 public import Refimpl.Common
 public import Refimpl.Gen.k8s_io.apiserver.pkg.storage.etcd3.metrics
+public import GeneratedProof.k8s_io.apimachinery.pkg.runtime.schema
+public import Perennial.GeneratedProof.time

@@ -34,8 +34,6 @@ theorem labels.Everything.model_proof :
   · iintro !> %Φ₁ - HΦ₁
     wp_func_call; wp_call
     wp_auto
-    simp only [labels.internalSelector_ne_nothingSelector, decide_false]
-    wp_auto
     iapply HΦ₁; itrivial
   · iintro !> %Φ₁ - HΦ₁
     wp_method_call; wp_call

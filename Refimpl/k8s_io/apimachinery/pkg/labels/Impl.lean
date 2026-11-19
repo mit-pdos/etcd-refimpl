@@ -27,28 +27,3 @@ public import Spec.k8s_io.apimachinery.pkg.labels.Everything
 public import Refimpl.Subst
 public import Refimpl.Common
 public import Refimpl.Gen.k8s_io.apimachinery.pkg.labels
-
-@[expose] public section
-
-noncomputable section
-
-namespace Perennial
-namespace EtcdGrove
-namespace Model
-
-section lemmas
-variable [GooseExts] [GoGlobalContext]
-
-/-- The two selector types differ (`MatchesNothing` tells them apart). -/
-theorem labels.internalSelector_ne_nothingSelector :
-    k8s_io.apimachinery.pkg.labels.internalSelector.ty ≠
-      k8s_io.apimachinery.pkg.labels.nothingSelector.ty := by
-  unfold k8s_io.apimachinery.pkg.labels.internalSelector.ty
-    k8s_io.apimachinery.pkg.labels.nothingSelector.ty
-  simp
-
-end lemmas
-
-end Model
-end EtcdGrove
-end Perennial

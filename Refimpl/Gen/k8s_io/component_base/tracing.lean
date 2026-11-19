@@ -5,6 +5,7 @@ on top of etcd-grove's names-only translation of the package. -/
 module
 
 public import Code.k8s_io.component_base.tracing
+public import Code.go_opentelemetry_io.otel.«attribute»
 public import Perennial.Code.context
 public import Perennial.Code.time
 public import Perennial.Golang.Defn

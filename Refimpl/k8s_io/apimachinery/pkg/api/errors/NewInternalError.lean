@@ -27,14 +27,14 @@ theorem apierrors.NewInternalError.model_proof :
     model% (EtcdGrove.apierrors.NewInternalError.spec (GF := GF) (hG := hG)) with [] := by
   intro err
   wp_start as -
+  iapply wp_fupd
   wp_auto
   wp_apply wp_slice_literal
   isplitr
   · ipureintro; rfl
   iintro %sl ⟨Hsl, -⟩
   wp_auto
-  iapply wp_fupd
-  imod ownSlice_persist $$ Hsl with Hsl
+  imod ownSlice_persist $$ Hsl with #Hsl
   ipersist «$v3»
   imodintro
   iapply HΦ

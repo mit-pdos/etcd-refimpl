@@ -43,7 +43,21 @@ theorem apierrors.IsTimeout.model_proof :
       (fun w => match w with | .status st _ => apierrors.timeoutV st | .plain => false) err _ $$ Hw
     subst He
     wp_auto
-    all_goals sorry
+    ihave Hl' := Hl
+    iStructNamed Hl'
+    iStructNamed ErrStatus
+    wp_auto
+    all_goals repeat' wp_if_destruct
+    all_goals (try wp_load); (try wp_auto)
+    all_goals
+      iapply HΦ
+      imodintro
+      iintro %w Hw'
+      ihave %h := Hans $$ Hw'
+      ipureintro
+      refine Eq.trans ?_ h
+      simp only [apierrors.timeoutV_eq]
+      simp_all [apierrors.knownReasons]
   · ihave #Hans := apiErrAt_answer
       (fun w => match w with | .status st _ => apierrors.timeoutV st | .plain => false) err _ $$ Hw
     subst He
@@ -51,7 +65,11 @@ theorem apierrors.IsTimeout.model_proof :
     simp only [Hty, decide_false]
     wp_auto
     iapply HΦ
-    iexact Hans
+    imodintro
+    iintro %w Hw'
+    ihave %h := Hans $$ Hw'
+    ipureintro
+    exact Eq.trans rfl h
 
 end proof
 

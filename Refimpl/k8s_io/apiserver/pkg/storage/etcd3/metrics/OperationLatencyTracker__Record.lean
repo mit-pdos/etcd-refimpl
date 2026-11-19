@@ -22,6 +22,8 @@ variable {GF : BundledGFunctors} [hG : HeapGS HasLC.hasLC GF]
 variable [sem : go.Semantics]
 variable [ref : k8s_io.apiserver.pkg.storage.etcd3.metrics.Refimpl]
 variable [package_sem : k8s_io.apiserver.pkg.storage.etcd3.metrics.Assumptions]
+variable [schema_sem : k8s_io.apimachinery.pkg.runtime.schema.Assumptions]
+variable [time_sem : time.Assumptions]
 
 theorem metrics.OperationLatencyTracker.Record.model_proof :
     model% (EtcdGrove.metrics.OperationLatencyTracker.Record.spec (GF := GF) (hG := hG)) with [] := by

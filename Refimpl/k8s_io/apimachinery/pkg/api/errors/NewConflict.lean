@@ -27,8 +27,8 @@ theorem apierrors.NewConflict.model_proof :
     model% (EtcdGrove.apierrors.NewConflict.spec (GF := GF) (hG := hG)) with [] := by
   intro gr name err
   wp_start as -
-  wp_auto
   iapply wp_fupd
+  wp_auto
   ipersist «$v3»
   imodintro
   iapply HΦ
