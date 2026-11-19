@@ -26,7 +26,7 @@ variable [package_sem : github_com.prometheus.client_golang.prometheus.Assumptio
 theorem prometheus.GaugeVec.WithLabelValues.model_proof :
     model% (EtcdGrove.prometheus.GaugeVec.WithLabelValues.spec (GF := GF) (hG := hG)) with [] := by
   intro v lvs ls vs dq
-  wp_start as ⟨-, %Hok, Hlvs⟩
+  wp_start as ⟨%Hok, Hlvs⟩
   wp_auto
   iapply HΦ
   iexists _
@@ -35,18 +35,18 @@ theorem prometheus.GaugeVec.WithLabelValues.model_proof :
   iframe Hlvs
   unfold go_etcd_io.etcd.server.v3.storage.mvcc.gaugeSpec
   isplitr
-  · iintro !> %Φ _ HΦ
+  · iintro !> !> %Φ _ HΦ
     dsimp only
     wp_method_call
     wp_auto
     iapply HΦ; itrivial
   isplitr
-  · iintro !> %Φ _ HΦ
+  · iintro !> !> %Φ _ HΦ
     dsimp only
     wp_method_call
     wp_auto
     iapply HΦ; itrivial
-  · iintro !> %x %Φ _ HΦ
+  · iintro !> %x !> %Φ _ HΦ
     dsimp only
     wp_method_call
     wp_auto

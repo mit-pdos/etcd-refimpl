@@ -26,14 +26,14 @@ variable [package_sem : github_com.prometheus.client_golang.prometheus.Assumptio
 theorem prometheus.GaugeVec.With.model_proof :
     model% (EtcdGrove.prometheus.GaugeVec.With.spec (GF := GF) (hG := hG)) with [] := by
   intro v labels ls M dq
-  wp_start as ⟨-, %Hok, Hlabels⟩
+  wp_start as ⟨%Hok, Hlabels⟩
   wp_auto
   iapply HΦ
   iexists _
   isplitr
   · ipureintro; rfl
   iframe Hlabels
-  iintro !> %x %Φ _ HΦ
+  iintro !> %x !> %Φ _ HΦ
   dsimp only
   wp_method_call
   wp_auto

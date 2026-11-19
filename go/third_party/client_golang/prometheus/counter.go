@@ -83,9 +83,8 @@ type CounterVecOpts struct {
 // performance. (It is common to have an Inc call in very hot execution paths.)
 // Both internal tracking values are added up in the Write method. This has to
 // be taken into account when it comes to precision and overflow behavior.
-func NewCounter(_ CounterOpts) Counter {
-	// refimpl: a counter that counts nothing (the methods below never dereference it); the
-	// options are not read (a blank parameter: etcd-grove's translation leaves `Opts` axiomatized)
+func NewCounter(opts CounterOpts) Counter {
+	// refimpl: a counter that counts nothing (the methods below never dereference it)
 	return (*counter)(nil)
 }
 

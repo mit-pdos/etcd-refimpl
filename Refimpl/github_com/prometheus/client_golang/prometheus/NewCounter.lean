@@ -25,8 +25,7 @@ variable [package_sem : github_com.prometheus.client_golang.prometheus.Assumptio
 
 theorem prometheus.NewCounter.model_proof :
     model% (EtcdGrove.prometheus.NewCounter.spec (GF := GF) (hG := hG)) with
-      [EtcdGrove.prometheus.counterOpts := @prometheus.counterOpts,
-        EtcdGrove.prometheus.collectorName := @prometheus.collectorName,
+      [EtcdGrove.prometheus.collectorName := @prometheus.collectorName,
         EtcdGrove.prometheus.nameFree := @prometheus.nameFree] := by
   intro o ns sub name help _ _
   wp_start
@@ -35,18 +34,18 @@ theorem prometheus.NewCounter.model_proof :
   unfold go_etcd_io.etcd.server.v3.storage.mvcc.counterSpec prometheus.collectorName
   isplitr
   · isplitr
-    · iintro !> %Φ _ HΦ
+    · iintro !> !> %Φ _ HΦ
       dsimp only
       wp_method_call
       wp_auto
       iapply HΦ; itrivial
     isplitr
-    · iintro !> %n %Φ _ HΦ
+    · iintro !> %n !> %Φ _ HΦ
       dsimp only
       wp_method_call
       wp_auto
       iapply HΦ; itrivial
-    · iintro !> %n %Hn %Φ _ HΦ
+    · iintro !> %n %Hn !> %Φ _ HΦ
       dsimp only
       wp_method_call
       wp_auto

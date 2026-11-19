@@ -767,9 +767,8 @@ func (h *histogram) Desc() *Desc {
 	return h.desc
 }
 
-func (h *histogram) Observe(_ float64) {
-	// refimpl: records nothing; the parameter is blank, so not allocated (etcd-grove's
-	// observerSpec passes any value, not only a float64: README, Findings)
+func (h *histogram) Observe(v float64) {
+	// refimpl: records nothing
 }
 
 // ObserveWithExemplar should not be called in a high-frequency setting

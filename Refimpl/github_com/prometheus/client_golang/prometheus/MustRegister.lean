@@ -25,8 +25,7 @@ variable [package_sem : github_com.prometheus.client_golang.prometheus.Assumptio
 
 theorem prometheus.MustRegister.model_proof :
     model% (EtcdGrove.prometheus.MustRegister.spec (GF := GF) (hG := hG)) with
-      [EtcdGrove.prometheus.counterOpts := @prometheus.counterOpts,
-        EtcdGrove.prometheus.collectorName := @prometheus.collectorName,
+      [EtcdGrove.prometheus.collectorName := @prometheus.collectorName,
         EtcdGrove.prometheus.nameFree := @prometheus.nameFree] := by
   intro s dq c n _
   wp_start as ⟨Hs, -⟩

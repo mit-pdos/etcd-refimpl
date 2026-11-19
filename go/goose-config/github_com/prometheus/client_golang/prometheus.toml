@@ -5,7 +5,9 @@ translate = ["!*", "NewCounter", "Register", "MustRegister",
   "HistogramVec.WithLabelValues",
   "counter.Inc", "counter.Add", "gauge.Set", "gauge.Inc", "gauge.Dec", "gauge.Add",
   "histogram.Observe", "init.0"]
-imports = ["!*"]
+# `time` for `Opts`'s field `now func() time.Time`, so that `Opts` (`CounterOpts`) translates (a
+# composite literal of it can be stepped: etcd-refimpl's reference implementation).
+imports = ["!*", "time"]
 
 # translate the definitions of all type declarations goose supports
 translate_types = true

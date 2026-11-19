@@ -9,7 +9,7 @@ pin) with the bodies of the functions etcd calls replaced (each marked `// refim
 that registers nothing, and metrics that record nothing:
 
 ```go
-func NewCounter(_ CounterOpts) Counter                       { return (*counter)(nil) }
+func NewCounter(opts CounterOpts) Counter                    { return (*counter)(nil) }
 func (v *CounterVec) WithLabelValues(lvs ...string) Counter  { return (*counter)(nil) }
 func (v *GaugeVec) WithLabelValues(lvs ...string) Gauge      { return (*gauge)(nil) }
 func (v *GaugeVec) With(labels Labels) Gauge                 { return (*gauge)(nil) }
@@ -20,23 +20,19 @@ func (g *gauge) Set(val float64)                             {}
 func (g *gauge) Inc()                                        {}
 func (g *gauge) Dec()                                        {}
 func (g *gauge) Add(val float64)                             {}
-func (h *histogram) Observe(_ float64)                       {}
+func (h *histogram) Observe(v float64)                       {}
 func Register(c Collector) error                             { return nil }
 func MustRegister(cs ...Collector)                           {}
 func init()                                                  {}  // registry.go's
 ```
 
-(Go calls a method on a nil pointer: the bodies never dereference their receivers.) Two
-parameters are blank, so that Goose does not allocate them: `NewCounter`'s, because etcd-grove's
-translation leaves `Opts` (so `CounterOpts`) an axiomatized type, whose allocation is stuck; and
-`Observe`'s, because `observerSpec` passes it any value, and allocating a `float64` from a value
-that is not a 64-bit word is stuck (README, Findings).
+(Go calls a method on a nil pointer: the bodies never dereference their receivers.)
+`HistogramVec.WithLabelValues` is not proved: its `observerSpec` says `Observe(f)` returns for
+every value `f`, a panic outcome `PanicV p` included, and applying any function to `PanicV p`
+unwinds to `PanicV p`, which is not `#()`: no implementation meets it (README, Findings).
 
-The predicates hold of everything: `counterOpts := True`, `collectorName := True`,
-`nameFree := True`, `nameUnclaimed := True`. `wp_counterOptsLit` is not proved: a composite
-literal of `CounterOpts` (a type whose underlying type is opaque in etcd-grove's translation) has
-no semantics, whatever the implementation; translating `Opts` in etcd-grove (importing `time`, for
-its `now func() time.Time` field) makes it provable there, of Go's own composite literal.
+The predicates hold of everything: `collectorName := True`, `nameFree := True`,
+`nameUnclaimed := True`. (`counterOpts` is a definition in etcd-grove, over the translated `Opts`.)
 -/
 module
 
@@ -56,10 +52,6 @@ namespace EtcdGrove
 namespace Model
 
 open Iris Iris.BI
-
-/-- `prometheus.counterOpts`: every value (the model's `NewCounter` reads no option). -/
-def prometheus.counterOpts [GooseExts] (_o : github_com.prometheus.client_golang.prometheus.CounterOpts)
-    (_ns _sub _name _help : GoString) : Prop := True
 
 /-- `prometheus.collectorName`: every collector, every name (the model's registry checks
 nothing). -/

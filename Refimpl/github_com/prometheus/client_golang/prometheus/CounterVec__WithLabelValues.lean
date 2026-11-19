@@ -26,7 +26,7 @@ variable [package_sem : github_com.prometheus.client_golang.prometheus.Assumptio
 theorem prometheus.CounterVec.WithLabelValues.model_proof :
     model% (EtcdGrove.prometheus.CounterVec.WithLabelValues.spec (GF := GF) (hG := hG)) with [] := by
   intro v lvs ls vs dq
-  wp_start as ⟨-, %Hok, Hlvs⟩
+  wp_start as ⟨%Hok, Hlvs⟩
   wp_auto
   iapply HΦ
   iexists _
@@ -35,12 +35,12 @@ theorem prometheus.CounterVec.WithLabelValues.model_proof :
   iframe Hlvs
   unfold prometheus.counterSpec
   isplitr
-  · iintro !> %Φ _ HΦ
+  · iintro !> !> %Φ _ HΦ
     dsimp only
     wp_method_call
     wp_auto
     iapply HΦ; itrivial
-  · iintro !> %n %Hn %Φ _ HΦ
+  · iintro !> %n %Hn !> %Φ _ HΦ
     dsimp only
     wp_method_call
     wp_auto
