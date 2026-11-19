@@ -1,9 +1,10 @@
 /-
-`github_com/Masterminds/semver/v3`'s package-initialization axioms (`opaqueInitsOk`, etcd-grove's
-`Proof/github_com/Masterminds/semver/v3/Init.lean`), read in the model: the untranslated package-variable initializers are `initNoop`.
+`github_com/Masterminds/semver/v3`'s package-initialization axioms (`opaqueInitsOk`, `initFuncsOk`, etcd-grove's
+`Proof/github_com/Masterminds/semver/v3/Init.lean`), read in the model: the untranslated package-variable initializers are `initNoop`; its `init()`s are Go, translated, with empty bodies.
 -/
 module
 
+public import Refimpl.Gen.github_com.Masterminds.semver.v3
 public import Proof.github_com.Masterminds.semver.v3.Init
 public import Refimpl.Subst
 public import Refimpl.Common
@@ -25,6 +26,7 @@ variable [GooseExts] [GooseSemantics] [GooseInterp]
 variable [go_gctx : GoGlobalContext]
 variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
+variable [ref : _root_.Perennial.github_com.Masterminds.semver.v3.Refimpl]
 
 theorem github_com_Masterminds_semver_v3.opaqueInitsOk.model_proof :
     model% (type_of% (_root_.Perennial.github_com.Masterminds.semver.v3.opaqueInitsOk (GF := GF) (hG := hG))) with
@@ -44,6 +46,15 @@ theorem github_com_Masterminds_semver_v3.opaqueInitsOk.model_proof :
   wp_start
   iapply HΦ
   ipureintro; trivial
+
+theorem github_com_Masterminds_semver_v3.initFuncsOk.model_proof :
+    model% (type_of% (_root_.Perennial.github_com.Masterminds.semver.v3.initFuncsOk (GF := GF) (hG := hG))) with [] := by
+  intro f hf
+  simp only [List.mem_cons, List.not_mem_nil, or_false] at hf
+  rcases hf with rfl | rfl <;>
+  · wp_start
+    iapply HΦ
+    ipureintro; trivial
 
 end proof
 

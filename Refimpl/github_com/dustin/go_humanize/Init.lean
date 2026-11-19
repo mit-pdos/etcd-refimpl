@@ -1,9 +1,10 @@
 /-
-`github_com/dustin/go_humanize`'s package-initialization axioms (`opaqueInitsOk`, etcd-grove's
-`Proof/github_com/dustin/go_humanize/Init.lean`), read in the model: the untranslated package-variable initializers are `initNoop`.
+`github_com/dustin/go_humanize`'s package-initialization axioms (`opaqueInitsOk`, `initFuncsOk`, etcd-grove's
+`Proof/github_com/dustin/go_humanize/Init.lean`), read in the model: the untranslated package-variable initializers are `initNoop`; its `init()`s are Go, translated, with empty bodies.
 -/
 module
 
+public import Refimpl.Gen.github_com.dustin.go_humanize
 public import Proof.github_com.dustin.go_humanize.Init
 public import Refimpl.Subst
 public import Refimpl.Common
@@ -25,6 +26,7 @@ variable [GooseExts] [GooseSemantics] [GooseInterp]
 variable [go_gctx : GoGlobalContext]
 variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
+variable [ref : _root_.Perennial.github_com.dustin.go_humanize.Refimpl]
 
 theorem github_com_dustin_go_humanize.opaqueInitsOk.model_proof :
     model% (type_of% (_root_.Perennial.github_com.dustin.go_humanize.opaqueInitsOk (GF := GF) (hG := hG))) with
@@ -68,6 +70,15 @@ theorem github_com_dustin_go_humanize.opaqueInitsOk.model_proof :
   wp_start
   iapply HΦ
   ipureintro; trivial
+
+theorem github_com_dustin_go_humanize.initFuncsOk.model_proof :
+    model% (type_of% (_root_.Perennial.github_com.dustin.go_humanize.initFuncsOk (GF := GF) (hG := hG))) with [] := by
+  intro f hf
+  simp only [List.mem_cons, List.not_mem_nil, or_false] at hf
+  rcases hf with rfl <;>
+  · wp_start
+    iapply HΦ
+    ipureintro; trivial
 
 end proof
 

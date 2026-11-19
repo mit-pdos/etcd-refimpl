@@ -13,6 +13,9 @@ namespace Model
 
 #model_check
   google_golang_org_grpc.opaqueInitsOk.model_proof
+  google_golang_org_grpc.initFuncsOk.model_proof
+
+#bound_check _root_.Perennial.google_golang_org.grpc.Refimpl
 
 end Model
 end EtcdGrove

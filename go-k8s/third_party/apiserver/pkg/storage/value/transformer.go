@@ -29,8 +29,8 @@ import (
 	"k8s.io/klog/v2"
 )
 
-func init() {
-	RegisterMetrics()
+func init() { // refimpl: empty (registers no metric); the real body is commented out below
+	//RegisterMetrics()
 }
 
 // Context is additional information that a storage transformation may need to verify the data at rest.

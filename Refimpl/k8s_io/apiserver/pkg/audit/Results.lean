@@ -13,6 +13,9 @@ namespace Model
 
 #model_check
   k8s_io_apiserver_pkg_audit.opaqueInitsOk.model_proof
+  k8s_io_apiserver_pkg_audit.initFuncsOk.model_proof
+
+#bound_check _root_.Perennial.k8s_io.apiserver.pkg.audit.Refimpl
 
 end Model
 end EtcdGrove

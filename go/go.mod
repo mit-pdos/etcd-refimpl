@@ -15,8 +15,10 @@ require (
 )
 
 require (
+	github.com/Masterminds/semver/v3 v3.5.0
 	github.com/beorn7/perks v1.0.1 // indirect
 	github.com/cespare/xxhash/v2 v2.3.0 // indirect
+	github.com/dustin/go-humanize v1.1.0
 	github.com/go-logr/logr v1.4.4 // indirect
 	github.com/go-logr/stdr v1.2.2 // indirect
 	github.com/grpc-ecosystem/go-grpc-middleware/v2 v2.3.4 // indirect
@@ -53,3 +55,7 @@ replace github.com/prometheus/client_golang => ./third_party/client_golang
 replace google.golang.org/grpc => ./third_party/grpc
 
 replace go.opentelemetry.io/contrib/instrumentation/google.golang.org/grpc/otelgrpc => ./third_party/otelgrpc
+
+replace github.com/Masterminds/semver/v3 => ./third_party/semver
+
+replace github.com/dustin/go-humanize => ./third_party/go_humanize

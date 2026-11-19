@@ -1,9 +1,10 @@
 /-
-`google_golang_org/grpc`'s package-initialization axioms (`opaqueInitsOk`, etcd-grove's
-`Proof/google_golang_org/grpc/Init.lean`), read in the model: the untranslated package-variable initializers are `initNoop`.
+`google_golang_org/grpc`'s package-initialization axioms (`opaqueInitsOk`, `initFuncsOk`, etcd-grove's
+`Proof/google_golang_org/grpc/Init.lean`), read in the model: the untranslated package-variable initializers are `initNoop`; its `init()`s are Go, translated, with empty bodies.
 -/
 module
 
+public import Refimpl.Gen.google_golang_org.grpc
 public import Proof.google_golang_org.grpc.Init
 public import Refimpl.Subst
 public import Refimpl.Common
@@ -25,6 +26,7 @@ variable [GooseExts] [GooseSemantics] [GooseInterp]
 variable [go_gctx : GoGlobalContext]
 variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
+variable [ref : _root_.Perennial.google_golang_org.grpc.Refimpl]
 
 theorem google_golang_org_grpc.opaqueInitsOk.model_proof :
     model% (type_of% (_root_.Perennial.google_golang_org.grpc.opaqueInitsOk (GF := GF) (hG := hG))) with
@@ -70,6 +72,15 @@ theorem google_golang_org_grpc.opaqueInitsOk.model_proof :
   wp_start
   iapply HΦ
   ipureintro; trivial
+
+theorem google_golang_org_grpc.initFuncsOk.model_proof :
+    model% (type_of% (_root_.Perennial.google_golang_org.grpc.initFuncsOk (GF := GF) (hG := hG))) with [] := by
+  intro f hf
+  simp only [List.mem_cons, List.not_mem_nil, or_false] at hf
+  rcases hf with rfl | rfl | rfl | rfl | rfl | rfl <;>
+  · wp_start
+    iapply HΦ
+    ipureintro; trivial
 
 end proof
 

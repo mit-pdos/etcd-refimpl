@@ -29,8 +29,8 @@ import (
 	"google.golang.org/grpc/grpclog/internal"
 )
 
-func init() {
-	SetLoggerV2(newLoggerV2())
+func init() { // refimpl: empty (installs no default logger; grpclog's names are untranslated); the real body is commented out below
+	//SetLoggerV2(newLoggerV2())
 }
 
 // V reports whether verbosity level l is at least the requested verbose level.

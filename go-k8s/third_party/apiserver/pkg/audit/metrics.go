@@ -22,7 +22,7 @@ import (
 
 	auditinternal "k8s.io/apiserver/pkg/apis/audit"
 	"k8s.io/component-base/metrics"
-	"k8s.io/component-base/metrics/legacyregistry"
+	_ "k8s.io/component-base/metrics/legacyregistry"
 	"k8s.io/klog/v2"
 )
 
@@ -77,11 +77,11 @@ var (
 	)
 )
 
-func init() {
-	legacyregistry.MustRegister(eventCounter)
-	legacyregistry.MustRegister(errorCounter)
-	legacyregistry.MustRegister(levelCounter)
-	legacyregistry.MustRegister(ApiserverAuditDroppedCounter)
+func init() { // refimpl: empty (registers no metric in the legacy registry); the real body is commented out below
+	//legacyregistry.MustRegister(eventCounter)
+	//legacyregistry.MustRegister(errorCounter)
+	//legacyregistry.MustRegister(levelCounter)
+	//legacyregistry.MustRegister(ApiserverAuditDroppedCounter)
 }
 
 // ObserveEvent updates the relevant prometheus metrics for the generated audit event.

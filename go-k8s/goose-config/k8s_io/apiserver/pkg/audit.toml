@@ -1,0 +1,9 @@
+# Types and names only: function and method bodies are axiomatized (project k8s-apiserver;
+# notes/k8s-etcd3-goose.md).
+translate = ["!*",
+  # etcd-refimpl: the reference implementation's init()s
+  "init.0", "init.1"]
+imports = ["!*"]
+
+# translate the definitions of all type declarations goose supports
+translate_types = true

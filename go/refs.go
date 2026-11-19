@@ -2,6 +2,8 @@
 package refs
 
 import (
+	_ "github.com/Masterminds/semver/v3"
+	_ "github.com/dustin/go-humanize"
 	_ "github.com/grpc-ecosystem/go-grpc-middleware/providers/prometheus"
 	_ "github.com/jonboulle/clockwork"
 	_ "github.com/prometheus/client_golang/prometheus"
@@ -10,7 +12,9 @@ import (
 	_ "go.opentelemetry.io/otel/trace"
 	_ "go.uber.org/zap"
 	_ "golang.org/x/time/rate"
+	_ "google.golang.org/grpc"
 	_ "google.golang.org/grpc/codes"
+	_ "google.golang.org/grpc/grpclog"
 	_ "google.golang.org/grpc/health"
 	_ "google.golang.org/grpc/health/grpc_health_v1"
 	_ "google.golang.org/grpc/metadata"

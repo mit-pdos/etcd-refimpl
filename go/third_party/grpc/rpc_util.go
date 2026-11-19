@@ -33,7 +33,7 @@ import (
 	"google.golang.org/grpc/credentials"
 	"google.golang.org/grpc/encoding"
 	"google.golang.org/grpc/encoding/proto"
-	"google.golang.org/grpc/internal"
+	_ "google.golang.org/grpc/internal"
 	"google.golang.org/grpc/internal/grpcutil"
 	"google.golang.org/grpc/internal/transport"
 	"google.golang.org/grpc/mem"
@@ -43,8 +43,8 @@ import (
 	"google.golang.org/grpc/status"
 )
 
-func init() {
-	internal.AcceptCompressors = acceptCompressors
+func init() { // refimpl: empty (sets none of grpc/internal's hooks, which only grpc's own code reads); the real body is commented out below
+	//internal.AcceptCompressors = acceptCompressors
 }
 
 // Compressor defines the interface gRPC uses to compress a message.

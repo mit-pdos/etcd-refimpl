@@ -133,8 +133,8 @@ generates (`Refimpl/<pkg>/Init.lean`; packages with function models are in the t
 | `encoding/base64` | `opaqueInitsOk` (2 vars) | 1/1 |  |
 | `encoding/hex` | `opaqueInitsOk` (1 var) | 1/1 |  |
 | `encoding/json` | `opaqueInitsOk` (4 vars), `initFuncsOk` (1 `init()`) | 1/2 |  |
-| `github.com/Masterminds/semver/v3` | `opaqueInitsOk` (11 vars), `initFuncsOk` (2 `init()`) | 1/2 |  |
-| `github.com/dustin/go-humanize` | `opaqueInitsOk` (35 vars), `initFuncsOk` (1 `init()`) | 1/2 |  |
+| `github.com/Masterminds/semver/v3` | `opaqueInitsOk` (11 vars), `initFuncsOk` (2 `init()`) | 2/2 |  |
+| `github.com/dustin/go-humanize` | `opaqueInitsOk` (35 vars), `initFuncsOk` (1 `init()`) | 2/2 |  |
 | `github.com/go-logr/logr` | `opaqueInitsOk` (5 vars) | 1/1 |  |
 | `github.com/spf13/pflag` | `opaqueInitsOk` (3 vars) | 1/1 |  |
 | `go.etcd.io/etcd/api/v3/authpb` | `opaqueInitsOk` (4 vars), `initFuncsOk` (1 `init()`) | 1/2 |  |
@@ -173,9 +173,9 @@ generates (`Refimpl/<pkg>/Init.lean`; packages with function models are in the t
 | `go.etcd.io/etcd/server/v3/storage/wal/walpb` | `opaqueInitsOk` (3 vars), `initFuncsOk` (1 `init()`) | 1/2 |  |
 | `golang.org/x/crypto/bcrypt` | `opaqueInitsOk` (5 vars) | 1/1 |  |
 | `golang.org/x/sys/unix` | `opaqueInitsOk` (11 vars) | 1/1 |  |
-| `google.golang.org/grpc` | `opaqueInitsOk` (37 vars), `initFuncsOk` (6 `init()`) | 1/2 |  |
+| `google.golang.org/grpc` | `opaqueInitsOk` (37 vars), `initFuncsOk` (6 `init()`) | 2/2 |  |
 | `google.golang.org/grpc/credentials` | `opaqueInitsOk` (3 vars) | 1/1 |  |
-| `google.golang.org/grpc/grpclog` | `opaqueInitsOk` (1 var), `initFuncsOk` (1 `init()`) | 1/2 |  |
+| `google.golang.org/grpc/grpclog` | `opaqueInitsOk` (1 var), `initFuncsOk` (1 `init()`) | 2/2 |  |
 | `google.golang.org/grpc/reflection` | `opaqueInitsOk` (1 var) | 1/1 |  |
 | `hash/crc32` | `opaqueInitsOk` (3 vars) | 1/1 |  |
 | `internal/bytealg` | `initFuncsOk` (1 `init()`) | 0/1 |  |
@@ -193,11 +193,11 @@ generates (`Refimpl/<pkg>/Init.lean`; packages with function models are in the t
 | `k8s.io/apimachinery/pkg/util/version` | `opaqueInitsOk` (2 vars) | 1/1 |  |
 | `k8s.io/apimachinery/pkg/util/wait` | `opaqueInitsOk` (8 vars) | 1/1 |  |
 | `k8s.io/apimachinery/pkg/watch` | `opaqueInitsOk` (6 vars) | 1/1 |  |
-| `k8s.io/apiserver/pkg/audit` | `opaqueInitsOk` (6 vars), `initFuncsOk` (2 `init()`) | 1/2 |  |
+| `k8s.io/apiserver/pkg/audit` | `opaqueInitsOk` (6 vars), `initFuncsOk` (2 `init()`) | 2/2 |  |
 | `k8s.io/apiserver/pkg/endpoints/request` | `opaqueInitsOk` (5 vars) | 1/1 |  |
 | `k8s.io/apiserver/pkg/features` | `opaqueInitsOk` (1 var) | 1/1 |  |
 | `k8s.io/apiserver/pkg/storage/feature` | `opaqueInitsOk` (3 vars) | 1/1 |  |
-| `k8s.io/apiserver/pkg/storage/value` | `opaqueInitsOk` (6 vars), `initFuncsOk` (1 `init()`) | 1/2 |  |
+| `k8s.io/apiserver/pkg/storage/value` | `opaqueInitsOk` (6 vars), `initFuncsOk` (1 `init()`) | 2/2 |  |
 | `k8s.io/apiserver/pkg/util/flowcontrol` | `opaqueInitsOk` (3 vars) | 1/1 |  |
 | `k8s.io/component-base/featuregate` | `opaqueInitsOk` (6 vars) | 1/1 |  |
 | `k8s.io/utils/clock` | `opaqueInitsOk` (2 vars) | 1/1 |  |

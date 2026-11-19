@@ -28,7 +28,7 @@ import (
 	"google.golang.org/grpc/balancer"
 	"google.golang.org/grpc/balancer/pickfirst"
 	"google.golang.org/grpc/codes"
-	"google.golang.org/grpc/internal"
+	_ "google.golang.org/grpc/internal"
 	"google.golang.org/grpc/internal/balancer/gracefulswitch"
 	internalserviceconfig "google.golang.org/grpc/internal/serviceconfig"
 	"google.golang.org/grpc/serviceconfig"
@@ -163,10 +163,10 @@ type jsonSC struct {
 	HealthCheckConfig   *healthCheckConfig
 }
 
-func init() {
-	internal.ParseServiceConfig = func(js string) *serviceconfig.ParseResult {
-		return parseServiceConfig(js, defaultMaxCallAttempts)
-	}
+func init() { // refimpl: empty (sets none of grpc/internal's hooks, which only grpc's own code reads); the real body is commented out below
+	//internal.ParseServiceConfig = func(js string) *serviceconfig.ParseResult {
+	//	return parseServiceConfig(js, defaultMaxCallAttempts)
+	//}
 }
 
 func parseServiceConfig(js string, maxAttempts int) *serviceconfig.ParseResult {
@@ -325,8 +325,8 @@ func newInt(b int) *int {
 	return &b
 }
 
-func init() {
-	internal.EqualServiceConfigForTesting = equalServiceConfig
+func init() { // refimpl: empty (sets none of grpc/internal's hooks, which only grpc's own code reads); the real body is commented out below
+	//internal.EqualServiceConfigForTesting = equalServiceConfig
 }
 
 // equalServiceConfig compares two configs. The rawJSONString field is ignored,

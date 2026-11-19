@@ -774,22 +774,22 @@ func (cc *ClientConn) waitForResolvedAddrs(ctx context.Context) (bool, error) {
 
 var emptyServiceConfig *ServiceConfig
 
-func init() {
-	cfg := parseServiceConfig("{}", defaultMaxCallAttempts)
-	if cfg.Err != nil {
-		panic(fmt.Sprintf("impossible error parsing empty service config: %v", cfg.Err))
-	}
-	emptyServiceConfig = cfg.Config.(*ServiceConfig)
-
-	internal.SubscribeToConnectivityStateChanges = func(cc *ClientConn, s grpcsync.Subscriber) func() {
-		return cc.csMgr.pubSub.Subscribe(s)
-	}
-	internal.EnterIdleModeForTesting = func(cc *ClientConn) {
-		cc.idlenessMgr.EnterIdleModeForTesting()
-	}
-	internal.ExitIdleModeForTesting = func(cc *ClientConn) {
-		cc.idlenessMgr.ExitIdleMode()
-	}
+func init() { // refimpl: empty (sets none of grpc/internal's hooks, which only grpc's own code reads); the real body is commented out below
+	//cfg := parseServiceConfig("{}", defaultMaxCallAttempts)
+	//if cfg.Err != nil {
+	//	panic(fmt.Sprintf("impossible error parsing empty service config: %v", cfg.Err))
+	//}
+	//emptyServiceConfig = cfg.Config.(*ServiceConfig)
+	//
+	//internal.SubscribeToConnectivityStateChanges = func(cc *ClientConn, s grpcsync.Subscriber) func() {
+	//	return cc.csMgr.pubSub.Subscribe(s)
+	//}
+	//internal.EnterIdleModeForTesting = func(cc *ClientConn) {
+	//	cc.idlenessMgr.EnterIdleModeForTesting()
+	//}
+	//internal.ExitIdleModeForTesting = func(cc *ClientConn) {
+	//	cc.idlenessMgr.ExitIdleMode()
+	//}
 }
 
 func (cc *ClientConn) maybeApplyDefaultServiceConfig() {

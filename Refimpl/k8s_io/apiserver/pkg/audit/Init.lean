@@ -1,9 +1,10 @@
 /-
-`k8s_io/apiserver/pkg/audit`'s package-initialization axioms (`opaqueInitsOk`, etcd-grove's
-`Proof/k8s_io/apiserver/pkg/audit/Init.lean`), read in the model: the untranslated package-variable initializers are `initNoop`.
+`k8s_io/apiserver/pkg/audit`'s package-initialization axioms (`opaqueInitsOk`, `initFuncsOk`, etcd-grove's
+`Proof/k8s_io/apiserver/pkg/audit/Init.lean`), read in the model: the untranslated package-variable initializers are `initNoop`; its `init()`s are Go, translated, with empty bodies.
 -/
 module
 
+public import Refimpl.Gen.k8s_io.apiserver.pkg.audit
 public import Proof.k8s_io.apiserver.pkg.audit.Init
 public import Refimpl.Subst
 public import Refimpl.Common
@@ -25,6 +26,7 @@ variable [GooseExts] [GooseSemantics] [GooseInterp]
 variable [go_gctx : GoGlobalContext]
 variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
+variable [ref : _root_.Perennial.k8s_io.apiserver.pkg.audit.Refimpl]
 
 theorem k8s_io_apiserver_pkg_audit.opaqueInitsOk.model_proof :
     model% (type_of% (_root_.Perennial.k8s_io.apiserver.pkg.audit.opaqueInitsOk (GF := GF) (hG := hG))) with
@@ -39,6 +41,15 @@ theorem k8s_io_apiserver_pkg_audit.opaqueInitsOk.model_proof :
   wp_start
   iapply HΦ
   ipureintro; trivial
+
+theorem k8s_io_apiserver_pkg_audit.initFuncsOk.model_proof :
+    model% (type_of% (_root_.Perennial.k8s_io.apiserver.pkg.audit.initFuncsOk (GF := GF) (hG := hG))) with [] := by
+  intro f hf
+  simp only [List.mem_cons, List.not_mem_nil, or_false] at hf
+  rcases hf with rfl | rfl <;>
+  · wp_start
+    iapply HΦ
+    ipureintro; trivial
 
 end proof
 

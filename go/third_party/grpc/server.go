@@ -38,7 +38,7 @@ import (
 	"google.golang.org/grpc/credentials"
 	"google.golang.org/grpc/encoding"
 	"google.golang.org/grpc/encoding/proto"
-	estats "google.golang.org/grpc/experimental/stats"
+	_ "google.golang.org/grpc/experimental/stats"
 	"google.golang.org/grpc/grpclog"
 	"google.golang.org/grpc/internal"
 	"google.golang.org/grpc/internal/binarylog"
@@ -69,27 +69,27 @@ const (
 	listenerAddressForServeHTTP = "listenerAddressForServeHTTP"
 )
 
-func init() {
-	internal.GetServerCredentials = func(srv *Server) credentials.TransportCredentials {
-		return srv.opts.creds
-	}
-	internal.IsRegisteredMethod = func(srv *Server, method string) bool {
-		return srv.isRegisteredMethod(method)
-	}
-	internal.ServerFromContext = serverFromContext
-	internal.AddGlobalServerOptions = func(opt ...ServerOption) {
-		globalServerOptions = append(globalServerOptions, opt...)
-	}
-	internal.ClearGlobalServerOptions = func() {
-		globalServerOptions = nil
-	}
-	internal.BinaryLogger = binaryLogger
-	internal.JoinServerOptions = newJoinServerOption
-	internal.BufferPool = bufferPool
-	internal.MetricsRecorderForServer = func(srv *Server) estats.MetricsRecorder {
-		return istats.NewMetricsRecorderList(srv.opts.statsHandlers)
-	}
-	internal.XDSFilterWrapperOption = xdsFilterWrapperOption
+func init() { // refimpl: empty (sets none of grpc/internal's hooks, which only grpc's own code reads); the real body is commented out below
+	//internal.GetServerCredentials = func(srv *Server) credentials.TransportCredentials {
+	//	return srv.opts.creds
+	//}
+	//internal.IsRegisteredMethod = func(srv *Server, method string) bool {
+	//	return srv.isRegisteredMethod(method)
+	//}
+	//internal.ServerFromContext = serverFromContext
+	//internal.AddGlobalServerOptions = func(opt ...ServerOption) {
+	//	globalServerOptions = append(globalServerOptions, opt...)
+	//}
+	//internal.ClearGlobalServerOptions = func() {
+	//	globalServerOptions = nil
+	//}
+	//internal.BinaryLogger = binaryLogger
+	//internal.JoinServerOptions = newJoinServerOption
+	//internal.BufferPool = bufferPool
+	//internal.MetricsRecorderForServer = func(srv *Server) estats.MetricsRecorder {
+	//	return istats.NewMetricsRecorderList(srv.opts.statsHandlers)
+	//}
+	//internal.XDSFilterWrapperOption = xdsFilterWrapperOption
 }
 
 var statusOK = status.New(codes.OK, "")

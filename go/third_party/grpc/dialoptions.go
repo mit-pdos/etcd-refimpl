@@ -43,25 +43,25 @@ const (
 	defaultMaxCallAttempts = 5
 )
 
-func init() {
-	internal.AddGlobalDialOptions = func(opt ...DialOption) {
-		globalDialOptions = append(globalDialOptions, opt...)
-	}
-	internal.ClearGlobalDialOptions = func() {
-		globalDialOptions = nil
-	}
-	internal.AddGlobalPerTargetDialOptions = func(opt any) {
-		if ptdo, ok := opt.(perTargetDialOption); ok {
-			globalPerTargetDialOptions = append(globalPerTargetDialOptions, ptdo)
-		}
-	}
-	internal.ClearGlobalPerTargetDialOptions = func() {
-		globalPerTargetDialOptions = nil
-	}
-	internal.WithBinaryLogger = withBinaryLogger
-	internal.JoinDialOptions = newJoinDialOption
-	internal.DisableGlobalDialOptions = newDisableGlobalDialOptions
-	internal.WithBufferPool = withBufferPool
+func init() { // refimpl: empty (sets none of grpc/internal's hooks, which only grpc's own code reads); the real body is commented out below
+	//internal.AddGlobalDialOptions = func(opt ...DialOption) {
+	//	globalDialOptions = append(globalDialOptions, opt...)
+	//}
+	//internal.ClearGlobalDialOptions = func() {
+	//	globalDialOptions = nil
+	//}
+	//internal.AddGlobalPerTargetDialOptions = func(opt any) {
+	//	if ptdo, ok := opt.(perTargetDialOption); ok {
+	//		globalPerTargetDialOptions = append(globalPerTargetDialOptions, ptdo)
+	//	}
+	//}
+	//internal.ClearGlobalPerTargetDialOptions = func() {
+	//	globalPerTargetDialOptions = nil
+	//}
+	//internal.WithBinaryLogger = withBinaryLogger
+	//internal.JoinDialOptions = newJoinDialOption
+	//internal.DisableGlobalDialOptions = newDisableGlobalDialOptions
+	//internal.WithBufferPool = withBufferPool
 }
 
 // dialOptions configure a Dial call. dialOptions are set by the DialOption
