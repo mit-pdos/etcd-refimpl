@@ -41,4 +41,5 @@ replace github.com/grpc-ecosystem/go-grpc-middleware/providers/prometheus => ./t
 replace go.opentelemetry.io/otel/trace => ./third_party/otel_trace
 
 replace github.com/xiang90/probing => ./third_party/probing
+
 replace github.com/prometheus/client_golang => ./third_party/client_golang
