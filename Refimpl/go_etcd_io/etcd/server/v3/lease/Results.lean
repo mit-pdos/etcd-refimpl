@@ -13,6 +13,9 @@ namespace Model
 
 #model_check
   go_etcd_io_etcd_server_v3_lease.opaqueInitsOk.model_proof
+  go_etcd_io_etcd_server_v3_lease.initFuncsOk.model_proof
+
+#bound_check _root_.Perennial.go_etcd_io.etcd.server.v3.lease.Refimpl
 
 end Model
 end EtcdGrove

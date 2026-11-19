@@ -124,7 +124,14 @@ generates (`Refimpl/<pkg>/Init.lean`; packages with function models are in the t
   errors, the server's prometheus metrics, ...), which these models do not cover.
 - `errorsNewVarsInit`: each `var X = errors.New(msg)` is Go's (`Refimpl/ErrorsNewVar.lean`).
 - `initFuncsOk`: the package's `init()`s are Go, translated from a copy of the package's source
-  (`go/third_party/`, `go-k8s/third_party/`) with empty bodies (`// refimpl:`, the line count kept).
+  (`go/third_party/`, `go-k8s/third_party/`) with empty bodies (`// refimpl:` on the `func init()`
+  line, the real body commented out line by line, so that every line number is the real one; an
+  import left unused is made blank, so that the package still imports it). As the post is `True`,
+  no other axiom can rely on what a real `init()` does. etcd's own packages are in
+  `go/third_party/etcd/`: the five Go modules (`api`, `client/pkg`, `client/v3`, `pkg`, `server`)
+  of the fork etcd-grove's `etcd` project pins (`upamanyus/etcd` `8c28a4296`), without tests; its
+  prophecy patches (`etc/proph-patches/etcd/`) touch only `client/v3/kubernetes`, which is not
+  translated here, and are not applied.
 
 | package | axioms | modelled | notes |
 |---|---|---|---|
@@ -137,40 +144,40 @@ generates (`Refimpl/<pkg>/Init.lean`; packages with function models are in the t
 | `github.com/dustin/go-humanize` | `opaqueInitsOk` (35 vars), `initFuncsOk` (1 `init()`) | 2/2 |  |
 | `github.com/go-logr/logr` | `opaqueInitsOk` (5 vars) | 1/1 |  |
 | `github.com/spf13/pflag` | `opaqueInitsOk` (3 vars) | 1/1 |  |
-| `go.etcd.io/etcd/api/v3/authpb` | `opaqueInitsOk` (4 vars), `initFuncsOk` (1 `init()`) | 1/2 |  |
-| `go.etcd.io/etcd/api/v3/etcdserverpb` | `opaqueInitsOk` (24 vars), `initFuncsOk` (3 `init()`) | 1/2 |  |
-| `go.etcd.io/etcd/api/v3/membershippb` | `opaqueInitsOk` (3 vars), `initFuncsOk` (1 `init()`) | 1/2 |  |
-| `go.etcd.io/etcd/api/v3/mvccpb` | `opaqueInitsOk` (6 vars), `initFuncsOk` (1 `init()`) | 1/2 |  |
+| `go.etcd.io/etcd/api/v3/authpb` | `opaqueInitsOk` (4 vars), `initFuncsOk` (1 `init()`) | 2/2 |  |
+| `go.etcd.io/etcd/api/v3/etcdserverpb` | `opaqueInitsOk` (24 vars), `initFuncsOk` (3 `init()`) | 2/2 |  |
+| `go.etcd.io/etcd/api/v3/membershippb` | `opaqueInitsOk` (3 vars), `initFuncsOk` (1 `init()`) | 2/2 |  |
+| `go.etcd.io/etcd/api/v3/mvccpb` | `opaqueInitsOk` (6 vars), `initFuncsOk` (1 `init()`) | 2/2 |  |
 | `go.etcd.io/etcd/api/v3/v3rpc/rpctypes` | `opaqueInitsOk` (96 vars) | 1/1 |  |
-| `go.etcd.io/etcd/api/v3/version` | `opaqueInitsOk` (13 vars), `initFuncsOk` (1 `init()`) | 1/2 |  |
+| `go.etcd.io/etcd/api/v3/version` | `opaqueInitsOk` (13 vars), `initFuncsOk` (1 `init()`) | 2/2 |  |
 | `go.etcd.io/etcd/client/pkg/v3/logutil` | `opaqueInitsOk` (3 vars) | 1/1 |  |
 | `go.etcd.io/etcd/client/pkg/v3/transport` | `opaqueInitsOk` (1 var) | 1/1 |  |
 | `go.etcd.io/etcd/client/pkg/v3/types` | `opaqueInitsOk` (2 vars) | 1/1 |  |
-| `go.etcd.io/etcd/client/v3` | `opaqueInitsOk` (7 vars), `initFuncsOk` (1 `init()`) | 1/2 |  |
+| `go.etcd.io/etcd/client/v3` | `opaqueInitsOk` (7 vars), `initFuncsOk` (1 `init()`) | 2/2 |  |
 | `go.etcd.io/etcd/pkg/v3/featuregate` | `opaqueInitsOk` (3 vars) | 1/1 |  |
 | `go.etcd.io/etcd/pkg/v3/ioutil` | `opaqueInitsOk` (2 vars) | 1/1 |  |
-| `go.etcd.io/etcd/server/v3/auth` | `opaqueInitsOk` (9 vars), `initFuncsOk` (1 `init()`) | 1/2 |  |
-| `go.etcd.io/etcd/server/v3/etcdserver` | `opaqueInitsOk` (9 vars), `initFuncsOk` (3 `init()`) | 1/2 |  |
-| `go.etcd.io/etcd/server/v3/etcdserver/api` | `opaqueInitsOk` (1 var), `initFuncsOk` (1 `init()`) | 1/2 |  |
-| `go.etcd.io/etcd/server/v3/etcdserver/api/membership` | `opaqueInitsOk` (4 vars), `errorsNewVarsInit` (6 vars), `initFuncsOk` (1 `init()`) | 2/3 |  |
-| `go.etcd.io/etcd/server/v3/etcdserver/api/rafthttp` | `opaqueInitsOk` (4 vars), `errorsNewVarsInit` (6 vars), `initFuncsOk` (1 `init()`) | 2/3 |  |
-| `go.etcd.io/etcd/server/v3/etcdserver/api/snap` | `opaqueInitsOk` (6 vars), `initFuncsOk` (1 `init()`) | 1/2 |  |
+| `go.etcd.io/etcd/server/v3/auth` | `opaqueInitsOk` (9 vars), `initFuncsOk` (1 `init()`) | 2/2 |  |
+| `go.etcd.io/etcd/server/v3/etcdserver` | `opaqueInitsOk` (9 vars), `initFuncsOk` (3 `init()`) | 2/2 |  |
+| `go.etcd.io/etcd/server/v3/etcdserver/api` | `opaqueInitsOk` (1 var), `initFuncsOk` (1 `init()`) | 2/2 |  |
+| `go.etcd.io/etcd/server/v3/etcdserver/api/membership` | `opaqueInitsOk` (4 vars), `errorsNewVarsInit` (6 vars), `initFuncsOk` (1 `init()`) | 3/3 |  |
+| `go.etcd.io/etcd/server/v3/etcdserver/api/rafthttp` | `opaqueInitsOk` (4 vars), `errorsNewVarsInit` (6 vars), `initFuncsOk` (1 `init()`) | 3/3 |  |
+| `go.etcd.io/etcd/server/v3/etcdserver/api/snap` | `opaqueInitsOk` (6 vars), `initFuncsOk` (1 `init()`) | 2/2 |  |
 | `go.etcd.io/etcd/server/v3/etcdserver/api/v3discovery` | `opaqueInitsOk` (7 vars) | 1/1 |  |
-| `go.etcd.io/etcd/server/v3/etcdserver/api/v3rpc` | `opaqueInitsOk` (2 vars), `initFuncsOk` (1 `init()`) | 1/2 |  |
-| `go.etcd.io/etcd/server/v3/etcdserver/apply` | `initFuncsOk` (1 `init()`) | 0/1 |  |
+| `go.etcd.io/etcd/server/v3/etcdserver/api/v3rpc` | `opaqueInitsOk` (2 vars), `initFuncsOk` (1 `init()`) | 2/2 |  |
+| `go.etcd.io/etcd/server/v3/etcdserver/apply` | `initFuncsOk` (1 `init()`) | 1/1 |  |
 | `go.etcd.io/etcd/server/v3/etcdserver/errors` | `errorsNewVarsInit` (23 vars) | 1/1 |  |
-| `go.etcd.io/etcd/server/v3/etcdserver/txn` | `opaqueInitsOk` (2 vars), `initFuncsOk` (1 `init()`) | 1/2 |  |
+| `go.etcd.io/etcd/server/v3/etcdserver/txn` | `opaqueInitsOk` (2 vars), `initFuncsOk` (1 `init()`) | 2/2 |  |
 | `go.etcd.io/etcd/server/v3/etcdserver/version` | `opaqueInitsOk` (3 vars) | 1/1 |  |
 | `go.etcd.io/etcd/server/v3/features` | `opaqueInitsOk` (1 var) | 1/1 |  |
-| `go.etcd.io/etcd/server/v3/lease` | `opaqueInitsOk` (6 vars), `initFuncsOk` (1 `init()`) | 1/2 |  |
+| `go.etcd.io/etcd/server/v3/lease` | `opaqueInitsOk` (6 vars), `initFuncsOk` (1 `init()`) | 2/2 |  |
 | `go.etcd.io/etcd/server/v3/lease/leasehttp` | `opaqueInitsOk` (3 vars) | 1/1 |  |
-| `go.etcd.io/etcd/server/v3/lease/leasepb` | `opaqueInitsOk` (3 vars), `initFuncsOk` (1 `init()`) | 1/2 |  |
-| `go.etcd.io/etcd/server/v3/storage` | `opaqueInitsOk` (3 vars), `initFuncsOk` (1 `init()`) | 1/2 |  |
-| `go.etcd.io/etcd/server/v3/storage/backend` | `opaqueInitsOk` (4 vars), `initFuncsOk` (1 `init()`) | 1/2 |  |
-| `go.etcd.io/etcd/server/v3/storage/mvcc` | `opaqueInitsOk` (9 vars), `initFuncsOk` (1 `init()`) | 1/2 |  |
-| `go.etcd.io/etcd/server/v3/storage/schema` | `opaqueInitsOk` (19 vars), `initFuncsOk` (1 `init()`) | 1/2 |  |
-| `go.etcd.io/etcd/server/v3/storage/wal` | `initFuncsOk` (1 `init()`) | 0/1 |  |
-| `go.etcd.io/etcd/server/v3/storage/wal/walpb` | `opaqueInitsOk` (3 vars), `initFuncsOk` (1 `init()`) | 1/2 |  |
+| `go.etcd.io/etcd/server/v3/lease/leasepb` | `opaqueInitsOk` (3 vars), `initFuncsOk` (1 `init()`) | 2/2 |  |
+| `go.etcd.io/etcd/server/v3/storage` | `opaqueInitsOk` (3 vars), `initFuncsOk` (1 `init()`) | 2/2 |  |
+| `go.etcd.io/etcd/server/v3/storage/backend` | `opaqueInitsOk` (4 vars), `initFuncsOk` (1 `init()`) | 2/2 |  |
+| `go.etcd.io/etcd/server/v3/storage/mvcc` | `opaqueInitsOk` (9 vars), `initFuncsOk` (1 `init()`) | 2/2 |  |
+| `go.etcd.io/etcd/server/v3/storage/schema` | `opaqueInitsOk` (19 vars), `initFuncsOk` (1 `init()`) | 2/2 |  |
+| `go.etcd.io/etcd/server/v3/storage/wal` | `initFuncsOk` (1 `init()`) | 1/1 |  |
+| `go.etcd.io/etcd/server/v3/storage/wal/walpb` | `opaqueInitsOk` (3 vars), `initFuncsOk` (1 `init()`) | 2/2 |  |
 | `golang.org/x/crypto/bcrypt` | `opaqueInitsOk` (5 vars) | 1/1 |  |
 | `golang.org/x/sys/unix` | `opaqueInitsOk` (11 vars) | 1/1 |  |
 | `google.golang.org/grpc` | `opaqueInitsOk` (37 vars), `initFuncsOk` (6 `init()`) | 2/2 |  |

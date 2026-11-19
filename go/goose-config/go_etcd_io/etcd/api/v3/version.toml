@@ -1,0 +1,9 @@
+# Types and names only: function and method bodies are axiomatized (the server's `start` logs
+# `version.Version` and `version.Cluster(...)`; the request path's unit 4c).
+translate = ["!*",
+  # etcd-refimpl: the reference implementation's init()s
+  "init.0"]
+imports = ["!*"]
+
+# translate the definitions of all type declarations goose supports
+translate_types = true

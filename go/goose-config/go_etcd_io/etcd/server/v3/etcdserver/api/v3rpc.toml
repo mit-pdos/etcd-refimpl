@@ -1,0 +1,104 @@
+# The gRPC KV service (key.go), with bodies: NewKVServer, the handlers, the request checks
+# (checkRangeRequest, ..., checkIntervals, checkRequestOp) and the stream wrapper's Send;
+# header.go (the response header's fill) and util.go's togRPCError, with bodies. The error
+# map toGRPCErrorMap (a map literal over sixty error variables of seven packages) and the
+# rest of the package (the other services, the interceptors, metrics.go's init) are names
+# only.
+translate = ["!*",
+  # key.go
+  "kvServer", "NewKVServer", "kvServer.Range", "kvServer.RangeStream", "kvServer.Put",
+  "kvServer.DeleteRange", "kvServer.Txn", "kvServer.Compact",
+  "headerFillingRangeStream", "headerFillingRangeStream.Send",
+  "checkRangeRequest", "checkRangeStreamRequest", "checkPutRequest", "checkDeleteRequest",
+  "checkTxnRequest", "checkIntervals", "checkRequestOp",
+  # header.go
+  "header", "newHeader", "header.fill", "header.fillWithoutRevision",
+  # util.go
+  "togRPCError", "isRPCSupportedForLearner",
+  # unit P3b: quota.go's KV wrapper (the quota check, the NOSPACE alarm) and interceptor.go's
+  # unary interceptors (logUnaryRequestStats names only)
+  "quotaKVServer", "quotaAlarmer", "quotaAlarmer.check", "NewQuotaKVServer", "quotaKVServer.Put",
+  "quotaKVServer.Txn", "quotaKVServer.Range", "quotaKVServer.DeleteRange", "newBackendQuota",
+  # the client's `kv.Compact` (2026-11-01): the wrapper's promoted `Compact`
+  "quotaKVServer.Compact",
+  "newUnaryInterceptor", "newLogUnaryInterceptor",
+  # the watch slice's unit W-S: watch.go with bodies (the metrics and isClientCtxErr names only)
+  "watchServer", "NewWatchServer", "GetProgressReportInterval", "SetProgressReportInterval",
+  "serverWatchStream", "watchServer.Watch", "serverWatchStream.isWatchPermitted",
+  "serverWatchStream.recvLoop", "serverWatchStream.sendLoop", "IsCreateEvent", "sendFragments",
+  "serverWatchStream.close", "serverWatchStream.newResponseHeader", "filterNoDelete",
+  "filterNoPut", "FiltersFromRequest", "minWatchProgressInterval", "ctrlStreamBufLen",
+  "progressReportInterval", "progressReportIntervalMu",
+  # the watch slice's unit W-W: interceptor.go's stream interceptor
+  "newStreamInterceptor", "monitorLeader", "streamsMap", "cancellableContext",
+  "newCancellableContext", "cancellableContext.Cancel", "cancellableContext.Err",
+  "serverStreamWithCtx", "serverStreamWithCtx.Context", "maxNoLeaderCnt", "snapshotMethod",
+  # k8s 7f-4: the wrapper's promoted methods (the require-leader branch's context and stream: the
+  # embedded `WithCancel` child's `Deadline`/`Done`/`Value`, the embedded raw stream's
+  # `RecvMsg`/`SendMsg`, which the generated handler calls)
+  "cancellableContext.Deadline", "cancellableContext.Done", "cancellableContext.Value",
+  "serverStreamWithCtx.RecvMsg", "serverStreamWithCtx.SendMsg",
+  # item 4 (server start): grpc.go's Server and getServerMetrics, the constructors of the other
+  # services it registers, the health notifier
+  "Server", "getServerMetrics", "maxSendBytes", "metricsServerLock", "metricsServerCached",
+  "codec", "NewQuotaLeaseServer", "NewLeaseServer", "NewClusterServer", "NewAuthServer",
+  "NewMaintenanceServer", "newHealthNotifier", "healthNotifier.startServe", "allGRPCServices",
+  # the client lease (item 1, branch `lease-client`): lease.go's unary handlers and the quota
+  # wrapper's (not `LeaseKeepAlive`: it needs the server's `lease` package, not imported);
+  # the wrapper's promoted `LeaseRevoke` (the embedded service's, as `quotaKVServer.Range`), what
+  # `_Lease_LeaseRevoke_Handler` calls on the registered `*quotaLeaseServer` (stage (c))
+  "LeaseServer.LeaseGrant", "LeaseServer.LeaseRevoke", "quotaLeaseServer.LeaseGrant",
+  "quotaLeaseServer.LeaseRevoke",
+  # the lease rows at the gRPC level (item 6, branch `lease-grpc`): the read handlers, over the
+  # server's lease package (`lease.ErrLeaseNotFound`)
+  "LeaseServer.LeaseTimeToLive", "LeaseServer.LeaseLeases",
+  # the closed lease example (2026-11-02): the wrapper's promoted reads, what
+  # `_Lease_LeaseTimeToLive_Handler` and `_Lease_LeaseLeases_Handler` call on the `*quotaLeaseServer`
+  "quotaLeaseServer.LeaseTimeToLive", "quotaLeaseServer.LeaseLeases",
+  # the keep-alive stream (item 6's second stage, branch `lease-keepalive`)
+  "LeaseServer.LeaseKeepAlive", "LeaseServer.leaseKeepAlive",
+  # the auth plan's A2 (2026-10-23): auth.go's AuthAdmin (the API layer's admin and
+  # authenticated-user guards) and maintenance.go's guarded wrappers (the inner
+  # maintenanceServer methods stay names only: the wrappers' specs take their triples)
+  "AuthAdmin.isPermitted", "AuthAdmin.requireAuthInfo",
+  "authMaintenanceServer.isPermitted", "authMaintenanceServer.requireAuthInfo",
+  "authMaintenanceServer.Defragment", "authMaintenanceServer.Snapshot",
+  "authMaintenanceServer.Hash", "authMaintenanceServer.HashKV", "authMaintenanceServer.Alarm",
+  "authMaintenanceServer.Status", "authMaintenanceServer.MoveLeader",
+  "authMaintenanceServer.Downgrade",
+  # the auth plan's A3, the API layer (2026-10-24): auth.go's AuthServer wrappers (each calls
+  # the server's method of the same name through the Authenticator interface, then togRPCError)
+  "AuthServer.AuthEnable", "AuthServer.AuthDisable", "AuthServer.AuthStatus",
+  "AuthServer.Authenticate", "AuthServer.RoleAdd", "AuthServer.RoleDelete", "AuthServer.RoleGet",
+  "AuthServer.RoleList", "AuthServer.RoleRevokePermission", "AuthServer.RoleGrantPermission",
+  "AuthServer.UserAdd", "AuthServer.UserDelete", "AuthServer.UserGet", "AuthServer.UserList",
+  "AuthServer.UserGrantRole", "AuthServer.UserRevokeRole", "AuthServer.UserChangePassword",
+  # etcd-refimpl: the reference implementation's init()s
+  "init.0"]
+imports = ["!*", "context", "errors", "time", "unicode/utf8", "go.uber.org/zap",
+  "google.golang.org/grpc", "google.golang.org/grpc/metadata",
+  "go.etcd.io/etcd/server/v3/storage", "go.etcd.io/etcd/client/pkg/v3/types",
+  "go.etcd.io/etcd/server/v3/etcdserver/api", "go.etcd.io/raft/v3",
+  "github.com/prometheus/client_golang/prometheus",
+  "google.golang.org/grpc/codes", "google.golang.org/grpc/status",
+  "go.etcd.io/etcd/api/v3/etcdserverpb", "go.etcd.io/etcd/api/v3/v3rpc/rpctypes",
+  "go.etcd.io/etcd/pkg/v3/adt", "go.etcd.io/etcd/server/v3/etcdserver",
+  "go.etcd.io/etcd/server/v3/etcdserver/apply", "go.etcd.io/etcd/server/v3/etcdserver/txn",
+  "go.etcd.io/etcd/server/v3/auth",
+  # item 6: lease.go's read handlers
+  "go.etcd.io/etcd/server/v3/lease",
+  # watch.go
+  "io", "math/rand", "sync", "go.opentelemetry.io/otel/attribute", "go.opentelemetry.io/otel/trace",
+  "google.golang.org/protobuf/proto", "go.etcd.io/etcd/api/v3/mvccpb",
+  "go.etcd.io/etcd/client/pkg/v3/verify", "go.etcd.io/etcd/client/v3",
+  "go.etcd.io/etcd/pkg/v3/traceutil", "go.etcd.io/etcd/server/v3/storage/mvcc",
+  # grpc.go (item 4, the server start): the options' and the registered services' packages
+  "crypto/tls", "math", "github.com/grpc-ecosystem/go-grpc-middleware/providers/prometheus",
+  "go.opentelemetry.io/contrib/instrumentation/google.golang.org/grpc/otelgrpc",
+  "google.golang.org/grpc/health", "google.golang.org/grpc/health/grpc_health_v1",
+  "go.etcd.io/etcd/client/v3/credentials", "go.etcd.io/etcd/server/v3/features",
+  "go.etcd.io/etcd/server/v3/etcdserver/version", "go.etcd.io/etcd/server/v3/storage/backend",
+  "go.etcd.io/etcd/server/v3/config"]
+
+# translate the definitions of all type declarations goose supports
+translate_types = true

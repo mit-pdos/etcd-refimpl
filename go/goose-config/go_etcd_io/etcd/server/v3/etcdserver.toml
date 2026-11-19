@@ -1,0 +1,152 @@
+# The apply thread's handling of the consistent index (server.go), with bodies: the
+# backend's post-lock hook, the apply loop and the entry applier, and the types they
+# use; the raft wrapper (raft.go): the Ready loop and its helpers; and the request path's
+# KV entry points (v3_server.go: Range, Put, DeleteRange,
+# Txn, the proposal and its wait, the serialized read) with what they call. The rest of
+# the package is names only.
+translate = ["!*", "EtcdServer.Logger", "EtcdServer.isLeader", "EtcdServer.MemberID", "EtcdServer.Lead", "EtcdServer.getLead", "EtcdServer.getTxPostLockInsideApplyHook", "EtcdServer.apply", "EtcdServer.applyEntryNormal", "EtcdServer.applyEntries", "EtcdServer.setAppliedIndex", "EtcdServer.setTerm", "EtcdServer", "raftNode", "raftNodeConfig", "etcdProgress", "toApply",
+  # the raft wrapper (raft.go): the Ready loop and its helpers
+  "raftReadyHandler", "raftNode.tick", "raftNode.getLatestTickTs", "raftNode.start",
+  "updateCommittedIndex", "raftNode.processMessages", "raftNode.apply", "raftNode.stop",
+  "raftNode.onStop", "raftNode.advanceTicks", "raftNode.ReadState", "maxInFlightMsgSnap",
+  "raftNode.Ready", "raftNode.Advance", "raftNode.Tick", "raftNode.Stop",
+  "raftNodeConfig.Ready", "raftNodeConfig.Advance", "raftNodeConfig.Tick", "raftNodeConfig.Stop",
+  # the request path (v3_server.go, tracing.go, util.go, interface.go, server.go): the KV
+  # entry points, the proposal and its wait, the serialized read, and what they call
+  "EtcdServer.Range", "EtcdServer.Put", "EtcdServer.DeleteRange", "EtcdServer.Txn",
+  # (the spec-first pilot, 2026-10-27: the auto-compactor's Compactable)
+  "EtcdServer.Compact",
+  "EtcdServer.raftRequest", "EtcdServer.doSerialize", "EtcdServer.processInternalRaftRequestOnce",
+  "getRequestType", "exceedsRequestLimit", "isPriorityRequest", "EtcdServer.parseProposeCtxErr",
+  "EtcdServer.AuthInfoFromCtx", "EtcdServer.newHeader", "EtcdServer.KV", "EtcdServer.AuthStore",
+  "EtcdServer.Cluster", "EtcdServer.getAppliedIndex", "EtcdServer.getCommittedIndex",
+  "EtcdServer.getTerm", "EtcdServer.Term", "EtcdServer.Leader", "EtcdServer.FeatureEnabled",
+  # (D14i, 2026-10-17: the applier's `SnapshotServer` contract)
+  "EtcdServer.ForceSnapshot",
+  # (D43 M4, 2026-10-26) the request path's learner check, over the cluster's (until then names
+  # only, an axiom)
+  "EtcdServer.IsLearner",
+  # (srvBuildGap, 2026-10-17: `start`'s `clusterVersionOk` from the cluster's `Version` contract)
+  "EtcdServer.ClusterVersion",
+  "EtcdServer.LinearizableReadNotify",
+  "firstCompareKey", "firstOpKey", "firstOpType", "firstOpLease",
+  "maxGapBetweenApplyAndCommitIndex", "maxNormalGap", "maxPriorityGap", "traceThreshold",
+  "RaftKV",
+  # raft.Node's Propose, promoted through raftNode's embedded raftNodeConfig (goose's
+  # MethodUnfold wrappers down to the interface field Node)
+  "raftNode.Propose", "raftNodeConfig.Propose",
+  # the read loop's server interface (interface.go, server.go; the request path's unit 4a:
+  # translated, proved in 4b) and raft.Node's ReadIndex, promoted as Propose
+  "EtcdServer.ApplyWait", "EtcdServer.Done", "EtcdServer.LeaderChanged",
+  "EtcdServer.NextRequestID", "EtcdServer.RequestTimeout", "EtcdServer.Stopping",
+  "EtcdServer.FirstCommitInTermNotify", "EtcdServer.AppliedIndex", "EtcdServer.CommittedIndex",
+  "raftNode.ReadIndex", "raftNodeConfig.ReadIndex",
+  # the apply loop (server.go; the request path's unit 4b): applyAll, the snapshot it applies
+  # (proved under raft's no-snapshot contract), the backend getter, the snapshot trigger
+  "EtcdServer.applyAll", "EtcdServer.applySnapshot", "EtcdServer.Backend",
+  "EtcdServer.snapshotIfNeededAndCompactRaftLog", "EtcdServer.shouldSnapshotToDisk",
+  "EtcdServer.compactRaftLog",
+  # (D22 J4b, 2026-10-27) the snapshot itself and its consistent-index check
+  "EtcdServer.snapshot", "verifyConsistentIndexIsLatest",
+  "EtcdServer.shouldSnapshotToMemory", "memorySnapshotCount",
+  # the server's goroutines (server.go; the request path's unit 4c): `start`, which builds the
+  # read loop and the registries and spawns `run`; `run`, the apply loop over the raft
+  # wrapper's `applyc` with the FIFO scheduler and the ready handler; `Start` and `GoAttach`;
+  # the committed index's and the leader's setters the ready handler calls
+  "EtcdServer.run", "EtcdServer.start", "EtcdServer.Start", "EtcdServer.GoAttach",
+  # (the restart plan R2b-2, 2026-11-02) the stop: `HardStop` and the shutdown's `Cleanup`
+  "EtcdServer.HardStop", "EtcdServer.Cleanup",
+  "EtcdServer.setCommittedIndex", "EtcdServer.setLead", "DefaultSnapshotCount",
+  "DefaultSnapshotCatchUpEntries",
+  # the proposal's error classification's connectivity queries (util.go; unit P1b, 2026-10-14)
+  "isConnectedSince", "isConnectedToQuorumSince", "numConnectedSince", "quorum",
+  # the watch slice's unit W-S: the watch server's getter of the watchable KV (v3_server.go)
+  "EtcdServer.Watchable",
+  # the interceptors' membership checks (server.go), over the cluster's (membership)
+  "EtcdServer.IsLearner", "EtcdServer.IsMemberExist",
+  # the watch slice's unit W-W: the stream interceptor's leader monitor's stop channel
+  "EtcdServer.StoppingNotify",
+  # the raft wrapper's construction (raft.go, bootstrap.go; stage R8b of the raft v3.7 retarget,
+  # 2026-10-16): `newRaftNode` and the new cluster's `bootstrappedRaft.newRaftNode` over raft's
+  # `StartNode`, with the type `bootstrappedRaft`
+  "newRaftNode", "bootstrappedRaft.newRaftNode", "bootstrappedRaft",
+  # the raft status's package variables (raft.go; D19r (C), 2026-10-18): the mutex and the
+  # function it guards, allocated by the package's initializer, which makes the mutex's
+  # invariant part of the package's fact
+  "raftStatusMu", "raftStatus",
+  # the server's construction (server.go; the server-construction unit N1, 2026-10-16, D13):
+  # `NewServer` over `bootstrap`'s result (names-only, a contract), with the bootstrapped record
+  # types, the alarm store's restore, the uber-applier's construction and the access controller
+  "NewServer", "bootstrappedServer", "bootstrappedStorage", "bootstrappedBackend",
+  "bootstrappedCluster", "bootstrappedWAL", "AccessController",
+  "EtcdServer.restoreAlarms", "EtcdServer.NewUberApplier",
+  # (R-D1, 2026-11-04) the record's close on `NewServer`'s error paths (bootstrap.go): until then
+  # a trusted triple of `bootOk` (`#Hclose`), false (a second `Close` panics)
+  "bootstrappedServer.Close", "bootstrappedStorage.Close", "bootstrappedBackend.Close",
+  # (restart S3, D2 (b), 2026-11-11) the restarted raft storage (bootstrap.go): `MemoryStorage`
+  # rebuilds it from the WAL's records over raft's proved `MemoryStorage` methods, so the restart
+  # contract's `memStorRestarted` is that method's post, not a trusted definition
+  "bootstrappedWAL.MemoryStorage",
+  # the client lease (item 1, branch `lease-client`): v3_server.go's lease grant and revoke
+  "EtcdServer.LeaseGrant", "EtcdServer.LeaseRevoke", "EtcdServer.requireAuthInfo",
+  # the lease-keys plan's Part B (2026-10-31): the lease API's key checks (v3_server.go); their
+  # entry points (LeaseRenew, LeaseTimeToLive, LeaseLeases) stay names only
+  "EtcdServer.checkLeaseRenew", "EtcdServer.checkLeaseTimeToLive", "EtcdServer.checkLeaseLeases",
+  # the lease-read plan (2026-10-31): the two read rows' entry points; `leaseTimeToLive` (the
+  # leader's lookup, the forwarding to the leader) stays names only, a contract
+  "EtcdServer.LeaseTimeToLive", "EtcdServer.LeaseLeases",
+  # the lease-renew plan (2026-11-01): the keep-alive row's entry point; the lessor's `Renew`,
+  # `ensureLeadership`, `waitAppliedIndex`, `waitLeader` and the forwarding (`leasehttp.RenewHTTP`)
+  # stay names only, contracts
+  "EtcdServer.LeaseRenew",
+  # the auth plan's A2 (2026-10-23): the membership operations' admin guard and the member
+  # operations it guards (their callees mayRemoveMember, configure, the cluster's Members stay
+  # names only: the specs take their triples; not AddMember, UpdateMember, promoteMember: they
+  # call encoding/json's Marshal, which Perennial has no model of)
+  "EtcdServer.checkMembershipOperationPermission", "EtcdServer.RemoveMember",
+  "EtcdServer.MemberList",
+  # the auth plan's A3, the API layer (2026-10-24): v3_server.go's Auth service methods (the
+  # `Authenticator` interface the gRPC AuthServer calls): each proposes its request through
+  # raftRequest; Authenticate checks the password and loops on the revision. UserAdd and
+  # UserChangePassword since the auth plan's E2x (2026-10-26): they hash the password
+  # (golang.org/x/crypto/bcrypt's GenerateFromPassword) and put the hash base64-encoded
+  # (encoding/base64's StdEncoding, names only: the k8s-apiserver project's translation) in the
+  # request; both at the trust boundary (Spec/encoding/base64, Spec/golang_org/x/crypto/bcrypt)
+  "EtcdServer.UserAdd", "EtcdServer.UserChangePassword",
+  "EtcdServer.AuthEnable", "EtcdServer.AuthDisable", "EtcdServer.AuthStatus",
+  "EtcdServer.Authenticate", "EtcdServer.UserDelete", "EtcdServer.UserGrantRole", "EtcdServer.UserGet",
+  "EtcdServer.UserList", "EtcdServer.UserRevokeRole", "EtcdServer.RoleAdd",
+  "EtcdServer.RoleGrantPermission", "EtcdServer.RoleGet", "EtcdServer.RoleList",
+  "EtcdServer.RoleRevokePermission", "EtcdServer.RoleDelete",
+  # (D21 M2, 2026-10-19) the inbound path from the transport: the `rafthttp.Raft` methods and
+  # raft.Node's Step and reports, promoted through raftNode's embedded raftNodeConfig
+  "EtcdServer.Process", "EtcdServer.IsIDRemoved", "EtcdServer.ReportUnreachable",
+  "EtcdServer.ReportSnapshot", "raftNode.Step", "raftNodeConfig.Step", "raftNode.ReportUnreachable",
+  "raftNodeConfig.ReportUnreachable", "raftNode.ReportSnapshot", "raftNodeConfig.ReportSnapshot",
+  # (notes/partition-plan.md, S0, 2026-10-20) etcd's partition hooks, which its integration tests
+  # use: pause/resume the transport's peer (rafthttp's `CutPeer`/`MendPeer`, names-only)
+  "EtcdServer.CutPeer", "EtcdServer.MendPeer",
+  # (rafthttp stage 6d, 2026-10-24) the member's raft handler, `s.r.transport.Handler()`, over
+  # rafthttp's proved `Transport.Handler`
+  "EtcdServer.RaftHandler",
+  # (D22 S-h, 2026-10-20) the merged snapshot's sender (snapshot_merge.go, server.go): the merged
+  # message, its reader goroutine over the backend snapshot and `io.Pipe`, and its send with the
+  # in-flight count released by a `GoAttach` goroutine
+  "EtcdServer.createMergedSnapshotMessage", "newSnapshotReaderCloser", "EtcdServer.sendMergedSnap",
+  "releaseDelayAfterSnapshot",
+  # (D43 M5e, 2026-10-26) the membership change's application (server.go), over the cluster's
+  # proved writers, raft's `ApplyConfChange`, the transport's `AddPeer`/`RemovePeer`
+  "EtcdServer.applyConfChange", "raftNode.ApplyConfChange", "raftNodeConfig.ApplyConfChange",
+  # (revoke-open pass 2, 2026-11-06) the expired-lease counter `revokeExpiredLeases` increments
+  # (metrics.go): its initializer, `prometheus.NewCounter` of a `CounterOpts` literal
+  "leaseExpired",
+  # (revoke-open pass 2, 2026-11-06) run's expiry arm (server.go): the round's goroutine, its
+  # leadership check and a `LeaseRevoke` per lease in goroutines of their own; until then names
+  # only, run's open premise `srvRevokeOpen`
+  "EtcdServer.revokeExpiredLeases", "maxPendingRevokes",
+  # etcd-refimpl: the reference implementation's init()s
+  "init.0", "init.1", "init.2"]
+imports = ["!*", "context", "io", "errors", "encoding/json", "fmt", "net/http", "sync", "sync/atomic", "time", "go.uber.org/zap", "github.com/dustin/go-humanize", "google.golang.org/protobuf/proto", "go.etcd.io/etcd/api/v3/etcdserverpb", "go.etcd.io/etcd/client/pkg/v3/types", "go.etcd.io/etcd/pkg/v3/contention", "go.etcd.io/etcd/pkg/v3/idutil", "go.etcd.io/etcd/pkg/v3/notify", "go.etcd.io/etcd/pkg/v3/pbutil", "go.etcd.io/etcd/pkg/v3/wait", "go.etcd.io/etcd/server/v3/auth", "go.etcd.io/etcd/server/v3/config", "go.etcd.io/etcd/server/v3/etcdserver/api/membership", "go.etcd.io/etcd/server/v3/etcdserver/api/rafthttp", "go.etcd.io/etcd/server/v3/etcdserver/api/snap", "go.etcd.io/etcd/server/v3/etcdserver/api/v2stats", "go.etcd.io/etcd/server/v3/etcdserver/api/v3alarm", "go.etcd.io/etcd/server/v3/etcdserver/api/v3compactor", "go.etcd.io/etcd/server/v3/etcdserver/apply", "go.etcd.io/etcd/server/v3/etcdserver/cindex", "go.etcd.io/etcd/server/v3/etcdserver/errors", "go.etcd.io/etcd/server/v3/etcdserver/read", "go.etcd.io/etcd/server/v3/lease", "go.etcd.io/etcd/server/v3/storage", "go.etcd.io/etcd/server/v3/storage/backend", "go.etcd.io/etcd/server/v3/storage/mvcc", "go.etcd.io/raft/v3", "go.etcd.io/raft/v3/raftpb", "strconv", "go.opentelemetry.io/otel/attribute", "go.opentelemetry.io/otel/trace", "go.etcd.io/etcd/pkg/v3/traceutil", "go.etcd.io/etcd/pkg/v3/featuregate", "go.etcd.io/etcd/server/v3/features", "go.etcd.io/etcd/server/v3/etcdserver/txn", "go.etcd.io/etcd/server/v3/etcdserver/api", "github.com/prometheus/client_golang/prometheus", "go.etcd.io/etcd/pkg/v3/schedule", "go.etcd.io/etcd/api/v3/version", "github.com/Masterminds/semver/v3", "log", "go.etcd.io/etcd/client/pkg/v3/logutil", "go.etcd.io/etcd/server/v3/storage/wal", "math", "go.etcd.io/etcd/server/v3/etcdserver/api/etcdhttp/types", "golang.org/x/crypto/bcrypt", "encoding/base64", "go.etcd.io/etcd/server/v3/lease/leasehttp"]
+
+# translate the definitions of all type declarations goose supports
+translate_types = true

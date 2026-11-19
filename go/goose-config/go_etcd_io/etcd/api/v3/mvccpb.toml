@@ -1,0 +1,16 @@
+# Types and names only: function and method bodies are axiomatized.
+# The messages the cache reads are listed explicitly: translate_types never translates
+# a struct with a field of another package's alias type, as every protobuf message
+# has (`state protoimpl.MessageState`, ...).
+# For `client/v3/concurrency` (`waitDelete` compares an event's type with `Event_DELETE`): the
+# event type constants.
+# k8s 7f-5a-P: `Event.IsCreate` (the etcd3 watcher's `parseEvent`, called through the client's alias
+# `clientv3.Event`) with the getters it reads and the constant `PUT`.
+translate = ["!*", "KeyValue", "Event", "Event_PUT", "Event_DELETE", "PUT", "Event.IsCreate",
+  "Event.GetType", "Event.GetKv", "KeyValue.GetCreateRevision", "KeyValue.GetModRevision",
+  # etcd-refimpl: the reference implementation's init()s
+  "init.0"]
+imports = ["!*", "google.golang.org/protobuf/runtime/protoimpl"]
+
+# translate the definitions of all type declarations goose supports
+translate_types = true

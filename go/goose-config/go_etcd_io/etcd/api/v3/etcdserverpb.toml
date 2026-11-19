@@ -1,0 +1,151 @@
+# Types and names only: function and method bodies are axiomatized.
+# The messages the cache reads are listed explicitly: translate_types never translates
+# a struct with a field of another package's alias type, as every protobuf message
+# has (`state protoimpl.MessageState`, ...).
+# For client/v3/concurrency (the transaction and lease model): the comparisons (`Compare` and its
+# oneof wrappers), the transaction's response (`TxnResponse`, `ResponseOp` and its oneof wrappers,
+# `PutResponse`, `DeleteRangeResponse`) and `LeaseRevokeResponse`; for `Mutex`, `ResponseOp.GetResponseRange`;
+# for client/v3/leasing, the header's, the comparison's and the response's getters; for the
+# server's apply thread, `AlarmType_NOSPACE` and (for `AlarmStore.Get`) `AlarmType_NONE` (an
+# axiomatized constant is an opaque `val`, which a `let` cannot bind without knowing it is not a
+# panic, nor a comparison decide); for the server's txn package, the requests
+# (`TxnRequest`, `RequestOp` and its oneof wrappers, `RangeRequest`, `PutRequest`,
+# `DeleteRangeRequest`), the range's sort constants and `RequestOp.GetRequestRange`; for the
+# server's apply package, the raft request (`InternalRaftRequest`, its `RequestHeader`, the
+# `InternalRaftStringer` the logs wrap it in), the requests it reads and the responses it builds
+# (compaction, lease, alarm, auth), the alarm actions and types.
+translate = ["!*", "ResponseHeader", "ResponseHeader.GetRevision", "Compare.GetKey", "RangeResponse", "WatchResponse",
+  "Compare", "Compare_Version", "Compare_CreateRevision", "Compare_ModRevision", "Compare_Value",
+  "Compare_Lease", "Compare_EQUAL", "Compare_GREATER", "Compare_LESS", "Compare_NOT_EQUAL",
+  "Compare_VERSION", "Compare_CREATE", "Compare_MOD", "Compare_VALUE", "Compare_LEASE",
+  "TxnResponse", "ResponseOp", "ResponseOp_ResponseRange", "ResponseOp_ResponsePut",
+  "ResponseOp_ResponseDeleteRange", "ResponseOp_ResponseTxn", "ResponseOp.GetResponseRange",
+  "PutResponse", "DeleteRangeResponse",
+  "LeaseRevokeResponse",
+  "ResponseHeader.GetClusterId", "ResponseHeader.GetMemberId", "ResponseHeader.GetRaftTerm",
+  "ResponseHeader.GetLeaderId", "Compare.GetRangeEnd", "Compare.GetResult", "Compare.GetTarget",
+  "Compare.GetTargetUnion", "ResponseOp.GetResponseTxn", "ResponseOp.GetResponsePut",
+  "ResponseOp.GetResponseDeleteRange", "ResponseOp.GetResponse", "AlarmType_NOSPACE", "AlarmType_NONE",
+  "TxnRequest", "RequestOp", "RequestOp_RequestRange", "RequestOp_RequestPut",
+  "RequestOp_RequestDeleteRange", "RequestOp_RequestTxn", "RequestOp.GetRequestRange",
+  "RangeRequest", "PutRequest", "DeleteRangeRequest",
+  "RangeRequest_NONE", "RangeRequest_ASCEND", "RangeRequest_DESCEND", "RangeRequest_KEY",
+  "RangeRequest_VERSION", "RangeRequest_CREATE", "RangeRequest_MOD", "RangeRequest_VALUE",
+  "InternalRaftRequest", "RequestHeader", "InternalRaftStringer", "InternalAuthenticateRequest",
+  "CompactionRequest", "CompactionResponse",
+  # the auth plan's A2 (2026-10-23): the server's `MemberList` reads the request's `Linearizable`
+  "MemberListRequest",
+  "LeaseGrantRequest", "LeaseGrantResponse", "LeaseRevokeRequest", "LeaseCheckpointRequest",
+  "LeaseCheckpoint", "LeaseCheckpointResponse",
+  # the lease-read plan (2026-10-31): `LeaseTimeToLive` reads its request's `ID` and `Keys`,
+  # `LeaseLeases` builds its response; `leaseTimeToLive`'s contract states its response's `Header`
+  "LeaseTimeToLiveRequest", "LeaseTimeToLiveResponse", "LeaseLeasesResponse", "LeaseStatus",
+  "AlarmRequest", "AlarmResponse", "AlarmMember", "AlarmRequest_GET", "AlarmRequest_ACTIVATE",
+  "AlarmRequest_DEACTIVATE", "AlarmType_NONE", "AlarmType_CORRUPT",
+  "AuthEnableResponse", "AuthDisableResponse", "AuthStatusResponse", "AuthenticateResponse",
+  "AuthUserAddResponse", "AuthUserDeleteResponse", "AuthUserChangePasswordResponse",
+  "AuthUserGrantRoleResponse", "AuthUserGetRequest", "AuthUserGetResponse",
+  "AuthUserRevokeRoleResponse", "AuthRoleAddResponse", "AuthRoleGrantPermissionResponse",
+  "AuthRoleGetRequest", "AuthRoleGetResponse", "AuthRoleRevokePermissionResponse",
+  "AuthRoleDeleteResponse", "AuthUserListResponse", "AuthRoleListResponse",
+  # unit N4 (D14g, 2026-10-17): the user and role additions, whose names the apply package's
+  # request model records (a name above bbolt's key bound is fatal:
+  # issues/etcd-auth-useradd-long-name-fatal.md)
+  "AuthUserAddRequest", "AuthRoleAddRequest",
+  # the auth plan's S4 (2026-10-24): the requests of the store's proved admin methods;
+  # A3, the API layer (2026-10-24): the requests whose fields the server's Authenticate and
+  # UserChangePassword read and write (the name and the passwords)
+  "AuthUserDeleteRequest", "AuthUserChangePasswordRequest", "AuthenticateRequest",
+  # the auth plan's S4b (2026-10-24): the requests of the revocations and of RoleDelete
+  "AuthUserRevokeRoleRequest", "AuthRoleRevokePermissionRequest", "AuthRoleDeleteRequest",
+  # the auth plan's S4c (2026-10-24): the requests of the grants
+  "AuthUserGrantRoleRequest", "AuthRoleGrantPermissionRequest",
+  # the server's RaftKV interface names the stream of RangeStream (an alias of a generic grpc
+  # interface: an untranslated alias is emitted without the `.ty` its users name)
+  "KV_RangeStreamServer",
+  # the getters the request path calls (the trace span's attributes, tracing.go's first*)
+  "RangeRequest.GetKey", "RangeRequest.GetRangeEnd", "RangeRequest.GetRevision",
+  "RangeRequest.GetLimit", "RangeRequest.GetCountOnly", "RangeRequest.GetKeysOnly",
+  "PutRequest.GetKey", "PutRequest.GetLease", "DeleteRangeRequest.GetKey",
+  "DeleteRangeRequest.GetRangeEnd", "TxnRequest.GetCompare", "TxnRequest.GetSuccess",
+  "TxnRequest.GetFailure", "RequestOp.GetRequest",
+  # the spec-first pilot (2026-10-27): the trace attributes of EtcdServer.Compact
+  "CompactionRequest.GetPhysical", "CompactionRequest.GetRevision",
+  # the lease-grant stage (2026-11-03): the trace attribute of EtcdServer.LeaseGrant
+  "LeaseGrantRequest.GetTTL",
+  # the lease-expiry plan's X6 (2026-11-04): the trace attribute of EtcdServer.LeaseRevoke
+  "LeaseRevokeRequest.GetID",
+  # unit P4: the read-only transaction's warning (txn's `util.go`) reads a range's `GetKvs()`
+  "RangeResponse.GetKvs",
+  # the gRPC KV service's interface (`v3rpc.NewKVServer` converts its `*kvServer` to it) and the
+  # stream's chunk (`v3rpc.headerFillingRangeStream.Send` reads its `RangeResponse`)
+  "KVServer", "RangeStreamResponse",
+  # unit C1 (the client meets the server): the generated client stub of the KV service
+  # (`rpc_grpc.pb.go`: `NewKVClient`, `kVClient.Put`/`Range` and their method names)
+  "NewKVClient", "kVClient.Put", "kVClient.Range", "KV_Put_FullMethodName",
+  "KV_Range_FullMethodName",
+  # the vertical slice's unit V2: the stub's `DeleteRange` and `Txn` (their method names below)
+  "kVClient.DeleteRange", "kVClient.Txn",
+  # the client's `kv.Compact` (2026-11-01): the stub's `Compact`, the server's handler and the
+  # method name
+  "kVClient.Compact", "_KV_Compact_Handler", "KV_Compact_FullMethodName",
+  # unit P3b (the server end of the gRPC boundary): the generated server-side handlers of the KV
+  # service's unary methods (`rpc_grpc.pb.go`: decode, then the interceptor or the service's
+  # method) and their method names; the registration `RegisterKVServer` and its `ServiceDesc`
+  "_KV_Range_Handler", "_KV_Put_Handler", "_KV_DeleteRange_Handler", "_KV_Txn_Handler",
+  "KV_DeleteRange_FullMethodName", "KV_Txn_FullMethodName", "RegisterKVServer", "KV_ServiceDesc",
+  # the watch slice's unit W-S (the server's watch service, `v3rpc/watch.go`): the requests it
+  # reads (`WatchRequest` and its oneof wrappers, the create/cancel/progress requests, the filter
+  # types) and the generated stream handler `_Watch_Watch_Handler`
+  "WatchRequest", "WatchRequest_CreateRequest", "WatchRequest_CancelRequest",
+  "WatchRequest_ProgressRequest", "WatchCreateRequest", "WatchCancelRequest",
+  "WatchProgressRequest", "WatchCreateRequest_NOPUT", "WatchCreateRequest_NODELETE",
+  "WatchServer", "_Watch_Watch_Handler",
+  # the watch slice's unit W-W (the gRPC stream wire): the generated client stub of the Watch
+  # service (`NewWatchClient`, `watchClient.Watch`, its method name, the client interface), the
+  # registration `RegisterWatchServer` and its `ServiceDesc` (the stub takes the address of its
+  # first `StreamDesc`)
+  "NewWatchClient", "watchClient.Watch", "Watch_Watch_FullMethodName", "WatchClient",
+  "watchClient", "Watch_WatchClient", "Watch_WatchServer", "RegisterWatchServer",
+  "Watch_ServiceDesc",
+  # item 4 (the server start): the registrations `v3rpc.Server` makes of the other services, their
+  # `ServiceDesc`s and their service interfaces
+  "RegisterLeaseServer", "Lease_ServiceDesc", "LeaseServer", "RegisterClusterServer",
+  "Cluster_ServiceDesc", "ClusterServer", "RegisterAuthServer", "Auth_ServiceDesc", "AuthServer",
+  "RegisterMaintenanceServer", "Maintenance_ServiceDesc", "MaintenanceServer",
+  # the client lease (item 1, branch `lease-client`): the generated Lease stub (client side) and
+  # handlers (server side), the method names, the keep-alive messages and the getters the
+  # client reads
+  "NewLeaseClient", "LeaseClient", "leaseClient", "leaseClient.LeaseGrant",
+  "leaseClient.LeaseRevoke", "leaseClient.LeaseKeepAlive", "Lease_LeaseGrant_FullMethodName",
+  "Lease_LeaseRevoke_FullMethodName", "Lease_LeaseKeepAlive_FullMethodName",
+  "Lease_LeaseKeepAliveClient", "Lease_LeaseKeepAliveServer", "LeaseKeepAliveRequest",
+  "LeaseKeepAliveResponse", "LeaseGrantResponse.GetHeader", "LeaseKeepAliveResponse.GetHeader",
+  "_Lease_LeaseGrant_Handler", "_Lease_LeaseRevoke_Handler", "_Lease_LeaseKeepAlive_Handler",
+  # the auth plan's E2h (2026-10-26): the generated Auth stub (client side) of the admin calls
+  # `examples/etcd/auth`'s `SetUp` makes, their method names and the one request not yet translated
+  "NewAuthClient", "AuthClient", "authClient", "authClient.UserAdd", "authClient.UserGrantRole",
+  "authClient.RoleAdd", "authClient.RoleGrantPermission", "authClient.AuthEnable",
+  "Auth_UserAdd_FullMethodName", "Auth_UserGrantRole_FullMethodName",
+  "Auth_RoleAdd_FullMethodName", "Auth_RoleGrantPermission_FullMethodName",
+  "Auth_AuthEnable_FullMethodName", "AuthEnableRequest",
+  # the auth plan's E3za (2026-10-27): the generated server-side handlers of those five methods
+  "_Auth_UserAdd_Handler", "_Auth_UserGrantRole_Handler", "_Auth_RoleAdd_Handler",
+  "_Auth_RoleGrantPermission_Handler", "_Auth_AuthEnable_Handler",
+  # the auth plan's C1 phase 2 (2026-10-28): the stub's `Authenticate` (a user client's token)
+  "authClient.Authenticate", "Auth_Authenticate_FullMethodName",
+  # C1's A5 (2026-10-31): the generated server-side handler of `Authenticate`
+  "_Auth_Authenticate_Handler",
+  # the closed lease example (2026-11-02): the Lease stub's two reads, their method names and
+  # handlers, the request of `Leases` and the getters the client reads
+  "leaseClient.LeaseTimeToLive", "leaseClient.LeaseLeases", "Lease_LeaseTimeToLive_FullMethodName",
+  "Lease_LeaseLeases_FullMethodName", "_Lease_LeaseTimeToLive_Handler", "_Lease_LeaseLeases_Handler",
+  "LeaseLeasesRequest", "LeaseTimeToLiveResponse.GetHeader", "LeaseLeasesResponse.GetHeader",
+  # etcd-refimpl: the reference implementation's init()s
+  "init.0", "init.1", "init.2"]
+imports = ["!*", "go.etcd.io/etcd/api/v3/mvccpb", "go.etcd.io/etcd/api/v3/membershippb",
+  "go.etcd.io/etcd/api/v3/authpb",
+  "google.golang.org/protobuf/runtime/protoimpl", "google.golang.org/grpc", "context"]
+
+# translate the definitions of all type declarations goose supports
+translate_types = true

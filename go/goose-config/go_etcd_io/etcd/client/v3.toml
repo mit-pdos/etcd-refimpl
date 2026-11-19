@@ -1,0 +1,299 @@
+# Types and names only: function and method bodies are axiomatized, except for what the
+# cache's proofs call: `WatchResponse.IsProgressNotify` and the event-type constants (the
+# store), `GetPrefixRangeEnd` with `getPrefix` and `noPrefixEnd` (`Cache.validateRange`), and
+# the `Op` getters `Cache.validateGet`/`validateWatch` read (with `Rev`, `IsSerializable` and
+# `IsProgressNotify`, for `Cache.Get`/`Watch`), and what builds the `Op` of a `Get`
+# (`OpGet` with `NewOp`, `applyOpts`, `IsOptsWithPrefix`/`IsOptsWithFromKey`, and the
+# options `Cache.Get`'s callers and `Cache.serverRevision` pass), and for `Cache.Watch`:
+# `OpWatch`, the watch options `WithProgressNotify`/`WithCreatedNotify`, and
+# `WatchResponse.Err` (which calls `rpctypes.Error` and grpc's `status.Error`: hence the
+# imports of `rpctypes` and grpc's `codes`/`status`, names only); and the `Client` struct
+# (`cache.newCache` reads its `KV` and `Watcher` fields), whose other fields need the types
+# of grpc, grpc's `credentials`, zap, `sync/atomic` and the client's `credentials` and
+# `internal/resolver` (names only, their `.toml`s; translating `Client` also translates the
+# client's structs whose field types these provide: `authClient`, `kv`, `watcher`, ...).
+# k8s 7f-3a: `WithPrevKV` (the etcd3 watcher's option). `WithRequireLeader` stays names-only (its
+# trust-boundary axiom, `Proof/go_etcd_io/etcd/client/v3/WithRequireLeader.lean`; 7f-3a decision D1).
+translate = [
+  "!*",
+  "WatchResponse.IsProgressNotify",
+  "EventTypeDelete",
+  "EventTypePut",
+  "GetPrefixRangeEnd",
+  "getPrefix",
+  "noPrefixEnd",
+  "Op.IsCountOnly",
+  "Op.IsPrevKV",
+  "Op.IsSortSet",
+  "Op.Limit",
+  "Op.MinModRev",
+  "Op.MaxModRev",
+  "Op.MinCreateRev",
+  "Op.MaxCreateRev",
+  "Op.IsFragment",
+  "Op.IsCreatedNotify",
+  "Op.IsFilterPut",
+  "Op.IsFilterDelete",
+  "Op.RangeBytes",
+  "Op.Rev",
+  "Op.IsSerializable",
+  "Op.IsProgressNotify",
+  "tRange",
+  "NewOp",
+  "OpGet",
+  "Op.applyOpts",
+  "IsOptsWithPrefix",
+  "IsOptsWithFromKey",
+  "WithLimit",
+  "WithRev",
+  "WithPrevKV",
+  "WithPrefix",
+  "WithRange",
+  "WithFromKey",
+  "WithSerializable",
+  "WithCountOnly",
+  "WithProgressNotify",
+  "WithCreatedNotify",
+  "OpWatch",
+  "WatchResponse.Err",
+  "Client",
+  # client/v3/concurrency's Session: the client's context and logger
+  "Client.Ctx",
+  "Client.GetLogger",
+  "NoLease",
+  # the transaction model: comparisons
+  "Compare",
+  "Value",
+  "Version",
+  "CreateRevision",
+  "ModRevision",
+  "LeaseValue",
+  "Cmp.WithRange",
+  "Cmp.WithPrefix",
+  "Cmp.Clone",
+  "Cmp.ensureCompare",
+  "cloneCompare",
+  "mustInt64",
+  "mustInt64orLeaseID",
+  # the transaction model: operations and their options
+  "OpPut",
+  "OpDelete",
+  "tPut",
+  "tDeleteRange",
+  "WithLease",
+  "WithSort",
+  "WithFirstCreate",
+  "WithLastCreate",
+  "withTop",
+  "WithMaxCreateRev",
+  "SortByCreateRevision",
+  "SortByKey",
+  "SortAscend",
+  "SortDescend",
+  "SortNone",
+  # client/v3/leasing: the Op getters and builders it uses, nested transactions, the comparison's
+  # message and key, the response conversions
+  "Op.KeyBytes",
+  "Op.ValueBytes",
+  "Op.IsGet",
+  "Op.IsPut",
+  "Op.IsDelete",
+  "Op.IsTxn",
+  "Op.Txn",
+  "Op.IsKeysOnly",
+  "tTxn",
+  "OpTxn",
+  "WithIgnoreLease",
+  "WithKeysOnly",
+  "WithLastRev",
+  "SortByModRevision",
+  "Cmp.KeyBytes",
+  "Cmp.GetCompare",
+  "GetResponse.OpResponse",
+  "PutResponse.OpResponse",
+  "DeleteResponse.OpResponse",
+  "TxnResponse.OpResponse",
+  "OpResponse.Get",
+  # client/v3/experimental/recipes: the options of its gets
+  "WithFirstRev",
+  "WithFirstKey",
+  "WithLastKey",
+  "WithMaxModRev",
+  "WithMinModRev",
+  # server/v3/storage/mvcc's watch stream: the watch ids `watchStream.Watch` and
+  # `RequestProgressAll` compare against
+  "AutoWatchID",
+  "InvalidWatchID",
+  # unit C1 (the client meets the server): the KV client's Put and Get over gRPC (`kv.go`:
+  # `NewKV`, `kv.Put`, `kv.Get`, `kv.Do`, with the range request `Op.toRangeRequest` and the
+  # sort check `Op.IsSortOptionValid`; `client.go`'s `ContextError`; `retry.go`'s
+  # `RetryKVClient`, `retryKVClient.Put`/`Range`; `retry_interceptor.go`'s
+  # `withRepeatablePolicy`); `ContextError` calls `errors.As`: hence the import of `errors`
+  "NewKV",
+  "kv.Put",
+  "kv.Get",
+  "kv.Do",
+  "Op.toRangeRequest",
+  "Op.IsSortOptionValid",
+  "ContextError",
+  "RetryKVClient",
+  "retryKVClient.Put",
+  "retryKVClient.Range",
+  "withRepeatablePolicy",
+  "repeatable",
+  "nonRepeatable",
+  # unit P3a (the retry interceptor proved, grpc's trust boundary below it): `retry_interceptor.go`'s
+  # `unaryClientInterceptor` (the retry loop), `isContextError`, `shouldRefreshToken`,
+  # `refreshToken`, `isSafeRetry`, the call options (`reuseOrNewWithCallOptions`,
+  # `filterCallOptions`, `withMax`, `withBackoff`); `retry.go`'s `isSafeRetryImmutableRPC`,
+  # `isSafeRetryMutableRPC`, `retryPolicy.String`. Names only (axioms): `waitRetryBackoff`
+  # (timers), `withVersion` (grpc's metadata), `getToken` (the auth client), `Endpoints` (a read
+  # under the client's `RWMutex`, whose reader slots a persistent interceptor cannot hold).
+  # The interceptor allocates a grpc `peer.Peer`: hence the import of grpc's `peer`.
+  "Client.unaryClientInterceptor",
+  "isContextError",
+  "Client.shouldRefreshToken",
+  "Client.refreshToken",
+  "isSafeRetry",
+  "isSafeRetryImmutableRPC",
+  "isSafeRetryMutableRPC",
+  "retryPolicy.String",
+  "reuseOrNewWithCallOptions",
+  "filterCallOptions",
+  "withMax",
+  "withBackoff",
+  # the vertical slice's unit V2: the KV client's Delete and Txn over gRPC (`kv.go`'s `kv.Delete`,
+  # `kv.Txn`; `txn.go`'s builder `txn.If`/`Then`/`Else`/`Commit`; `op.go`'s `Op.toRequestOp`,
+  # `Op.toTxnRequest`, `Op.isWrite`; `retry.go`'s `retryKVClient.DeleteRange`/`Txn`)
+  "kv.Delete",
+  "kv.Txn",
+  "txn.If",
+  "txn.Then",
+  "txn.Else",
+  "txn.Commit",
+  "Op.toRequestOp",
+  "Op.toTxnRequest",
+  "Op.isWrite",
+  "retryKVClient.DeleteRange",
+  "retryKVClient.Txn",
+  # the client's `kv.Compact` (2026-11-01, `examples/etcd/compactwatch`): `kv.go`'s `kv.Compact`,
+  # `compact_op.go`'s `OpCompact`, `CompactOp.applyCompactOpts`, `CompactOp.toRequest`;
+  # `retry.go`'s `retryKVClient.Compact`
+  "kv.Compact",
+  "OpCompact",
+  "CompactOp.applyCompactOpts",
+  "CompactOp.toRequest",
+  "retryKVClient.Compact",
+  # the watch slice's unit W-C: the client's watch (`watch.go`, all of it but
+  # `streamKeyFromCtx`, names only: grpc's `metadata.FromOutgoingContext` and `fmt.Sprintf` of a
+  # map), with `block_logger.go` (the substream's buffer logger) and `client.go`'s `isHaltErr`,
+  # `isUnavailableErr`
+  "closeSendErrTimeout",
+  "watcherStreamBufWarningInterval",
+  "watcherStreamBufWarningThreshold",
+  "ensureWatchHeader",
+  "NewWatcher",
+  "NewWatchFromWatchClient",
+  "valCtxCh",
+  "zeroTime",
+  "valCtx.Deadline",
+  "valCtx.Done",
+  "valCtx.Err",
+  "watcher.newWatcherGRPCStream",
+  "watcher.Watch",
+  "watcher.Close",
+  "watcher.RequestProgress",
+  "watchGRPCStream.close",
+  "watcher.closeStream",
+  "watchGRPCStream.addSubstream",
+  "watchGRPCStream.sendCloseSubstream",
+  "watchGRPCStream.closeSubstream",
+  "watchGRPCStream.run",
+  "watchGRPCStream.nextResume",
+  "watchGRPCStream.dispatchEvent",
+  "watchGRPCStream.broadcastResponse",
+  "watchGRPCStream.unicastResponse",
+  "watchGRPCStream.serveWatchClient",
+  "watchGRPCStream.serveSubstream",
+  "watchGRPCStream.startBufWait",
+  "watchGRPCStream.recordBufWait",
+  "watcherStream.resetBufWait",
+  "watchGRPCStream.newWatcherStreamBufLogger",
+  "watchGRPCStream.newWatchClient",
+  "watchGRPCStream.waitCancelSubstreams",
+  "watchGRPCStream.joinSubstreams",
+  "maxBackoff",
+  "watchGRPCStream.backoffIfUnavailable",
+  "watchGRPCStream.openWatchClient",
+  "watchRequest.toPB",
+  "progressRequest.toPB",
+  "newBlockLogger",
+  "blockLogger.recordWait",
+  "isHaltErr",
+  "isUnavailableErr",
+  # item 5 (client construction, branch `construct`): `clientv3.New` and what it runs on the way
+  # to the dial (`client.go`: `newClient`, `SetEndpoints`, `credentialsForEndpoint`, `dial`,
+  # `dialSetupOpts`, `authority`, `autoSync`); `Config` is translated as a struct (its `TLS` field needs the import of `crypto/tls`), and the dial
+  # options' packages are imported (grpc's `keepalive`, `credentials/insecure`, the client's
+  # `internal/endpoint`, `client/pkg/v3/logutil`), names only; and `io`, so that the `Maintenance`
+  # interface (a field of `Client`, which `newClient` allocates) is translated, not axiomatized
+  "New",
+  "newClient",
+  "Client.SetEndpoints",
+  # (not `Client.dialWithBalancer`, names only: its `grpc.WithResolvers(c.resolver)` converts to
+  # grpc's `resolver.Builder`, which no file of the package imports, and the pinned translator
+  # then names the type after the imported package of the same name, the client's
+  # `internal/resolver` (`pkgRef`'s fallback): an unknown `internal.resolver.Builder.ty`. Its body
+  # is the translation with that type corrected, a trusted unfolding:
+  # `Proof/go_etcd_io/etcd/client/v3/DialWithBalancerBody.lean`.)
+  "Client.credentialsForEndpoint",
+  "Client.dial",
+  "Client.dialSetupOpts",
+  "authority",
+  "Client.autoSync",
+  # the adequacy example (item 9, point 7): `(*Client).Put`/`Get`, promoted from the embedded
+  # `KV` interface (no body: the filter only lets the translator emit their `MethodUnfold`
+  # rules, `ptr_Put_unfold`/`ptr_Get_unfold`, the call through the `KV` field)
+  "Client.Put",
+  "Client.Get",
+  # linkv-txn stage F: `(*Client).Delete`/`Txn`, promoted likewise (`examples/etcd/txnlin`'s `call`)
+  "Client.Delete",
+  "Client.Txn",
+  # the client's `kv.Compact` (2026-11-01): `(*Client).Compact`, promoted likewise
+  # (`examples/etcd/compactwatch`)
+  "Client.Compact",
+  # Kubernetes' compactor's watch loop (Q1 (b) of notes/k8s-compactor-plan.md, 2026-11-04):
+  # `(*Client).Watch`, promoted likewise from the embedded `Watcher` interface
+  "Client.Watch",
+  # the client lease (item 1, branch `lease-client`): lease.go's lessor with bodies but
+  # `closeRequireLeader` (grpc's `metadata`, not imported: names only), retry.go's lease client,
+  # client.go's `canceledByCaller`
+  "lessor", "keepAlive", "keepAliveCtxKey", "ErrKeepAliveHalted", "defaultTTL", "retryConnWait",
+  "NewLease", "NewLeaseFromLeaseClient", "lessor.Grant", "lessor.Revoke", "lessor.KeepAlive",
+  "lessor.keepAliveCtxCloser", "lessor.closeRequireLeader", "lessor.recvKeepAliveLoop", "lessor.resetRecv",
+  "lessor.recvKeepAlive", "lessor.deadlineLoop", "lessor.sendKeepAliveLoop", "keepAlive.close",
+  "RetryLeaseClient", "retryLeaseClient", "retryLeaseClient.LeaseGrant",
+  "retryLeaseClient.LeaseRevoke", "retryLeaseClient.LeaseKeepAlive", "canceledByCaller",
+  # the auth plan's E2h (2026-10-26): the client's Auth API for the admin calls
+  # `examples/etcd/auth`'s `SetUp` makes (auth.go's `NewAuth` and `authClient`'s `UserAdd`,
+  # `UserGrantRole`, `RoleAdd`, `RoleGrantPermission`, `AuthEnable`, the permission types;
+  # retry.go's `RetryAuthClient` and `retryAuthClient`'s same five)
+  "NewAuth", "authClient", "authClient.UserAdd", "authClient.UserGrantRole", "authClient.RoleAdd",
+  "authClient.RoleGrantPermission", "authClient.AuthEnable", "PermissionType", "PermRead",
+  "PermWrite", "PermReadWrite", "RetryAuthClient", "retryAuthClient", "retryAuthClient.UserAdd",
+  "retryAuthClient.UserGrantRole", "retryAuthClient.RoleAdd", "retryAuthClient.RoleGrantPermission",
+  "retryAuthClient.AuthEnable",
+  # the auth plan's C1 phase 2 (2026-10-28): a user client's token (`getToken`, the client's
+  # `Authenticate` and its retrying wrapper's)
+  "Client.getToken", "authClient.Authenticate", "retryAuthClient.Authenticate",
+  # the closed lease example (2026-11-02, `notes/lease-ex-plan.md`): the client's lease reads
+  # (lease.go's `TimeToLive`, `Leases`; op.go's `LeaseOp.applyOpts`, `toLeaseTimeToLiveRequest`;
+  # retry.go's two wrappers)
+  "lessor.TimeToLive", "lessor.Leases", "LeaseOp.applyOpts", "toLeaseTimeToLiveRequest",
+  "retryLeaseClient.LeaseTimeToLive", "retryLeaseClient.LeaseLeases",
+  # etcd-refimpl: the reference implementation's init()s
+  "init.0"]
+imports = ["!*", "context", "sync", "time", "go.etcd.io/etcd/api/v3/etcdserverpb", "go.etcd.io/etcd/api/v3/authpb", "go.etcd.io/etcd/api/v3/mvccpb", "go.etcd.io/etcd/api/v3/v3rpc/rpctypes", "google.golang.org/grpc/codes", "google.golang.org/grpc/status", "google.golang.org/grpc", "google.golang.org/grpc/credentials", "go.etcd.io/etcd/client/v3/internal/resolver", "go.etcd.io/etcd/client/v3/credentials", "go.uber.org/zap", "sync/atomic", "google.golang.org/protobuf/proto", "fmt", "errors", "google.golang.org/grpc/peer", "crypto/tls", "strings", "google.golang.org/grpc/keepalive", "google.golang.org/grpc/credentials/insecure", "go.etcd.io/etcd/client/v3/internal/endpoint", "go.etcd.io/etcd/client/pkg/v3/logutil", "io", "google.golang.org/grpc/metadata"]
+
+# translate the definitions of all type declarations goose supports
+translate_types = true

@@ -1,9 +1,10 @@
 /-
-`go_etcd_io/etcd/server/v3/etcdserver/api/membership`'s package-initialization axioms (`opaqueInitsOk`, `errorsNewVarsInit`, etcd-grove's
-`Proof/go_etcd_io/etcd/server/v3/etcdserver/api/membership/Init.lean`), read in the model: the untranslated package-variable initializers are `initNoop`; `errorsNewVarsInit`'s, each a `var X = errors.New(msg)`, are Go's (`errorsNewVarInit`, Perennial's `errors.New`).
+`go_etcd_io/etcd/server/v3/etcdserver/api/membership`'s package-initialization axioms (`opaqueInitsOk`, `errorsNewVarsInit`, `initFuncsOk`, etcd-grove's
+`Proof/go_etcd_io/etcd/server/v3/etcdserver/api/membership/Init.lean`), read in the model: the untranslated package-variable initializers are `initNoop`; `errorsNewVarsInit`'s, each a `var X = errors.New(msg)`, are Go's (`errorsNewVarInit`, Perennial's `errors.New`); its `init()`s are Go, translated, with empty bodies.
 -/
 module
 
+public import Refimpl.Gen.go_etcd_io.etcd.server.v3.etcdserver.api.membership
 public import Proof.go_etcd_io.etcd.server.v3.etcdserver.api.membership.Init
 public import Refimpl.Subst
 public import Refimpl.Common
@@ -26,6 +27,7 @@ variable [GooseExts] [GooseSemantics] [GooseInterp]
 variable [go_gctx : GoGlobalContext]
 variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
+variable [ref : _root_.Perennial.go_etcd_io.etcd.server.v3.etcdserver.api.membership.Refimpl]
 
 theorem go_etcd_io_etcd_server_v3_etcdserver_api_membership.opaqueInitsOk.model_proof :
     model% (type_of% (_root_.Perennial.go_etcd_io.etcd.server.v3.etcdserver.api.membership.opaqueInitsOk (GF := GF) (hG := hG))) with
@@ -87,6 +89,15 @@ theorem go_etcd_io_etcd_server_v3_etcdserver_api_membership.errorsNewVarsInit.mo
   simp only [List.mem_cons, List.not_mem_nil, or_false, Prod.mk.injEq] at h
   rcases h with ⟨rfl, rfl, rfl⟩ | ⟨rfl, rfl, rfl⟩ | ⟨rfl, rfl, rfl⟩ | ⟨rfl, rfl, rfl⟩ | ⟨rfl, rfl, rfl⟩ | ⟨rfl, rfl, rfl⟩ <;>
   exact errorsNewVarInit_ok _ _
+
+theorem go_etcd_io_etcd_server_v3_etcdserver_api_membership.initFuncsOk.model_proof :
+    model% (type_of% (_root_.Perennial.go_etcd_io.etcd.server.v3.etcdserver.api.membership.initFuncsOk (GF := GF) (hG := hG))) with [] := by
+  intro f hf
+  simp only [List.mem_cons, List.not_mem_nil, or_false] at hf
+  rcases hf with rfl <;>
+  · wp_start
+    iapply HΦ
+    ipureintro; trivial
 
 end proof
 

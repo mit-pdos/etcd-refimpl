@@ -1,0 +1,40 @@
+# The server's Range, Put, DeleteRange and Txn over the mvcc core, with bodies: txn.go,
+# put.go, range.go (with kvSort and its five sorters), delete.go and util.go's read-only loggers
+# (unit P4: `WarnOfExpensiveReadOnly{Range,Txn}Request`, `warnOfExpensiveGenericRequest`, `isNil`
+# through reflect's names-only `ValueOf`/`IsNil`). Names only: util.go's `WarnOfExpensiveRequest`
+# and `WarnOfFailedRequest` (the apply thread's `dispatch` passes them a response whose fields no
+# predicate holds for most requests, so their specs cannot have the premise `proto.Size` needs:
+# notes/STATUS.md, "Units P1/P1b/P4"), and metrics.go (prometheus; a float division).
+translate = ["!*",
+  # txn.go
+  "Txn", "txn", "newTxnResp", "executeTxn", "checkTxn", "compareInt64", "compareToPath",
+  "applyCompares", "applyCompare", "compareKV", "IsTxnSerializable", "IsTxnReadonly",
+  # put.go
+  "Put", "put", "checkPut", "checkLease", "checkAndGetPrevKV", "getPrevKV",
+  # range.go
+  "Count", "Range", "executeRange", "rangeLimit", "IsDefaultOrdering", "HasRevisionFilters",
+  "filterRangeResults", "sortRangeResults", "asembleRangeResponse", "checkRange", "pruneKVs",
+  "kvSort", "kvSort.Swap", "kvSort.Len",
+  "kvSortByKey", "kvSortByKey.Less", "kvSortByVersion", "kvSortByVersion.Less",
+  "kvSortByCreate", "kvSortByCreate.Less", "kvSortByMod", "kvSortByMod.Less",
+  "kvSortByValue", "kvSortByValue.Less",
+  # the promoted methods of the sorters' embedded *kvSort (goose's MethodUnfold wrappers)
+  "kvSortByKey.Swap", "kvSortByKey.Len", "kvSortByVersion.Swap", "kvSortByVersion.Len",
+  "kvSortByCreate.Swap", "kvSortByCreate.Len", "kvSortByMod.Swap", "kvSortByMod.Len",
+  "kvSortByValue.Swap", "kvSortByValue.Len",
+  # delete.go
+  "DeleteRange", "deleteRange", "mkGteRange",
+  # util.go
+  "WarnOfExpensiveReadOnlyTxnRequest", "WarnOfExpensiveReadOnlyRangeRequest",
+  "warnOfExpensiveGenericRequest", "isNil",
+  # etcd-refimpl: the reference implementation's init()s
+  "init.0"]
+imports = ["!*", "bytes", "context", "fmt", "math", "reflect", "sort", "strings", "time",
+  "go.uber.org/zap", "google.golang.org/protobuf/proto",
+  "github.com/prometheus/client_golang/prometheus",
+  "go.etcd.io/etcd/api/v3/etcdserverpb", "go.etcd.io/etcd/api/v3/mvccpb",
+  "go.etcd.io/etcd/pkg/v3/traceutil", "go.etcd.io/etcd/server/v3/etcdserver/errors",
+  "go.etcd.io/etcd/server/v3/lease", "go.etcd.io/etcd/server/v3/storage/mvcc"]
+
+# translate the definitions of all type declarations goose supports
+translate_types = true

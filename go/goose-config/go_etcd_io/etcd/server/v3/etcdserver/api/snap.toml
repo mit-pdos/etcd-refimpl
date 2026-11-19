@@ -1,0 +1,12 @@
+# Types and names only: function and method bodies are axiomatized. (D22 S-h, 2026-10-20) `io` and
+# raftpb imported, so that `Message` (a raft message, its reader, its size, its `closeC`) is a
+# translated struct: `sendMergedSnap` reads its `TotalSize` field.
+# (2026-10-24, rafthttp stage 7d) `Message`'s `GetTo`, promoted from its embedded raft message:
+# `Transport.SendSnapshot` looks up the peer it names.
+translate = ["!*", "Message.GetTo",
+  # etcd-refimpl: the reference implementation's init()s
+  "init.0"]
+imports = ["!*", "io", "go.etcd.io/raft/v3/raftpb"]
+
+# translate the definitions of all type declarations goose supports
+translate_types = true
