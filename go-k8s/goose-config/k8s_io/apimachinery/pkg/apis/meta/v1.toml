@@ -24,7 +24,7 @@ translate = ["!*", "StatusFailure", "StatusReasonTimeout", "CauseTypeResourceVer
   "Time.DeepCopyInto",
   # END etc/gen-k8s-deep.py
   # etcd-refimpl: the reference implementation's bodies
-  "LabelSelectorAsSelector"]
+  "LabelSelectorAsSelector", "init.0", "init.1"]
 imports = ["!*", "k8s.io/apimachinery/pkg/types", "k8s.io/apimachinery/pkg/runtime",
   "k8s.io/apimachinery/pkg/runtime/schema", "time"]
 

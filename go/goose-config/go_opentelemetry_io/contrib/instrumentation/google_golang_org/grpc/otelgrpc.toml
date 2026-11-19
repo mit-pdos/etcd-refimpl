@@ -1,0 +1,7 @@
+# Types and names only: function and method bodies are axiomatized.
+# etcd-refimpl: and the reference implementation's NewServerHandler
+translate = ["!*", "NewServerHandler"]
+imports = ["!*"]
+
+# translate the definitions of all type declarations goose supports
+translate_types = true

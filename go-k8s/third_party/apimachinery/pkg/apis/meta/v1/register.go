@@ -98,10 +98,10 @@ func AddMetaToScheme(scheme *runtime.Scheme) error {
 }
 
 func init() {
-	scheme.AddUnversionedTypes(SchemeGroupVersion, optionsTypes...)
-
-	utilruntime.Must(AddMetaToScheme(scheme))
-
-	// register manually. This usually goes through the SchemeBuilder, which we cannot use here.
-	utilruntime.Must(RegisterDefaults(scheme))
+	// refimpl: registers nothing in the package's scheme (the model has no scheme).
+	// The real code:
+	//   scheme.AddUnversionedTypes(SchemeGroupVersion, optionsTypes...)
+	//   utilruntime.Must(AddMetaToScheme(scheme))
+	//   utilruntime.Must(RegisterDefaults(scheme))
+	// (the last "registers manually": the SchemeBuilder cannot be used here)
 }

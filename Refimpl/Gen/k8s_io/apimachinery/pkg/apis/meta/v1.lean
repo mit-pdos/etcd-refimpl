@@ -21,7 +21,6 @@ noncomputable section
 
 namespace k8s_io.apimachinery.pkg.apis.«meta».v1
 
-
 /-- LabelSelectorAsSelector converts the LabelSelector api type into a struct that implements
     labels.Selector
     Note: This function should be kept in sync with the selector methods in pkg/labels/selector.go
@@ -76,12 +75,33 @@ noncomputable def LabelSelectorAsSelector.impl [GooseExts] [GoGlobalContext] : v
   (Val #()))))))
   (Pair (App (Val (GoInstruction (GoLoad _root_.Perennial.k8s_io.apimachinery.pkg.labels.Selector.ty))) (Var "$res0")) (App (Val (GoInstruction (GoLoad go.error))) (Var "$res1")))))))
 
+/-- go: register.go:100:6 -/
+noncomputable def init.«0».impl [GooseExts] [GoGlobalContext] : val :=
+  (LamV BAnon
+  (Seq (App (Val exceptionDo)
+  (App (Val doExecute)
+  (Val #())))
+  (Val #())))
+
+
+/-- go: zz_generated.conversion.go:37:6 -/
+noncomputable def init.«1».impl [GooseExts] [GoGlobalContext] : val :=
+  (LamV BAnon
+  (Seq (App (Val exceptionDo)
+  (App (Val doExecute)
+  (Val #())))
+  (Val #())))
+
 /-- The reference implementation's bindings: each name to its translated body. -/
 class Refimpl [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
   LabelSelectorAsSelector_unfold : FuncUnfold LabelSelectorAsSelector [] LabelSelectorAsSelector.impl
+  «init.0_unfold» : FuncUnfold init.«0» [] init.«0».impl
+  «init.1_unfold» : FuncUnfold init.«1» [] init.«1».impl
 
 attribute [instance]
   Refimpl.LabelSelectorAsSelector_unfold
+  Refimpl.«init.0_unfold»
+  Refimpl.«init.1_unfold»
 
 end k8s_io.apimachinery.pkg.apis.«meta».v1
 

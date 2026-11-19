@@ -46,51 +46,15 @@ type serverHandler struct {
 }
 
 // NewServerHandler creates a stats.Handler for a gRPC server.
-func NewServerHandler(opts ...Option) stats.Handler {
-	c := newConfig(opts)
-	if c.SpanKind == trace.SpanKindUnspecified {
-		c.SpanKind = trace.SpanKindServer
-	}
-
-	h := &serverHandler{config: c}
-
-	h.tracer = c.TracerProvider.Tracer(
-		ScopeName,
-		trace.WithInstrumentationVersion(Version),
-	)
-
-	meter := c.MeterProvider.Meter(
-		ScopeName,
-		metric.WithInstrumentationVersion(Version),
-		metric.WithSchemaURL(semconv.SchemaURL),
-	)
-
-	var err error
-	if c.semconvMode == semconvModeOld || c.semconvMode == semconvModeDup {
-		oldDur, err := oldrpcconv.NewServerDuration(meter)
-		if err != nil {
-			otel.Handle(err)
-		} else {
-			h.oldDuration = oldDur
-		}
-	}
-
-	if c.semconvMode == semconvModeNew || c.semconvMode == semconvModeDup {
-		h.duration, err = rpcconv.NewServerCallDuration(
-			meter,
-			metric.WithExplicitBucketBoundaries(
-				0.005, 0.01, 0.025, 0.05, 0.075, 0.1,
-				0.25, 0.5, 0.75, 1, 2.5, 5, 7.5, 10,
-			),
-		)
-		if err != nil {
-			otel.Handle(err)
-		}
-	}
-
-	return h
+func NewServerHandler(_ ...Option) stats.Handler {
+	// refimpl: no handler. grpc's StatsHandler option ignores a nil one (server.go:
+	// "ignoring nil parameter in grpc.StatsHandler ServerOption"), so no call is tagged
+	// or recorded. The real code builds a *serverHandler from the options' tracer and
+	// meter providers.
+	return nil
 }
 
+//line stats_handler.go:94
 // TagConn can attach some information to the given context.
 func (*serverHandler) TagConn(ctx context.Context, _ *stats.ConnTagInfo) context.Context {
 	return ctx

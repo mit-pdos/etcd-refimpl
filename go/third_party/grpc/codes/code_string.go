@@ -21,11 +21,11 @@ package codes
 import (
 	"strconv"
 
-	"google.golang.org/grpc/internal"
+	_ "google.golang.org/grpc/internal"
 )
 
 func init() {
-	internal.CanonicalString = canonicalString
+	// refimpl: sets no hook (internal.CanonicalString, read only by grpc's own status printing)
 }
 
 func (c Code) String() string {

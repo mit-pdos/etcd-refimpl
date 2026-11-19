@@ -261,11 +261,11 @@ func (v *HistogramVec) ResetLabelAllowLists() {
 }
 
 // WithContext returns wrapped HistogramVec with context
-func (v *HistogramVec) WithContext(ctx context.Context) *HistogramVecWithContext {
-	return &HistogramVecWithContext{
-		ctx:          ctx,
-		HistogramVec: v,
-	}
+func (v *HistogramVec) WithContext(_ context.Context) *HistogramVecWithContext {
+	// refimpl: a nil wrapper (its WithLabelValues reads nothing): neither the vector
+	// nor the context is kept (the real code: &HistogramVecWithContext{ctx: ctx,
+	// HistogramVec: v})
+	return nil
 }
 
 // HistogramVecWithContext is the wrapper of HistogramVec with context.
@@ -274,8 +274,8 @@ type HistogramVecWithContext struct {
 	ctx context.Context
 }
 
-func (h *exemplarHistogramVec) Observe(v float64) {
-	h.withExemplar(v)
+func (h *exemplarHistogramVec) Observe(_ float64) {
+	// refimpl: records nothing
 }
 
 func (h *exemplarHistogramVec) withExemplar(v float64) {
@@ -294,11 +294,11 @@ func (h *exemplarHistogramVec) withExemplar(v float64) {
 }
 
 // WithLabelValues is the wrapper of HistogramVec.WithLabelValues.
-func (vc *HistogramVecWithContext) WithLabelValues(lvs ...string) *exemplarHistogramVec {
-	return &exemplarHistogramVec{
-		HistogramVecWithContext: vc,
-		observer:                vc.HistogramVec.WithLabelValues(lvs...),
-	}
+func (vc *HistogramVecWithContext) WithLabelValues(_ ...string) *exemplarHistogramVec {
+	// refimpl: a nil observer (its Observe records nothing), whatever the values (the
+	// real code wraps vc.HistogramVec.WithLabelValues(lvs...), which panics on values
+	// the vector's labels do not accept: the spec's premise)
+	return nil
 }
 
 // With is the wrapper of HistogramVec.With.

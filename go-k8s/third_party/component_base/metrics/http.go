@@ -29,7 +29,7 @@ var (
 )
 
 func init() {
-	processStartedAt = time.Now()
+	// refimpl: records no start time (processStartedAt stays zero)
 }
 
 // These constants cause handlers serving metrics to behave as described if

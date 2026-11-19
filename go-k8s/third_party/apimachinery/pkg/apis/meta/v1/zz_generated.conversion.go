@@ -35,7 +35,7 @@ import (
 )
 
 func init() {
-	localSchemeBuilder.Register(RegisterConversions)
+	// refimpl: registers no conversions (the model has no scheme)
 }
 
 // RegisterConversions adds conversion functions to the given scheme.
