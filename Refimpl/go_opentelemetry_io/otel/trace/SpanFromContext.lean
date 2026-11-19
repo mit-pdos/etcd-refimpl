@@ -31,20 +31,17 @@ theorem trace.SpanFromContext.model_proof :
   iapply HΦ
   unfold EtcdGrove.trace.isSpan
   iexists _
-  isplitr; · ipure_intro; rfl
+  isplitr; · ipureintro; rfl
   isplitr
   · imodintro; iintro %opts
     wp_start
-    wp_auto
     iapply HΦ; itrivial
   isplitr
   · imodintro; iintro %name %opts
     wp_start
-    wp_auto
     iapply HΦ; itrivial
   · imodintro; iintro %err %opts
     wp_start
-    wp_auto
     iapply HΦ; itrivial
 
 end proof

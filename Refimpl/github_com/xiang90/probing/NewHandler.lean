@@ -1,6 +1,7 @@
 module
 
 public import Refimpl.github_com.xiang90.probing.Impl
+public import GeneratedProof.net.http
 public import Proof.net.http.Boundary
 
 @[expose] public section
@@ -31,28 +32,32 @@ theorem probing.NewHandler.model_proof
     model% (EtcdGrove.probing.NewHandler.spec (GF := GF) (hG := hG)) with [] := by
   wp_start as -
   wp_auto
+  wp_alloc hl as Hl
+  wp_auto
   iapply HΦ
   isplitr
-  · ipure_intro; exact http.handlerRegOk_ptr _ _
+  · ipureintro; exact http.handlerRegOk_ptr _ _
   imodintro
   iintro %H %a %Rs %pats %pat #Hresp %Hhdr
   unfold http.handlerFor
   iexists _
-  isplitr; · ipure_intro; rfl
+  isplitr; · ipureintro; rfl
   imodintro
   iintro %wi %r %R %γk %rd - %Hroute - - - Hw Hhd %Hfl HRs
   obtain ⟨Hhost, Hmux⟩ := Hroute
+  dsimp only
+  rw [method_unfold (t := go.GoType.PointerType github_com.xiang90.probing.httpHealth.ty)
+    (m := go!"ServeHTTP")]
   wp_auto
   wp_apply hWriteHeader H _ wi a R γk (W64 200) rfl $$ [$Hw Hhd] as Hw
   · isplitr
-    · imodintro; iapply Hresp; ipure_intro
+    · imodintro; iapply Hresp; ipureintro
       exact ⟨Hhost, http.route_of_muxRoute Hmux⟩
     isplitr
-    · ipure_intro; decide
+    · ipureintro; decide
     simp only [http.hdrsReady]
-    iexists _; iframe; ipure_intro
+    iexists _; iframe; ipureintro
     exact ⟨Hhdr R (http.route_of_muxRoute Hmux), http.respHdrsOk_nil⟩
-  wp_auto
   iframe HRs; unfold http.handlerDone; ileft; iexists _, _; iexact Hw
 
 end proof

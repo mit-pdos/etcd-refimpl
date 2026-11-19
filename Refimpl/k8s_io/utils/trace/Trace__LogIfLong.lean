@@ -1,6 +1,7 @@
 module
 
 public import Refimpl.k8s_io.utils.trace.Impl
+public import Perennial.GeneratedProof.time
 
 @[expose] public section
 
@@ -21,7 +22,9 @@ variable {GF : BundledGFunctors} [hG : HeapGS HasLC.hasLC GF]
 variable [sem : go.Semantics]
 variable [ref : k8s_io.utils.trace.Refimpl]
 variable [package_sem : k8s_io.utils.trace.Assumptions]
+variable [time_sem : _root_.Perennial.time.Assumptions]
 
+include time_sem in
 theorem trace.Trace.LogIfLong.model_proof :
     model% (EtcdGrove.trace.Trace.LogIfLong.spec (GF := GF) (hG := hG)) with [] := by
   intro t d
