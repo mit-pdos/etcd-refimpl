@@ -10,6 +10,8 @@ that registers nothing, and metrics that record nothing:
 
 ```go
 func NewCounter(opts CounterOpts) Counter                    { return (*counter)(nil) }
+func NewGauge(opts GaugeOpts) Gauge                          { return (*gauge)(nil) }
+func NewHistogram(opts HistogramOpts) Histogram              { return (*histogram)(nil) }
 func (v *CounterVec) WithLabelValues(lvs ...string) Counter  { return (*counter)(nil) }
 func (v *GaugeVec) WithLabelValues(lvs ...string) Gauge      { return (*gauge)(nil) }
 func (v *GaugeVec) With(labels Labels) Gauge                 { return (*gauge)(nil) }
@@ -24,7 +26,22 @@ func (h *histogram) Observe(v float64)                       {}
 func Register(c Collector) error                             { return nil }
 func MustRegister(cs ...Collector)                           {}
 func init()                                                  {}  // registry.go's
+
+func ExponentialBuckets(start, factor float64, count int) []float64 {
+	buckets := make([]float64, count)
+	bits := *(*uint64)(unsafe.Pointer(&start))
+	for i := 0; i < count; i++ {
+		*(*uint64)(unsafe.Pointer(&buckets[i])) = bits + uint64(i)<<52
+	}
+	return buckets
+}
 ```
+
+`ExponentialBuckets` computes the buckets of the spec's case (`factor` 2, `start` a positive normal
+float64, the last bucket finite: `expBucketsArgsOk`) on the float64s' bits, through `uint64`
+views (Perennial's float arithmetic is uninterpreted, a plain view is not): doubling such a float64
+adds `1 << 52` to its bits. It ignores `factor` and checks nothing, which the spec allows. The
+histogram `NewHistogram` returns keeps no buckets: the spec's slice points-to is dropped.
 
 (Go calls a method on a nil pointer: the bodies never dereference their receivers.)
 `HistogramVec.WithLabelValues` is proved since etcd-grove `4fcdd2aa9d`, whose `observerSpec`

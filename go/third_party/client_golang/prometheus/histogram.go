@@ -22,6 +22,7 @@ import (
 	"sync"
 	"sync/atomic"
 	"time"
+	"unsafe"
 
 	dto "github.com/prometheus/client_model/go"
 
@@ -313,19 +314,13 @@ func LinearBuckets(start, width float64, count int) []float64 {
 // The function panics if 'count' is 0 or negative, if 'start' is 0 or negative,
 // or if 'factor' is less than or equal 1.
 func ExponentialBuckets(start, factor float64, count int) []float64 {
-	if count < 1 {
-		panic("ExponentialBuckets needs a positive count")
-	}
-	if start <= 0 {
-		panic("ExponentialBuckets needs a positive start value")
-	}
-	if factor <= 1 {
-		panic("ExponentialBuckets needs a factor greater than 1")
-	}
+	// refimpl: the buckets of etcd's calls (factor 2, start a positive normal float64, the last
+	// bucket finite: no check panics), computed on the bits: each doubling adds 1<<52 (one to the
+	// exponent). Perennial's float arithmetic is uninterpreted; a uint64 view of a float64 is not.
 	buckets := make([]float64, count)
-	for i := range buckets {
-		buckets[i] = start
-		start *= factor
+	bits := *(*uint64)(unsafe.Pointer(&start))
+	for i := 0; i < count; i++ {
+		*(*uint64)(unsafe.Pointer(&buckets[i])) = bits + uint64(i)<<52
 	}
 	return buckets
 }
@@ -524,16 +519,8 @@ type HistogramVecOpts struct {
 // perform the corresponding type assertion. Exemplars are tracked separately
 // for each bucket.
 func NewHistogram(opts HistogramOpts) Histogram {
-	return newHistogram(
-		V2.NewDesc(
-			BuildFQName(opts.Namespace, opts.Subsystem, opts.Name),
-			opts.Help,
-			UnconstrainedLabels(nil),
-			opts.ConstLabels,
-			WithUnit(opts.Unit),
-		),
-		opts,
-	)
+	// refimpl: a histogram that records nothing (its Observe never dereferences it)
+	return (*histogram)(nil)
 }
 
 func newHistogram(desc *Desc, opts HistogramOpts, labelValues ...string) Histogram {

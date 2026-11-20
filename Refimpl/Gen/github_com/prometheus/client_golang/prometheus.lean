@@ -89,7 +89,30 @@ noncomputable def CounterVec.WithLabelValues.impl [GooseExts] [GoGlobalContext] 
   (App (Val (GoInstruction (GoStore Counter.ty))) (Pair (Var "$res0") (Var "$r0")))))))))
   (App (Val (GoInstruction (GoLoad Counter.ty))) (Var "$res0"))))))
 
-/-- go: gauge.go:107:17 -/
+/-- NewGauge creates a new Gauge based on the provided GaugeOpts.
+
+    The returned implementation is optimized for a fast Set method. If you have a
+    choice for managing the value of a Gauge via Set vs. Inc/Dec/Add/Sub, pick
+    the former. For example, the Inc method of the returned Gauge is slower than
+    the Inc method of a Counter returned by NewCounter. This matches the typical
+    scenarios for Gauges and Counters, where the former tends to be Set-heavy and
+    the latter Inc-heavy.
+
+    go: gauge.go:78:6 -/
+noncomputable def NewGauge.impl [GooseExts] [GoGlobalContext] : val :=
+  (LamV "opts"
+  (Let "$res0" (App (Val (GoInstruction (GoAlloc Gauge.ty))) (App (Val (GoInstruction (GoZeroVal Gauge.ty))) (Val #())))
+  (Seq (App (Val exceptionDo)
+  (Let "opts" (App (Val (GoInstruction (GoAlloc GaugeOpts.ty))) (Var "opts"))
+  (Let "$r0" (App (Val (GoInstruction (Convert (go.GoType.PointerType gauge.ty) Gauge.ty))) (App (Val (GoInstruction (Convert go.untypedNil (go.GoType.PointerType gauge.ty)))) (Val UntypedNil)))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (Val #()))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore Gauge.ty))) (Pair (Var "$res0") (Var "$r0"))))))))
+  (App (Val (GoInstruction (GoLoad Gauge.ty))) (Var "$res0")))))
+
+/-- go: gauge.go:99:17 -/
 noncomputable def gauge.Set.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV "g"
   (Lam "val"
@@ -100,7 +123,7 @@ noncomputable def gauge.Set.impl [GooseExts] [GoGlobalContext] : val :=
   (Val #())))))
   (Val #()))))
 
-/-- go: gauge.go:115:17 -/
+/-- go: gauge.go:107:17 -/
 noncomputable def gauge.Inc.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV "g"
   (Lam BAnon
@@ -110,7 +133,7 @@ noncomputable def gauge.Inc.impl [GooseExts] [GoGlobalContext] : val :=
   (Val #()))))
   (Val #()))))
 
-/-- go: gauge.go:119:17 -/
+/-- go: gauge.go:111:17 -/
 noncomputable def gauge.Dec.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV "g"
   (Lam BAnon
@@ -120,7 +143,7 @@ noncomputable def gauge.Dec.impl [GooseExts] [GoGlobalContext] : val :=
   (Val #()))))
   (Val #()))))
 
-/-- go: gauge.go:123:17 -/
+/-- go: gauge.go:115:17 -/
 noncomputable def gauge.Add.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV "g"
   (Lam "val"
@@ -137,7 +160,7 @@ noncomputable def gauge.Add.impl [GooseExts] [GoGlobalContext] : val :=
 
     	myVec.WithLabelValues("404", "GET").Add(42)
 
-    go: gauge.go:231:20 -/
+    go: gauge.go:223:20 -/
 noncomputable def GaugeVec.WithLabelValues.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV "v"
   (Lam "lvs"
@@ -158,7 +181,7 @@ noncomputable def GaugeVec.WithLabelValues.impl [GooseExts] [GoGlobalContext] : 
 
     	myVec.With(prometheus.Labels{"code": "404", "method": "GET"}).Add(42)
 
-    go: gauge.go:240:20 -/
+    go: gauge.go:232:20 -/
 noncomputable def GaugeVec.With.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV "v"
   (Lam "labels"
@@ -174,7 +197,79 @@ noncomputable def GaugeVec.With.impl [GooseExts] [GoGlobalContext] : val :=
   (App (Val (GoInstruction (GoStore Gauge.ty))) (Pair (Var "$res0") (Var "$r0")))))))))
   (App (Val (GoInstruction (GoLoad Gauge.ty))) (Var "$res0"))))))
 
-/-- go: histogram.go:770:21 -/
+/-- ExponentialBuckets creates 'count' regular buckets, where the lowest bucket
+    has an upper bound of 'start' and each following bucket's upper bound is
+    'factor' times the previous bucket's upper bound. The final +Inf bucket is
+    not counted and not included in the returned slice. The returned slice is
+    meant to be used for the Buckets field of HistogramOpts.
+
+    The function panics if 'count' is 0 or negative, if 'start' is 0 or negative,
+    or if 'factor' is less than or equal 1.
+
+    go: histogram.go:316:6 -/
+noncomputable def ExponentialBuckets.impl [GooseExts] [GoGlobalContext] : val :=
+  (LamV "start"
+  (Lam "factor"
+  (Lam "count"
+  (Let "$res0" (App (Val (GoInstruction (GoAlloc (go.GoType.SliceType go.float64)))) (App (Val (GoInstruction (GoZeroVal (go.GoType.SliceType go.float64)))) (Val #())))
+  (Seq (App (Val exceptionDo)
+  (Let "count" (App (Val (GoInstruction (GoAlloc go.int))) (Var "count"))
+  (Let "factor" (App (Val (GoInstruction (GoAlloc go.float64))) (Var "factor"))
+  (Let "start" (App (Val (GoInstruction (GoAlloc go.float64))) (Var "start"))
+  (Let "$r0" (App (App (Val (GoInstruction (FuncResolve go.make2 [(go.GoType.SliceType go.float64)]))) (Val #())) (App (Val (GoInstruction (GoLoad go.int))) (Var "count")))
+  (Let "buckets" (App (Val (GoInstruction (GoAlloc (go.GoType.SliceType go.float64)))) (App (Val (GoInstruction (GoZeroVal (go.GoType.SliceType go.float64)))) (Val #())))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (App (Val (GoInstruction (GoLoad go.uint64))) (App (Val (GoInstruction (Convert «unsafe».Pointer (go.GoType.PointerType go.uint64)))) (App (Val (GoInstruction (Convert (go.GoType.PointerType go.float64) «unsafe».Pointer))) (Var "start"))))
+  (Let "bits" (App (Val (GoInstruction (GoAlloc go.uint64))) (App (Val (GoInstruction (GoZeroVal go.uint64))) (Val #())))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (App (Val (GoInstruction (GoLoad (go.GoType.SliceType go.float64)))) (Var "buckets"))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (Val #()))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore (go.GoType.SliceType go.float64)))) (Pair (Var "$res0") (Var "$r0"))))))))
+  (Let "$r0" (Val #(W64 0))
+  (Let "i" (App (Val (GoInstruction (GoAlloc go.int))) (App (Val (GoInstruction (GoZeroVal go.int))) (Val #())))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (App (Val doFor) (Lam BAnon
+  (App (Val (GoInstruction (GoOp GoLt go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "i")) (App (Val (GoInstruction (GoLoad go.int))) (Var "count")))))) (Lam BAnon
+  (Let "$r0" (App (Val (GoInstruction (GoOp GoPlus go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (Var "bits")) (App (Val (GoInstruction (GoOp GoShiftl go.uint64))) (Pair (App (Val (GoInstruction (Convert go.int go.uint64))) (App (Val (GoInstruction (GoLoad go.int))) (Var "i"))) (App (Val (GoInstruction (Convert go.untypedInt go.uint64))) (Val #(52 : Int)))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.uint64))) (Pair (App (Val (GoInstruction (Convert «unsafe».Pointer (go.GoType.PointerType go.uint64)))) (App (Val (GoInstruction (Convert (go.GoType.PointerType go.float64) «unsafe».Pointer))) (App (Val (GoInstruction (IndexRef (go.GoType.SliceType go.float64)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.SliceType go.float64)))) (Var "buckets")) (App (Val (GoInstruction (GoLoad go.int))) (Var "i")))))) (Var "$r0")))))))
+  (Lam BAnon
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.int))) (Pair (Var "i") (App (Val (GoInstruction (GoOp GoPlus go.int))) (Pair (App (Val (GoInstruction (GoLoad go.int))) (Var "i")) (Val #(W64 1)))))))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.int))) (Pair (Var "i") (Var "$r0"))))))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.uint64))) (Pair (Var "bits") (Var "$r0")))))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore (go.GoType.SliceType go.float64)))) (Pair (Var "buckets") (Var "$r0")))))))))))
+  (App (Val (GoInstruction (GoLoad (go.GoType.SliceType go.float64)))) (Var "$res0")))))))
+
+/-- NewHistogram creates a new Histogram based on the provided HistogramOpts. It
+    panics if the buckets in HistogramOpts are not in strictly increasing order.
+
+    The returned implementation also implements ExemplarObserver. It is safe to
+    perform the corresponding type assertion. Exemplars are tracked separately
+    for each bucket.
+
+    go: histogram.go:521:6 -/
+noncomputable def NewHistogram.impl [GooseExts] [GoGlobalContext] : val :=
+  (LamV "opts"
+  (Let "$res0" (App (Val (GoInstruction (GoAlloc Histogram.ty))) (App (Val (GoInstruction (GoZeroVal Histogram.ty))) (Val #())))
+  (Seq (App (Val exceptionDo)
+  (Let "opts" (App (Val (GoInstruction (GoAlloc HistogramOpts.ty))) (Var "opts"))
+  (Let "$r0" (App (Val (GoInstruction (Convert (go.GoType.PointerType histogram.ty) Histogram.ty))) (App (Val (GoInstruction (Convert go.untypedNil (go.GoType.PointerType histogram.ty)))) (Val UntypedNil)))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (Val #()))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore Histogram.ty))) (Pair (Var "$res0") (Var "$r0"))))))))
+  (App (Val (GoInstruction (GoLoad Histogram.ty))) (Var "$res0")))))
+
+/-- go: histogram.go:757:21 -/
 noncomputable def histogram.Observe.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV "h"
   (Lam "v"
@@ -191,7 +286,7 @@ noncomputable def histogram.Observe.impl [GooseExts] [GoGlobalContext] : val :=
 
     	myVec.WithLabelValues("404", "GET").Observe(42.21)
 
-    go: histogram.go:1263:24 -/
+    go: histogram.go:1250:24 -/
 noncomputable def HistogramVec.WithLabelValues.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV "v"
   (Lam "lvs"
@@ -264,6 +359,9 @@ class Refimpl [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctio
   histogram_ptr_Observe_unfold : MethodUnfold (go.GoType.PointerType histogram.ty) go!"Observe" histogram.Observe.impl
   HistogramVec_ptr_WithLabelValues_unfold : MethodUnfold (go.GoType.PointerType HistogramVec.ty) go!"WithLabelValues" HistogramVec.WithLabelValues.impl
   NewCounter_unfold : FuncUnfold NewCounter [] NewCounter.impl
+  NewGauge_unfold : FuncUnfold NewGauge [] NewGauge.impl
+  ExponentialBuckets_unfold : FuncUnfold ExponentialBuckets [] ExponentialBuckets.impl
+  NewHistogram_unfold : FuncUnfold NewHistogram [] NewHistogram.impl
   «init.0_unfold» : FuncUnfold init.«0» [] init.«0».impl
   Register_unfold : FuncUnfold Register [] Register.impl
   MustRegister_unfold : FuncUnfold MustRegister [] MustRegister.impl
@@ -281,6 +379,9 @@ attribute [instance]
   Refimpl.histogram_ptr_Observe_unfold
   Refimpl.HistogramVec_ptr_WithLabelValues_unfold
   Refimpl.NewCounter_unfold
+  Refimpl.NewGauge_unfold
+  Refimpl.ExponentialBuckets_unfold
+  Refimpl.NewHistogram_unfold
   Refimpl.«init.0_unfold»
   Refimpl.Register_unfold
   Refimpl.MustRegister_unfold
