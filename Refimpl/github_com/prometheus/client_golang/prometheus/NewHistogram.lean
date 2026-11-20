@@ -32,7 +32,7 @@ theorem prometheus.NewHistogram.model_proof :
   wp_start as -
   wp_auto
   iapply HΦ
-  unfold go_etcd_io.etcd.server.v3.storage.mvcc.histSpec prometheus.collectorName
+  unfold EtcdGrove.prometheus.metric.histSpec prometheus.collectorName
   isplitr
   · iintro !> %x !> %Φ _ HΦ
     dsimp only

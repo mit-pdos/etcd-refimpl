@@ -67,13 +67,32 @@ noncomputable def counter.Inc.impl [GooseExts] [GoGlobalContext] : val :=
   (Val #()))))
   (Val #()))))
 
+/-- NewCounterVec creates a new CounterVec based on the provided CounterOpts and
+    partitioned by the given label names.
+
+    go: counter.go:166:6 -/
+noncomputable def NewCounterVec.impl [GooseExts] [GoGlobalContext] : val :=
+  (LamV "opts"
+  (Lam "labelNames"
+  (Let "$res0" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType CounterVec.ty)))) (App (Val (GoInstruction (GoZeroVal (go.GoType.PointerType CounterVec.ty)))) (Val #())))
+  (Seq (App (Val exceptionDo)
+  (Let "labelNames" (App (Val (GoInstruction (GoAlloc (go.GoType.SliceType go.string)))) (Var "labelNames"))
+  (Let "opts" (App (Val (GoInstruction (GoAlloc CounterOpts.ty))) (Var "opts"))
+  (Let "$r0" (App (Val (GoInstruction (Convert go.untypedNil (go.GoType.PointerType CounterVec.ty)))) (Val UntypedNil))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (Val #()))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore (go.GoType.PointerType CounterVec.ty)))) (Pair (Var "$res0") (Var "$r0")))))))))
+  (App (Val (GoInstruction (GoLoad (go.GoType.PointerType CounterVec.ty)))) (Var "$res0"))))))
+
 /-- WithLabelValues works as GetMetricWithLabelValues, but panics where
     GetMetricWithLabelValues would have returned an error. Not returning an
     error allows shortcuts like
 
     	myVec.WithLabelValues("404", "GET").Add(42)
 
-    go: counter.go:254:22 -/
+    go: counter.go:252:22 -/
 noncomputable def CounterVec.WithLabelValues.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV "v"
   (Lam "lvs"
@@ -154,13 +173,32 @@ noncomputable def gauge.Add.impl [GooseExts] [GoGlobalContext] : val :=
   (Val #())))))
   (Val #()))))
 
+/-- NewGaugeVec creates a new GaugeVec based on the provided GaugeOpts and
+    partitioned by the given label names.
+
+    go: gauge.go:139:6 -/
+noncomputable def NewGaugeVec.impl [GooseExts] [GoGlobalContext] : val :=
+  (LamV "opts"
+  (Lam "labelNames"
+  (Let "$res0" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType GaugeVec.ty)))) (App (Val (GoInstruction (GoZeroVal (go.GoType.PointerType GaugeVec.ty)))) (Val #())))
+  (Seq (App (Val exceptionDo)
+  (Let "labelNames" (App (Val (GoInstruction (GoAlloc (go.GoType.SliceType go.string)))) (Var "labelNames"))
+  (Let "opts" (App (Val (GoInstruction (GoAlloc GaugeOpts.ty))) (Var "opts"))
+  (Let "$r0" (App (Val (GoInstruction (Convert go.untypedNil (go.GoType.PointerType GaugeVec.ty)))) (Val UntypedNil))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (Val #()))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore (go.GoType.PointerType GaugeVec.ty)))) (Pair (Var "$res0") (Var "$r0")))))))))
+  (App (Val (GoInstruction (GoLoad (go.GoType.PointerType GaugeVec.ty)))) (Var "$res0"))))))
+
 /-- WithLabelValues works as GetMetricWithLabelValues, but panics where
     GetMetricWithLabelValues would have returned an error. Not returning an
     error allows shortcuts like
 
     	myVec.WithLabelValues("404", "GET").Add(42)
 
-    go: gauge.go:223:20 -/
+    go: gauge.go:221:20 -/
 noncomputable def GaugeVec.WithLabelValues.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV "v"
   (Lam "lvs"
@@ -181,7 +219,7 @@ noncomputable def GaugeVec.WithLabelValues.impl [GooseExts] [GoGlobalContext] : 
 
     	myVec.With(prometheus.Labels{"code": "404", "method": "GET"}).Add(42)
 
-    go: gauge.go:232:20 -/
+    go: gauge.go:230:20 -/
 noncomputable def GaugeVec.With.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV "v"
   (Lam "labels"
@@ -196,6 +234,32 @@ noncomputable def GaugeVec.With.impl [GooseExts] [GoGlobalContext] : val :=
   (App (Val doExecute)
   (App (Val (GoInstruction (GoStore Gauge.ty))) (Pair (Var "$res0") (Var "$r0")))))))))
   (App (Val (GoInstruction (GoLoad Gauge.ty))) (Var "$res0"))))))
+
+/-- NewGaugeFunc creates a new GaugeFunc based on the provided GaugeOpts. The
+    value reported is determined by calling the given function from within the
+    Write method. Take into account that metric collection may happen
+    concurrently. Therefore, it must be safe to call the provided function
+    concurrently.
+
+    NewGaugeFunc is a good way to create an “info” style metric with a constant
+    value of 1. Example:
+    https://github.com/prometheus/common/blob/8558a5b7db3c84fa38b4766966059a7bd5bfa2ee/version/info.go#L36-L56
+
+    go: gauge.go:284:6 -/
+noncomputable def NewGaugeFunc.impl [GooseExts] [GoGlobalContext] : val :=
+  (LamV "opts"
+  (Lam "function"
+  (Let "$res0" (App (Val (GoInstruction (GoAlloc GaugeFunc.ty))) (App (Val (GoInstruction (GoZeroVal GaugeFunc.ty))) (Val #())))
+  (Seq (App (Val exceptionDo)
+  (Let "function" (App (Val (GoInstruction (GoAlloc (go.GoType.FunctionType (go.signature.Signature [] false [go.float64]))))) (Var "function"))
+  (Let "opts" (App (Val (GoInstruction (GoAlloc GaugeOpts.ty))) (Var "opts"))
+  (Let "$r0" (App (Val (GoInstruction (Convert (go.GoType.PointerType valueFunc.ty) GaugeFunc.ty))) (App (Val (GoInstruction (Convert go.untypedNil (go.GoType.PointerType valueFunc.ty)))) (Val UntypedNil)))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (Val #()))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore GaugeFunc.ty))) (Pair (Var "$res0") (Var "$r0")))))))))
+  (App (Val (GoInstruction (GoLoad GaugeFunc.ty))) (Var "$res0"))))))
 
 /-- ExponentialBuckets creates 'count' regular buckets, where the lowest bucket
     has an upper bound of 'start' and each following bucket's upper bound is
@@ -280,13 +344,32 @@ noncomputable def histogram.Observe.impl [GooseExts] [GoGlobalContext] : val :=
   (Val #())))))
   (Val #()))))
 
+/-- NewHistogramVec creates a new HistogramVec based on the provided HistogramOpts and
+    partitioned by the given label names.
+
+    go: histogram.go:1170:6 -/
+noncomputable def NewHistogramVec.impl [GooseExts] [GoGlobalContext] : val :=
+  (LamV "opts"
+  (Lam "labelNames"
+  (Let "$res0" (App (Val (GoInstruction (GoAlloc (go.GoType.PointerType HistogramVec.ty)))) (App (Val (GoInstruction (GoZeroVal (go.GoType.PointerType HistogramVec.ty)))) (Val #())))
+  (Seq (App (Val exceptionDo)
+  (Let "labelNames" (App (Val (GoInstruction (GoAlloc (go.GoType.SliceType go.string)))) (Var "labelNames"))
+  (Let "opts" (App (Val (GoInstruction (GoAlloc HistogramOpts.ty))) (Var "opts"))
+  (Let "$r0" (App (Val (GoInstruction (Convert go.untypedNil (go.GoType.PointerType HistogramVec.ty)))) (Val UntypedNil))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (Val #()))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore (go.GoType.PointerType HistogramVec.ty)))) (Pair (Var "$res0") (Var "$r0")))))))))
+  (App (Val (GoInstruction (GoLoad (go.GoType.PointerType HistogramVec.ty)))) (Var "$res0"))))))
+
 /-- WithLabelValues works as GetMetricWithLabelValues, but panics where
     GetMetricWithLabelValues would have returned an error. Not returning an
     error allows shortcuts like
 
     	myVec.WithLabelValues("404", "GET").Observe(42.21)
 
-    go: histogram.go:1250:24 -/
+    go: histogram.go:1248:24 -/
 noncomputable def HistogramVec.WithLabelValues.impl [GooseExts] [GoGlobalContext] : val :=
   (LamV "v"
   (Lam "lvs"
@@ -359,9 +442,13 @@ class Refimpl [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctio
   histogram_ptr_Observe_unfold : MethodUnfold (go.GoType.PointerType histogram.ty) go!"Observe" histogram.Observe.impl
   HistogramVec_ptr_WithLabelValues_unfold : MethodUnfold (go.GoType.PointerType HistogramVec.ty) go!"WithLabelValues" HistogramVec.WithLabelValues.impl
   NewCounter_unfold : FuncUnfold NewCounter [] NewCounter.impl
+  NewCounterVec_unfold : FuncUnfold NewCounterVec [] NewCounterVec.impl
   NewGauge_unfold : FuncUnfold NewGauge [] NewGauge.impl
+  NewGaugeVec_unfold : FuncUnfold NewGaugeVec [] NewGaugeVec.impl
+  NewGaugeFunc_unfold : FuncUnfold NewGaugeFunc [] NewGaugeFunc.impl
   ExponentialBuckets_unfold : FuncUnfold ExponentialBuckets [] ExponentialBuckets.impl
   NewHistogram_unfold : FuncUnfold NewHistogram [] NewHistogram.impl
+  NewHistogramVec_unfold : FuncUnfold NewHistogramVec [] NewHistogramVec.impl
   «init.0_unfold» : FuncUnfold init.«0» [] init.«0».impl
   Register_unfold : FuncUnfold Register [] Register.impl
   MustRegister_unfold : FuncUnfold MustRegister [] MustRegister.impl
@@ -379,9 +466,13 @@ attribute [instance]
   Refimpl.histogram_ptr_Observe_unfold
   Refimpl.HistogramVec_ptr_WithLabelValues_unfold
   Refimpl.NewCounter_unfold
+  Refimpl.NewCounterVec_unfold
   Refimpl.NewGauge_unfold
+  Refimpl.NewGaugeVec_unfold
+  Refimpl.NewGaugeFunc_unfold
   Refimpl.ExponentialBuckets_unfold
   Refimpl.NewHistogram_unfold
+  Refimpl.NewHistogramVec_unfold
   Refimpl.«init.0_unfold»
   Refimpl.Register_unfold
   Refimpl.MustRegister_unfold

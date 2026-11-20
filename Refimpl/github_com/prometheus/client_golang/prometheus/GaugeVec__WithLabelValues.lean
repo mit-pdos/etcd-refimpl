@@ -24,7 +24,8 @@ variable [ref : github_com.prometheus.client_golang.prometheus.Refimpl]
 variable [package_sem : github_com.prometheus.client_golang.prometheus.Assumptions]
 
 theorem prometheus.GaugeVec.WithLabelValues.model_proof :
-    model% (EtcdGrove.prometheus.GaugeVec.WithLabelValues.spec (GF := GF) (hG := hG)) with [] := by
+    model% (EtcdGrove.prometheus.GaugeVec.WithLabelValues.spec (GF := GF) (hG := hG)) with
+      [EtcdGrove.prometheus.vecLabels := @prometheus.vecLabels] := by
   intro v lvs ls vs dq
   wp_start as ⟨%Hok, Hlvs⟩
   wp_auto
@@ -33,7 +34,7 @@ theorem prometheus.GaugeVec.WithLabelValues.model_proof :
   isplitr
   · ipureintro; rfl
   iframe Hlvs
-  unfold go_etcd_io.etcd.server.v3.storage.mvcc.gaugeSpec
+  unfold EtcdGrove.prometheus.metric.gaugeSpec
   isplitr
   · iintro !> !> %Φ _ HΦ
     dsimp only

@@ -1,6 +1,6 @@
 /-
-`go_etcd_io/etcd/server/v3/auth`'s package-initialization axioms (`opaqueInitsOk`, `initFuncsOk`, etcd-grove's
-`Proof/go_etcd_io/etcd/server/v3/auth/Init.lean`), read in the model: the untranslated package-variable initializers are `initNoop`; its `init()`s are Go, translated, with empty bodies.
+`go_etcd_io/etcd/server/v3/auth`'s package-initialization axioms (`initFuncsOk`; its `opaqueInitsOk` is gone, every such variable translated in etcd-grove since `1ed1c7f480`, etcd-grove's
+`Proof/go_etcd_io/etcd/server/v3/auth/Init.lean`), read in the model: its `init()`s are Go, translated, with empty bodies.
 -/
 module
 
@@ -27,23 +27,6 @@ variable [go_gctx : GoGlobalContext]
 variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
 variable [ref : _root_.Perennial.go_etcd_io.etcd.server.v3.auth.Refimpl]
-
-theorem go_etcd_io_etcd_server_v3_auth.opaqueInitsOk.model_proof :
-    model% (type_of% (_root_.Perennial.go_etcd_io.etcd.server.v3.auth.opaqueInitsOk (GF := GF) (hG := hG))) with
-      [_root_.Perennial.go_etcd_io.etcd.server.v3.auth.currentAuthRevision.init := @initNoop,
-        _root_.Perennial.go_etcd_io.etcd.server.v3.auth.knownOptions.init := @initNoop,
-        _root_.Perennial.go_etcd_io.etcd.server.v3.auth.DefaultTTL.init := @initNoop,
-        _root_.Perennial.go_etcd_io.etcd.server.v3.auth.«_».init := @initNoop,
-        _root_.Perennial.go_etcd_io.etcd.server.v3.auth.rootPerm.init := @initNoop,
-        _root_.Perennial.go_etcd_io.etcd.server.v3.auth.ErrInvalidAuthMethod.init := @initNoop,
-        _root_.Perennial.go_etcd_io.etcd.server.v3.auth.ErrMissingKey.init := @initNoop,
-        _root_.Perennial.go_etcd_io.etcd.server.v3.auth.ErrKeyMismatch.init := @initNoop,
-        _root_.Perennial.go_etcd_io.etcd.server.v3.auth.ErrVerifyOnly.init := @initNoop] := by
-  intro v hv
-  obtain rfl : v = initNoop := by simpa using hv
-  wp_start
-  iapply HΦ
-  ipureintro; trivial
 
 theorem go_etcd_io_etcd_server_v3_auth.initFuncsOk.model_proof :
     model% (type_of% (_root_.Perennial.go_etcd_io.etcd.server.v3.auth.initFuncsOk (GF := GF) (hG := hG))) with [] := by

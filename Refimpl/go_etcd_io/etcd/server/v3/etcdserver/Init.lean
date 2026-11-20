@@ -31,14 +31,7 @@ variable [ref : _root_.Perennial.go_etcd_io.etcd.server.v3.etcdserver.Refimpl]
 theorem go_etcd_io_etcd_server_v3_etcdserver.opaqueInitsOk.model_proof :
     model% (type_of% (_root_.Perennial.go_etcd_io.etcd.server.v3.etcdserver.opaqueInitsOk (GF := GF) (hG := hG))) with
       [_root_.Perennial.go_etcd_io.etcd.server.v3.etcdserver.«_».init := @initNoop,
-        _root_.Perennial.go_etcd_io.etcd.server.v3.etcdserver.learnerPromoteFailed.init := @initNoop,
-        _root_.Perennial.go_etcd_io.etcd.server.v3.etcdserver.learnerPromoteSucceed.init := @initNoop,
-        _root_.Perennial.go_etcd_io.etcd.server.v3.etcdserver.currentVersion.init := @initNoop,
-        _root_.Perennial.go_etcd_io.etcd.server.v3.etcdserver.currentGoVersion.init := @initNoop,
-        _root_.Perennial.go_etcd_io.etcd.server.v3.etcdserver.fdUsed.init := @initNoop,
-        _root_.Perennial.go_etcd_io.etcd.server.v3.etcdserver.fdLimit.init := @initNoop,
-        _root_.Perennial.go_etcd_io.etcd.server.v3.etcdserver.monitorVersionInterval.init := @initNoop,
-        _root_.Perennial.go_etcd_io.etcd.server.v3.etcdserver.recommendedMaxRequestBytesString.init := @initNoop] := by
+        _root_.Perennial.go_etcd_io.etcd.server.v3.etcdserver.monitorVersionInterval.init := @initNoop] := by
   intro v hv
   obtain rfl : v = initNoop := by simpa using hv
   wp_start

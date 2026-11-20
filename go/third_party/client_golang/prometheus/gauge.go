@@ -137,10 +137,8 @@ type GaugeVec struct {
 // NewGaugeVec creates a new GaugeVec based on the provided GaugeOpts and
 // partitioned by the given label names.
 func NewGaugeVec(opts GaugeOpts, labelNames []string) *GaugeVec {
-	return V2.NewGaugeVec(GaugeVecOpts{
-		GaugeOpts:      opts,
-		VariableLabels: UnconstrainedLabels(labelNames),
-	})
+	// refimpl: a nil vector (its WithLabelValues and With never dereference it)
+	return nil
 }
 
 // NewGaugeVec creates a new GaugeVec based on the provided GaugeVecOpts.
@@ -284,11 +282,6 @@ type GaugeFunc interface {
 // value of 1. Example:
 // https://github.com/prometheus/common/blob/8558a5b7db3c84fa38b4766966059a7bd5bfa2ee/version/info.go#L36-L56
 func NewGaugeFunc(opts GaugeOpts, function func() float64) GaugeFunc {
-	return newValueFunc(V2.NewDesc(
-		BuildFQName(opts.Namespace, opts.Subsystem, opts.Name),
-		opts.Help,
-		UnconstrainedLabels(nil),
-		opts.ConstLabels,
-		WithUnit(opts.Unit),
-	), GaugeValue, function)
+	// refimpl: a nil *valueFunc in a non-nil interface; it never calls function
+	return (*valueFunc)(nil)
 }

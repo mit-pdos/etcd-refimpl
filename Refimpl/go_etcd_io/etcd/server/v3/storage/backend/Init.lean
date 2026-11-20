@@ -1,6 +1,6 @@
 /-
-`go_etcd_io/etcd/server/v3/storage/backend`'s package-initialization axioms (`opaqueInitsOk`, `initFuncsOk`, etcd-grove's
-`Proof/go_etcd_io/etcd/server/v3/storage/backend/Init.lean`), read in the model: the untranslated package-variable initializers are `initNoop`; its `init()`s are Go, translated, with empty bodies.
+`go_etcd_io/etcd/server/v3/storage/backend`'s package-initialization axioms (`initFuncsOk`; its `opaqueInitsOk` is gone, every such variable translated in etcd-grove since `1ed1c7f480`, etcd-grove's
+`Proof/go_etcd_io/etcd/server/v3/storage/backend/Init.lean`), read in the model: its `init()`s are Go, translated, with empty bodies.
 -/
 module
 
@@ -27,18 +27,6 @@ variable [go_gctx : GoGlobalContext]
 variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
 variable [ref : _root_.Perennial.go_etcd_io.etcd.server.v3.storage.backend.Refimpl]
-
-theorem go_etcd_io_etcd_server_v3_storage_backend.opaqueInitsOk.model_proof :
-    model% (type_of% (_root_.Perennial.go_etcd_io.etcd.server.v3.storage.backend.opaqueInitsOk (GF := GF) (hG := hG))) with
-      [_root_.Perennial.go_etcd_io.etcd.server.v3.storage.backend.defragSec.init := @initNoop,
-        _root_.Perennial.go_etcd_io.etcd.server.v3.storage.backend.defragBlockingSec.init := @initNoop,
-        _root_.Perennial.go_etcd_io.etcd.server.v3.storage.backend.snapshotTransferSec.init := @initNoop,
-        _root_.Perennial.go_etcd_io.etcd.server.v3.storage.backend.isDefragActive.init := @initNoop] := by
-  intro v hv
-  obtain rfl : v = initNoop := by simpa using hv
-  wp_start
-  iapply HΦ
-  ipureintro; trivial
 
 theorem go_etcd_io_etcd_server_v3_storage_backend.initFuncsOk.model_proof :
     model% (type_of% (_root_.Perennial.go_etcd_io.etcd.server.v3.storage.backend.initFuncsOk (GF := GF) (hG := hG))) with [] := by

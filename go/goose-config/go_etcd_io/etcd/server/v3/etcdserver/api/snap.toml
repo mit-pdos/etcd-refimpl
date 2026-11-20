@@ -6,9 +6,13 @@
 # (2026-11-19) `Message`'s `CloseNotify` and `CloseWithError` with their bodies (their specs proved
 # over `msgIs`'s definition, `Proof/.../snap/Defs.lean`).
 translate = ["!*", "Message.GetTo", "Message.CloseNotify", "Message.CloseWithError",
+  # (prove-errinits, 2026-11-19) the package variables: an `errors.New` error and the metrics
+  "ErrNoDBSnapshot", "snapMarshallingSec", "snapSaveSec", "snapFsyncSec", "snapDBSaveSec",
+  "snapDBFsyncSec",
   # etcd-refimpl: the reference implementation's init()s
   "init.0"]
-imports = ["!*", "io", "go.etcd.io/raft/v3/raftpb"]
+imports = ["!*", "errors", "io", "github.com/prometheus/client_golang/prometheus",
+  "go.etcd.io/raft/v3/raftpb"]
 
 # translate the definitions of all type declarations goose supports
 translate_types = true

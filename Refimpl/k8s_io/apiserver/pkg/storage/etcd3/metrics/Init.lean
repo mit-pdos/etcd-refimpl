@@ -1,15 +1,13 @@
 /-
-apiserver's etcd3 `metrics`'s package-initialization axioms (`opaqueInitsOk`, `errorsNewVarsInit`, etcd-grove's
+apiserver's etcd3 `metrics`'s package-initialization axioms (`opaqueInitsOk`; its `errorsNewVarsInit` is gone since etcd-grove `1ed1c7f480`, `ErrTransactionConflict` translated and proved; etcd-grove's
 `Proof/k8s_io/apiserver/pkg/storage/etcd3/metrics/Init.lean`), read in the model: the untranslated package-variable
-initializers are `initNoop`; `errorsNewVarsInit`'s one, `var ErrTransactionConflict =
-errors.New("transaction conflict")`, is Go's (`errorsNewVarInit`, Perennial's `errors.New`).
+initializers are `initNoop`.
 -/
 module
 
 public import Proof.k8s_io.apiserver.pkg.storage.etcd3.metrics.Init
 public import Refimpl.Subst
 public import Refimpl.Common
-public import Refimpl.ErrorsNewVar
 
 @[expose] public section
 
@@ -54,20 +52,6 @@ theorem metrics.opaqueInitsOk.model_proof :
   wp_start
   iapply HΦ
   ipureintro; trivial
-
-/-- `ErrTransactionConflict`'s initializer in the model. -/
-def metrics.ErrTransactionConflict.initModel [GooseExts] [GoGlobalContext] : val :=
-  errorsNewVarInit k8s_io.apiserver.pkg.storage.etcd3.metrics.ErrTransactionConflict
-    go!"transaction conflict"
-
-theorem metrics.errorsNewVarsInit.model_proof [errors_sem : _root_.Perennial.errors.Assumptions] :
-    model% (type_of% (k8s_io.apiserver.pkg.storage.etcd3.metrics.errorsNewVarsInit (GF := GF) (hG := hG))) with
-      [k8s_io.apiserver.pkg.storage.etcd3.metrics.ErrTransactionConflict.init :=
-        @metrics.ErrTransactionConflict.initModel] := by
-  intro init X msg h
-  simp only [List.mem_cons, List.not_mem_nil, or_false, Prod.mk.injEq] at h
-  obtain ⟨rfl, rfl, rfl⟩ := h
-  exact errorsNewVarInit_ok _ _
 
 end proof
 

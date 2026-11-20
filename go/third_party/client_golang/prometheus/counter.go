@@ -164,10 +164,8 @@ type CounterVec struct {
 // NewCounterVec creates a new CounterVec based on the provided CounterOpts and
 // partitioned by the given label names.
 func NewCounterVec(opts CounterOpts, labelNames []string) *CounterVec {
-	return V2.NewCounterVec(CounterVecOpts{
-		CounterOpts:    opts,
-		VariableLabels: UnconstrainedLabels(labelNames),
-	})
+	// refimpl: a nil vector (its WithLabelValues never dereferences it)
+	return nil
 }
 
 // NewCounterVec creates a new CounterVec based on the provided CounterVecOpts.

@@ -3,9 +3,11 @@
 # `OperationLatencyTracker` translates as a struct (for a reference implementation of
 # `NewEtcdMetricsTracker`).
 translate = ["!*",
+  # (prove-errinits, 2026-11-19) `ErrTransactionConflict` (`errors.New`) translated
+  "ErrTransactionConflict",
   # etcd-refimpl: the reference implementation's bodies
   "NewEtcdMetricsTracker", "OperationLatencyTracker.Record", "RecordDecodeError", "RecordEtcdBookmark", "RecordEtcdEvent", "RecordEtcdRequest", "RecordListLatency", "RecordStorageListMetrics"]
-imports = ["!*", "k8s.io/apimachinery/pkg/runtime/schema", "k8s.io/component-base/metrics"]
+imports = ["!*", "errors", "k8s.io/apimachinery/pkg/runtime/schema", "k8s.io/component-base/metrics"]
 
 # translate the definitions of all type declarations goose supports
 translate_types = true

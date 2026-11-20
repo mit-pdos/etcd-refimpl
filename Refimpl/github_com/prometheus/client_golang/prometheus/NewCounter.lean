@@ -31,7 +31,7 @@ theorem prometheus.NewCounter.model_proof :
   wp_start
   wp_auto
   iapply HΦ
-  unfold go_etcd_io.etcd.server.v3.storage.mvcc.counterSpec prometheus.collectorName
+  unfold EtcdGrove.prometheus.metric.counterSpec prometheus.collectorName
   isplitr
   · isplitr
     · iintro !> !> %Φ _ HΦ

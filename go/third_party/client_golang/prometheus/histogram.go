@@ -1168,10 +1168,8 @@ type HistogramVec struct {
 // NewHistogramVec creates a new HistogramVec based on the provided HistogramOpts and
 // partitioned by the given label names.
 func NewHistogramVec(opts HistogramOpts, labelNames []string) *HistogramVec {
-	return V2.NewHistogramVec(HistogramVecOpts{
-		HistogramOpts:  opts,
-		VariableLabels: UnconstrainedLabels(labelNames),
-	})
+	// refimpl: a nil vector (its WithLabelValues never dereferences it)
+	return nil
 }
 
 // NewHistogramVec creates a new HistogramVec based on the provided HistogramVecOpts.

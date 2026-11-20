@@ -12,6 +12,10 @@ that registers nothing, and metrics that record nothing:
 func NewCounter(opts CounterOpts) Counter                    { return (*counter)(nil) }
 func NewGauge(opts GaugeOpts) Gauge                          { return (*gauge)(nil) }
 func NewHistogram(opts HistogramOpts) Histogram              { return (*histogram)(nil) }
+func NewCounterVec(opts CounterOpts, labelNames []string) *CounterVec       { return nil }
+func NewGaugeVec(opts GaugeOpts, labelNames []string) *GaugeVec             { return nil }
+func NewHistogramVec(opts HistogramOpts, labelNames []string) *HistogramVec { return nil }
+func NewGaugeFunc(opts GaugeOpts, function func() float64) GaugeFunc       { return (*valueFunc)(nil) }
 func (v *CounterVec) WithLabelValues(lvs ...string) Counter  { return (*counter)(nil) }
 func (v *GaugeVec) WithLabelValues(lvs ...string) Gauge      { return (*gauge)(nil) }
 func (v *GaugeVec) With(labels Labels) Gauge                 { return (*gauge)(nil) }
@@ -42,6 +46,11 @@ float64, the last bucket finite: `expBucketsArgsOk`) on the float64s' bits, thro
 views (Perennial's float arithmetic is uninterpreted, a plain view is not): doubling such a float64
 adds `1 << 52` to its bits. It ignores `factor` and checks nothing, which the spec allows. The
 histogram `NewHistogram` returns keeps no buckets: the spec's slice points-to is dropped.
+The metric vectors (`NewCounterVec`, `NewGaugeVec`, `NewHistogramVec`, added by etcd-grove
+`1ed1c7f480`) are nil pointers, which their `WithLabelValues`/`With` never dereference; they keep
+neither the label-name slice nor the buckets (the specs' points-to are dropped). `NewGaugeFunc`
+returns a nil `*valueFunc` in a non-nil interface and never calls `function` (the spec says nothing
+of its methods).
 
 (Go calls a method on a nil pointer: the bodies never dereference their receivers.)
 `HistogramVec.WithLabelValues` is proved since etcd-grove `4fcdd2aa9d`, whose `observerSpec`
@@ -49,11 +58,13 @@ quantifies over a 64-bit word `f` (it was any value, a panic outcome included, w
 implementation could meet: README, Findings).
 
 The predicates hold of everything: `collectorName := True`, `nameFree := True`,
-`nameUnclaimed := True`. (`counterOpts` is a definition in etcd-grove, over the translated `Opts`.)
+`nameUnclaimed := True`, `vecLabels := True` (the model's vectors check no labels; its only other
+uses are the premises of the vectors' `WithLabelValues`/`With`, whose model proofs ignore it). (`counterOpts` is a definition in etcd-grove, over the translated `Opts`.)
 -/
 module
 
 public import Proof.github_com.prometheus.client_golang.prometheus.Registry
+public import Proof.github_com.prometheus.client_golang.prometheus.Labels
 public import Refimpl.Subst
 public import Refimpl.Common
 public import Refimpl.Gen.github_com.prometheus.client_golang.prometheus
@@ -80,6 +91,10 @@ def prometheus.nameFree {GF : BundledGFunctors} (_n : GoString) : IProp GF := ip
 /-- `prometheus.nameUnclaimed`: every name of every program (it has no law; the start axiom that
 takes it gives `nameFree`, `True` here). -/
 def prometheus.nameUnclaimed [GooseExts] (_e : Expr) (_n : GoString) : Prop := True
+
+/-- `prometheus.vecLabels`: every vector, every label list (the model's vectors are nil pointers
+whose `WithLabelValues`/`With` check nothing). -/
+def prometheus.vecLabels (_v : Loc) (_ls : List GoString) : Prop := True
 
 end Model
 end EtcdGrove

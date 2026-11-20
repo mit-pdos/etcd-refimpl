@@ -24,7 +24,8 @@ variable [ref : github_com.prometheus.client_golang.prometheus.Refimpl]
 variable [package_sem : github_com.prometheus.client_golang.prometheus.Assumptions]
 
 theorem prometheus.GaugeVec.With.model_proof :
-    model% (EtcdGrove.prometheus.GaugeVec.With.spec (GF := GF) (hG := hG)) with [] := by
+    model% (EtcdGrove.prometheus.GaugeVec.With.spec (GF := GF) (hG := hG)) with
+      [EtcdGrove.prometheus.vecLabels := @prometheus.vecLabels] := by
   intro v labels ls M dq
   wp_start as ⟨%Hok, Hlabels⟩
   wp_auto

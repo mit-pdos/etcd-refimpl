@@ -31,7 +31,6 @@ namespace Model
   metrics.RecordDecodeError.model_proof
   metrics.NewEtcdMetricsTracker.model_proof
   metrics.opaqueInitsOk.model_proof
-  metrics.errorsNewVarsInit.model_proof
 
 #bound_check k8s_io.apiserver.pkg.storage.etcd3.metrics.Refimpl
 

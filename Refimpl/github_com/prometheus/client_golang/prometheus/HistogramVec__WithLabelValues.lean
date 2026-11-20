@@ -24,7 +24,8 @@ variable [ref : github_com.prometheus.client_golang.prometheus.Refimpl]
 variable [package_sem : github_com.prometheus.client_golang.prometheus.Assumptions]
 
 theorem prometheus.HistogramVec.WithLabelValues.model_proof :
-    model% (EtcdGrove.prometheus.HistogramVec.WithLabelValues.spec (GF := GF) (hG := hG)) with [] := by
+    model% (EtcdGrove.prometheus.HistogramVec.WithLabelValues.spec (GF := GF) (hG := hG)) with
+      [EtcdGrove.prometheus.vecLabels := @prometheus.vecLabels] := by
   intro v lvs ls vs dq
   wp_start as ⟨%Hok, Hlvs⟩
   wp_auto

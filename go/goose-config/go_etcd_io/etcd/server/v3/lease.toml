@@ -28,6 +28,9 @@ translate = ["!*",
   "newLeaseExpiredNotifier", "LeaseExpiredNotifier.RegisterOrUpdate",
   # the lease-expiry plan's S1 (2026-11-03, the user's): the snapshot's restore, proved
   "lessor.Recover", "lessor.initAndRecover", "LeaseExpiredNotifier.Init",
+  # (prove-errinits, 2026-11-19) the remaining package variables: constants and a counter
+  "defaultLeaseRevokeRate", "leaseCheckpointRate", "defaultLeaseCheckpointInterval",
+  "maxLeaseCheckpointBatchSize", "defaultExpiredleaseRetryInterval", "leaseRenewed",
   # etcd-refimpl: the reference implementation's init()s
   "init.0"]
 imports = ["!*", "container/heap", "context", "sort", "sync", "time", "errors",

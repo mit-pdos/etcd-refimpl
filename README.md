@@ -52,12 +52,12 @@ Then one directory per Go package (`Refimpl/<go package path>/`):
   `Spec/<pkg>/<fn>.lean`): `theorem <fn>.model_proof`, the spec, read in the model, proved of the
   translated reference implementation, under `[<pkg>.Refimpl]` (and the package's type
   `Assumptions`).
-- `Init.lean`: the package-initialization axioms (`opaqueInitsOk`, `initFuncsOk`,
-  `errorsNewVarsInit`), read in the model, as theorems. The untranslated initializers are `initNoop`;
+- `Init.lean`: the package-initialization axioms (`opaqueInitsOk`, `initFuncsOk`), read in the
+  model, as theorems. The untranslated initializers are `initNoop`;
   the `init()`s are Go, translated, and where the real one writes a package variable (which a
   `{{ True }}` triple does not own) or calls code etcd-grove does not translate, its body is replaced
-  by an empty one; a `var X = errors.New(msg)` is Go's, written as Goose would translate it
-  (`Refimpl/ErrorsNewVar.lean`: `go.GlobalAlloc`, then Perennial's `errors.New`). A package with only
+  by an empty one. (Until etcd-grove `1ed1c7f480`, which translates and proves every `var X =
+  errors.New(msg)`, there was a third, `errorsNewVarsInit`, modelled by Go's `errors.New`.) A package with only
   an `opaqueInitsOk` needs no Go (its directory has `Init.lean` and `Results.lean` alone).
 - `Results.lean`: `#model_check` of every model proof, and `#bound_check` of the binding classes.
 
@@ -107,7 +107,7 @@ initializers that do nothing.
 | `google.golang.org/grpc/codes` | 2 (`opaqueInitsOk`, `initFuncsOk`) | 2 | the `init()` sets no `internal.CanonicalString` hook |
 | `k8s.io/utils/trace` | 3 (`New`, `Trace.LogIfLong`, `opaqueInitsOk`; the predicate `trace.fromNew`) | 3 | a nil trace, logging nothing; `fromNew := True`. `LogIfLong`'s spec, false of the real code, fixed in etcd-grove `4fcdd2aa9d`: see below |
 | `github.com/xiang90/probing` | 3 (`NewHandler`, `NewProber`, `opaqueInitsOk`) | 3 | an empty `200` handler (relative to net/http's `WriteHeader` spec) and a nil prober |
-| `github.com/prometheus/client_golang/prometheus` | 15 (10 function specs, `opaqueInitsOk`, `initFuncsOk`; `collectorName`/`nameFree`/`nameUnclaimed` are the predicates) | 15 | a registry that registers nothing, metrics (nil pointers) that record nothing; `NewGauge`, `NewHistogram`, `ExponentialBuckets` (factor 2) added by etcd-grove `1df314ccbf` (metric initializers translated); `ExponentialBuckets` computes the exact buckets on the float64 bits through `uint64` views (Perennial's float arithmetic is uninterpreted), `NewHistogram` drops the buckets slice; `HistogramVec.WithLabelValues` was unsatisfiable (`observerSpec`), fixed in etcd-grove `4fcdd2aa9d`: see below; `Opts` translated in etcd-grove (`2040eeb525`) |
+| `github.com/prometheus/client_golang/prometheus` | 19 (14 function specs, `opaqueInitsOk`, `initFuncsOk`; `collectorName`/`nameFree`/`nameUnclaimed`/`vecLabels` are the predicates) | 19 | a registry that registers nothing, metrics and metric vectors (nil pointers) that record nothing (`vecLabels := True`); `NewCounterVec`, `NewGaugeVec`, `NewHistogramVec` (nil vectors, keeping neither slice) and `NewGaugeFunc` (a nil `*valueFunc`, never calling the function) added by etcd-grove `1ed1c7f480` (metric vectors' initializers translated); `NewGauge`, `NewHistogram`, `ExponentialBuckets` (factor 2) added by etcd-grove `1df314ccbf` (metric initializers translated); `ExponentialBuckets` computes the exact buckets on the float64 bits through `uint64` views (Perennial's float arithmetic is uninterpreted), `NewHistogram` drops the buckets slice; `HistogramVec.WithLabelValues` was unsatisfiable (`observerSpec`), fixed in etcd-grove `4fcdd2aa9d`: see below; `Opts` translated in etcd-grove (`2040eeb525`) |
 | `google.golang.org/grpc/status` (and `internal/status`'s `Status.Code`) | 5 | 3 | every code `Unknown`; `Error`, `FromError`: **no implementation meets them**, see below |
 | `google.golang.org/grpc/metadata` | 6 (3 function specs, `incomingOf_cancelCtx`, `opaqueInitsOk`, `initFuncsOk`) | 5 | no context carries metadata; `MD.Get` **verified in etcd-grove** (`4fcdd2aa9d`); `AppendToOutgoingContext`: **no implementation meets it**, see below |
 | `google.golang.org/grpc/health`, `health/grpc_health_v1` | 9 (4 function specs, `grpcHealthSrv_persistent`, `opaqueInitsOk` ×2, `initFuncsOk` ×2) | 7 | a health server that records nothing; `SetServingStatus`, `ServingStatus.String` met since etcd-grove `4fcdd2aa9d` (a `w32` status); `NewServer` blocked by an axiomatized type, `RegisterHealthServer` by grpc's server model: see below |
@@ -115,7 +115,7 @@ initializers that do nothing.
 | `k8s.io/apimachinery/pkg/labels` | 2 (`Everything`, `opaqueInitsOk`) | 2 | the shared selectors without their package variables; `Empty`/`Matches` are the real code |
 | `k8s.io/apimachinery/pkg/apis/meta/v1` | 4 (`LabelSelectorAsSelector`, the predicate `labels.reqsValid`, `opaqueInitsOk`, `initFuncsOk`) | 4 | only the empty selector is accepted (`reqsValid`: no pair, no requirement); the two `init()`s register nothing in the package's scheme |
 | `k8s.io/api/core/v1`, `apps/v1` | 7 (`Resource` ×2, `DeepCopyObject` of `Node`, `Pod`, `DaemonSet`, `opaqueInitsOk` ×2) | 4 | `DeepCopyObject` not modelled: see below; `ControllerRevision.DeepCopyObject` **verified in etcd-grove** (`4fcdd2aa9d`) |
-| `k8s.io/apiserver/pkg/storage/etcd3/metrics` | 10 (`NewEtcdMetricsTracker`, `OperationLatencyTracker.Record`, 6 `Record*`, `opaqueInitsOk`, `errorsNewVarsInit`) | 10 | no metrics; `ErrTransactionConflict` is Go's `errors.New`; `NewEtcdMetricsTracker` met since etcd-grove `4fcdd2aa9d` translates `OperationLatencyTracker`: see below |
+| `k8s.io/apiserver/pkg/storage/etcd3/metrics` | 9 (`NewEtcdMetricsTracker`, `OperationLatencyTracker.Record`, 6 `Record*`, `opaqueInitsOk`) | 9 | no metrics; `ErrTransactionConflict` translated and proved in etcd-grove since `1ed1c7f480` (its `errorsNewVarsInit` gone); `NewEtcdMetricsTracker` met since etcd-grove `4fcdd2aa9d` translates `OperationLatencyTracker`: see below |
 | `k8s.io/component-base/metrics` | 3 (`HistogramVec.WithContext`, `opaqueInitsOk`, `initFuncsOk`; `vecLabels`, `histCtxOk` are its vocabulary) | 3 | nil wrappers and observers that record nothing; the `init()` records no process start time |
 
 ### Package initialization
@@ -125,9 +125,8 @@ generates (`Refimpl/<pkg>/Init.lean`; packages with function models are in the t
 
 - `opaqueInitsOk`: every listed untranslated initializer `X.init` is `initNoop`. This is sound with
   respect to etcd-grove's other axioms: `gen-init.py` leaves out of the list every variable a spec
-  relies on, whose initializer has an axiom of its own (`X_init`, giving its value: rpctypes' gRPC
-  errors, the server's prometheus metrics, ...), which these models do not cover.
-- `errorsNewVarsInit`: each `var X = errors.New(msg)` is Go's (`Refimpl/ErrorsNewVar.lean`).
+  relies on, whose initializer has an axiom of its own (`X_init`, giving its value: rpctypes' client
+  errors, rafthttp's `linkHeartbeatSize`, ...), which these models do not cover.
 - `initFuncsOk`: the package's `init()`s are Go, translated from a copy of the package's source
   (`go/third_party/`, `go-k8s/third_party/`) with empty bodies (`// refimpl:` on the `func init()`
   line, the real body commented out line by line, so that every line number is the real one; an
@@ -155,30 +154,24 @@ generates (`Refimpl/<pkg>/Init.lean`; packages with function models are in the t
 | `go.etcd.io/etcd/api/v3/v3rpc/rpctypes` | `opaqueInitsOk` (96 vars) | 1/1 |  |
 | `go.etcd.io/etcd/api/v3/version` | `opaqueInitsOk` (11 vars), `initFuncsOk` (1 `init()`) | 2/2 |  |
 | `go.etcd.io/etcd/client/pkg/v3/logutil` | `opaqueInitsOk` (3 vars) | 1/1 |  |
-| `go.etcd.io/etcd/client/pkg/v3/transport` | `opaqueInitsOk` (1 var) | 1/1 |  |
 | `go.etcd.io/etcd/client/pkg/v3/types` | `opaqueInitsOk` (2 vars) | 1/1 |  |
 | `go.etcd.io/etcd/client/v3` | `opaqueInitsOk` (6 vars), `initFuncsOk` (1 `init()`) | 2/2 |  |
 | `go.etcd.io/etcd/pkg/v3/featuregate` | `opaqueInitsOk` (3 vars) | 1/1 |  |
-| `go.etcd.io/etcd/pkg/v3/ioutil` | `opaqueInitsOk` (2 vars) | 1/1 |  |
-| `go.etcd.io/etcd/server/v3/auth` | `opaqueInitsOk` (9 vars), `initFuncsOk` (1 `init()`) | 2/2 |  |
-| `go.etcd.io/etcd/server/v3/etcdserver` | `opaqueInitsOk` (9 vars), `initFuncsOk` (3 `init()`) | 2/2 |  |
+| `go.etcd.io/etcd/server/v3/auth` | `initFuncsOk` (1 `init()`) | 1/1 | no `opaqueInitsOk` since etcd-grove `1ed1c7f480` (its variables translated) |
+| `go.etcd.io/etcd/server/v3/etcdserver` | `opaqueInitsOk` (2 vars), `initFuncsOk` (3 `init()`) | 2/2 |  |
 | `go.etcd.io/etcd/server/v3/etcdserver/api` | `opaqueInitsOk` (1 var), `initFuncsOk` (1 `init()`) | 2/2 |  |
-| `go.etcd.io/etcd/server/v3/etcdserver/api/membership` | `opaqueInitsOk` (4 vars), `initFuncsOk` (1 `init()`) | 2/2 | its `errors.New` variables are translated and proved in etcd-grove (`f61c5c06cc`) |
-| `go.etcd.io/etcd/server/v3/etcdserver/api/rafthttp` | `errorsNewVarsInit` (6 vars), `initFuncsOk` (1 `init()`) | 2/2 | no `opaqueInitsOk` since etcd-grove `101733cb0e` (its variables translated) |
-| `go.etcd.io/etcd/server/v3/etcdserver/api/snap` | `opaqueInitsOk` (6 vars), `initFuncsOk` (1 `init()`) | 2/2 |  |
-| `go.etcd.io/etcd/server/v3/etcdserver/api/v3discovery` | `opaqueInitsOk` (7 vars) | 1/1 |  |
-| `go.etcd.io/etcd/server/v3/etcdserver/api/v3rpc` | `opaqueInitsOk` (2 vars), `initFuncsOk` (1 `init()`) | 2/2 |  |
+| `go.etcd.io/etcd/server/v3/etcdserver/api/membership` | `initFuncsOk` (1 `init()`) | 1/1 | its `errors.New` variables are translated and proved in etcd-grove (`f61c5c06cc`); no `opaqueInitsOk` since etcd-grove `1ed1c7f480` |
+| `go.etcd.io/etcd/server/v3/etcdserver/api/rafthttp` | `initFuncsOk` (1 `init()`) | 1/1 | no `opaqueInitsOk` since etcd-grove `101733cb0e` (its variables translated), no `errorsNewVarsInit` since etcd-grove `1ed1c7f480` (its `errors.New` variables translated and proved) |
+| `go.etcd.io/etcd/server/v3/etcdserver/api/snap` | `initFuncsOk` (1 `init()`) | 1/1 | no `opaqueInitsOk` since etcd-grove `1ed1c7f480` (its variables translated) |
+| `go.etcd.io/etcd/server/v3/etcdserver/api/v3rpc` | `initFuncsOk` (1 `init()`) | 1/1 | no `opaqueInitsOk` since etcd-grove `1ed1c7f480` (its variables translated) |
 | `go.etcd.io/etcd/server/v3/etcdserver/apply` | `initFuncsOk` (1 `init()`) | 1/1 |  |
-| `go.etcd.io/etcd/server/v3/etcdserver/errors` | `errorsNewVarsInit` (23 vars) | 1/1 |  |
 | `go.etcd.io/etcd/server/v3/etcdserver/txn` | `opaqueInitsOk` (2 vars), `initFuncsOk` (1 `init()`) | 2/2 |  |
-| `go.etcd.io/etcd/server/v3/etcdserver/version` | `opaqueInitsOk` (3 vars) | 1/1 |  |
 | `go.etcd.io/etcd/server/v3/features` | `opaqueInitsOk` (1 var) | 1/1 |  |
-| `go.etcd.io/etcd/server/v3/lease` | `opaqueInitsOk` (6 vars), `initFuncsOk` (1 `init()`) | 2/2 |  |
-| `go.etcd.io/etcd/server/v3/lease/leasehttp` | `opaqueInitsOk` (2 vars) | 1/1 |  |
+| `go.etcd.io/etcd/server/v3/lease` | `initFuncsOk` (1 `init()`) | 1/1 | no `opaqueInitsOk` since etcd-grove `1ed1c7f480` (its variables translated) |
 | `go.etcd.io/etcd/server/v3/lease/leasepb` | `opaqueInitsOk` (3 vars), `initFuncsOk` (1 `init()`) | 2/2 |  |
-| `go.etcd.io/etcd/server/v3/storage` | `opaqueInitsOk` (3 vars), `initFuncsOk` (1 `init()`) | 2/2 |  |
-| `go.etcd.io/etcd/server/v3/storage/backend` | `opaqueInitsOk` (4 vars), `initFuncsOk` (1 `init()`) | 2/2 |  |
-| `go.etcd.io/etcd/server/v3/storage/mvcc` | `opaqueInitsOk` (9 vars), `initFuncsOk` (1 `init()`) | 2/2 |  |
+| `go.etcd.io/etcd/server/v3/storage` | `initFuncsOk` (1 `init()`) | 1/1 | no `opaqueInitsOk` since etcd-grove `1ed1c7f480` (its variables translated) |
+| `go.etcd.io/etcd/server/v3/storage/backend` | `initFuncsOk` (1 `init()`) | 1/1 | no `opaqueInitsOk` since etcd-grove `1ed1c7f480` (its variables translated) |
+| `go.etcd.io/etcd/server/v3/storage/mvcc` | `initFuncsOk` (1 `init()`) | 1/1 | no `opaqueInitsOk` since etcd-grove `1ed1c7f480` (its variables translated) |
 | `go.etcd.io/etcd/server/v3/storage/schema` | `opaqueInitsOk` (4 vars), `initFuncsOk` (1 `init()`) | 2/2 |  |
 | `go.etcd.io/etcd/server/v3/storage/wal` | `initFuncsOk` (1 `init()`) | 1/1 |  |
 | `go.etcd.io/etcd/server/v3/storage/wal/walpb` | `opaqueInitsOk` (3 vars), `initFuncsOk` (1 `init()`) | 2/2 |  |

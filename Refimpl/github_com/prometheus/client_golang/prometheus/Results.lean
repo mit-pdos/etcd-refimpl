@@ -11,8 +11,12 @@ public import Refimpl.github_com.prometheus.client_golang.prometheus.GaugeVec__W
 public import Refimpl.github_com.prometheus.client_golang.prometheus.HistogramVec__WithLabelValues
 public import Refimpl.github_com.prometheus.client_golang.prometheus.MustRegister
 public import Refimpl.github_com.prometheus.client_golang.prometheus.NewCounter
+public import Refimpl.github_com.prometheus.client_golang.prometheus.NewCounterVec
 public import Refimpl.github_com.prometheus.client_golang.prometheus.NewGauge
+public import Refimpl.github_com.prometheus.client_golang.prometheus.NewGaugeFunc
+public import Refimpl.github_com.prometheus.client_golang.prometheus.NewGaugeVec
 public import Refimpl.github_com.prometheus.client_golang.prometheus.NewHistogram
+public import Refimpl.github_com.prometheus.client_golang.prometheus.NewHistogramVec
 public import Refimpl.github_com.prometheus.client_golang.prometheus.Register
 public import Refimpl.github_com.prometheus.client_golang.prometheus.Init
 
@@ -30,8 +34,12 @@ namespace Model
   prometheus.HistogramVec.WithLabelValues.model_proof
   prometheus.MustRegister.model_proof
   prometheus.NewCounter.model_proof
+  prometheus.NewCounterVec.model_proof
   prometheus.NewGauge.model_proof
+  prometheus.NewGaugeFunc.model_proof
+  prometheus.NewGaugeVec.model_proof
   prometheus.NewHistogram.model_proof
+  prometheus.NewHistogramVec.model_proof
   prometheus.Register.model_proof
   prometheus.opaqueInitsOk.model_proof
   prometheus.initFuncsOk.model_proof
