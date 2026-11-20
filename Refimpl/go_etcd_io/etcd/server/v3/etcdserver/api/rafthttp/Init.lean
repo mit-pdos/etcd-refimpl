@@ -1,5 +1,5 @@
 /-
-`go_etcd_io/etcd/server/v3/etcdserver/api/rafthttp`'s package-initialization axioms (`opaqueInitsOk`, `errorsNewVarsInit`, `initFuncsOk`, etcd-grove's
+`go_etcd_io/etcd/server/v3/etcdserver/api/rafthttp`'s package-initialization axioms (`errorsNewVarsInit`, `initFuncsOk`; its `opaqueInitsOk` is gone, every such variable translated in etcd-grove since `101733cb0e`; etcd-grove's
 `Proof/go_etcd_io/etcd/server/v3/etcdserver/api/rafthttp/Init.lean`), read in the model: the untranslated package-variable initializers are `initNoop`; `errorsNewVarsInit`'s, each a `var X = errors.New(msg)`, are Go's (`errorsNewVarInit`, Perennial's `errors.New`); its `init()`s are Go, translated, with empty bodies.
 -/
 module
@@ -29,17 +29,6 @@ variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
 variable [sem : go.Semantics]
 variable [ref : _root_.Perennial.go_etcd_io.etcd.server.v3.etcdserver.api.rafthttp.Refimpl]
 
-theorem go_etcd_io_etcd_server_v3_etcdserver_api_rafthttp.opaqueInitsOk.model_proof :
-    model% (type_of% (_root_.Perennial.go_etcd_io.etcd.server.v3.etcdserver.api.rafthttp.opaqueInitsOk (GF := GF) (hG := hG))) with
-      [_root_.Perennial.go_etcd_io.etcd.server.v3.etcdserver.api.rafthttp.ConnWriteTimeout.init := @initNoop,
-        _root_.Perennial.go_etcd_io.etcd.server.v3.etcdserver.api.rafthttp.proberInterval.init := @initNoop,
-        _root_.Perennial.go_etcd_io.etcd.server.v3.etcdserver.api.rafthttp.statusMonitoringInterval.init := @initNoop,
-        _root_.Perennial.go_etcd_io.etcd.server.v3.etcdserver.api.rafthttp.statusErrorInterval.init := @initNoop] := by
-  intro v hv
-  obtain rfl : v = initNoop := by simpa using hv
-  wp_start
-  iapply HΦ
-  ipureintro; trivial
 
 /-- `ErrExceedSizeLimit`'s initializer in the model. -/
 def go_etcd_io_etcd_server_v3_etcdserver_api_rafthttp.ErrExceedSizeLimit.initModel [GooseExts] [GoGlobalContext] : val :=

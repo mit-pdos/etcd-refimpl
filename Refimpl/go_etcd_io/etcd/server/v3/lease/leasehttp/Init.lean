@@ -28,8 +28,7 @@ variable [sem : go.Semantics]
 
 theorem go_etcd_io_etcd_server_v3_lease_leasehttp.opaqueInitsOk.model_proof :
     model% (type_of% (_root_.Perennial.go_etcd_io.etcd.server.v3.lease.leasehttp.opaqueInitsOk (GF := GF) (hG := hG))) with
-      [_root_.Perennial.go_etcd_io.etcd.server.v3.lease.leasehttp.LeaseInternalPrefix.init := @initNoop,
-        _root_.Perennial.go_etcd_io.etcd.server.v3.lease.leasehttp.applyTimeout.init := @initNoop,
+      [_root_.Perennial.go_etcd_io.etcd.server.v3.lease.leasehttp.applyTimeout.init := @initNoop,
         _root_.Perennial.go_etcd_io.etcd.server.v3.lease.leasehttp.ErrLeaseHTTPTimeout.init := @initNoop] := by
   intro v hv
   obtain rfl : v = initNoop := by simpa using hv

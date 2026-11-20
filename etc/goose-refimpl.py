@@ -67,8 +67,7 @@ PACKAGES = {
     "google.golang.org/grpc/codes": "etcd",
     "google.golang.org/grpc": "etcd",
     "google.golang.org/grpc/grpclog": "etcd",
-    # not otelgrpc (go/third_party/otelgrpc, NewServerHandler): its result's type `stats.Handler` is
-    # not translated in etcd-grove, so the translated body does not compile (README, Findings)
+    "go.opentelemetry.io/contrib/instrumentation/google.golang.org/grpc/otelgrpc": "etcd",
     "k8s.io/klog/v2": "k8s-apiserver",
     "k8s.io/component-base/tracing": "k8s-apiserver",
     "k8s.io/utils/trace": "k8s-apiserver",

@@ -30,7 +30,8 @@ variable [ref : _root_.Perennial.google_golang_org.grpc.Refimpl]
 
 theorem google_golang_org_grpc.opaqueInitsOk.model_proof :
     model% (type_of% (_root_.Perennial.google_golang_org.grpc.opaqueInitsOk (GF := GF) (hG := hG))) with
-      [_root_.Perennial.google_golang_org.grpc.noOpRegisterHealthListenerFn.init := @initNoop,
+      [_root_.Perennial.google_golang_org.grpc.DefaultBackoffConfig.init := @initNoop,
+        _root_.Perennial.google_golang_org.grpc.noOpRegisterHealthListenerFn.init := @initNoop,
         _root_.Perennial.google_golang_org.grpc.unaryStreamDesc.init := @initNoop,
         _root_.Perennial.google_golang_org.grpc.ErrClientConnClosing.init := @initNoop,
         _root_.Perennial.google_golang_org.grpc.errConnDrain.init := @initNoop,

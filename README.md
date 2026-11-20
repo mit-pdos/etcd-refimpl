@@ -103,7 +103,7 @@ initializers that do nothing.
 | `go.opentelemetry.io/otel/trace` | 2 (`SpanFromContext`, `opaqueInitsOk`) | 2 | `SpanFromContext` returns the no-op span; `WithAttributes` **verified in etcd-grove** (`4fcdd2aa9d`: the real body translated, its axiom a theorem) |
 | `go.opentelemetry.io/otel/attribute` | 5 (`Bool`, `Int`, `Int64`, `String`, `opaqueInitsOk`) | 1 + moved | the 4 functions **verified in etcd-grove** (`4fcdd2aa9d`): the real code translated, the 4 axioms are theorems there |
 | `go.opentelemetry.io/otel/codes` | 1 (`opaqueInitsOk`) | 1 | |
-| `go.opentelemetry.io/contrib/instrumentation/google.golang.org/grpc/otelgrpc` | 2 (`NewServerHandler`, `opaqueInitsOk`; `grpcStatsHandlerOk` is the predicate) | 1 | `NewServerHandler` blocked by an untranslated type (`stats.Handler`): see below |
+| `go.opentelemetry.io/contrib/instrumentation/google.golang.org/grpc/otelgrpc` | 2 (`NewServerHandler`, `opaqueInitsOk`; `grpcStatsHandlerOk` is the predicate) | 2 | `grpcStatsHandlerOk` modelled as the nil handler, which grpc's `StatsHandler` option ignores; unblocked by etcd-grove `9d1d50a846` (grpc `stats` types translated): see below |
 | `google.golang.org/grpc/codes` | 2 (`opaqueInitsOk`, `initFuncsOk`) | 2 | the `init()` sets no `internal.CanonicalString` hook |
 | `k8s.io/utils/trace` | 3 (`New`, `Trace.LogIfLong`, `opaqueInitsOk`; the predicate `trace.fromNew`) | 3 | a nil trace, logging nothing; `fromNew := True`. `LogIfLong`'s spec, false of the real code, fixed in etcd-grove `4fcdd2aa9d`: see below |
 | `github.com/xiang90/probing` | 3 (`NewHandler`, `NewProber`, `opaqueInitsOk`) | 3 | an empty `200` handler (relative to net/http's `WriteHeader` spec) and a nil prober |
@@ -143,7 +143,6 @@ generates (`Refimpl/<pkg>/Init.lean`; packages with function models are in the t
 | `bufio` | `opaqueInitsOk` (1 var) | 1/1 |  |
 | `crypto/tls` | `opaqueInitsOk` (50 vars) | 1/1 |  |
 | `encoding/base64` | `opaqueInitsOk` (2 vars) | 1/1 |  |
-| `encoding/hex` | `opaqueInitsOk` (1 var) | 1/1 |  |
 | `encoding/json` | `opaqueInitsOk` (4 vars), `initFuncsOk` (1 `init()`) | 2/2 |  |
 | `github.com/Masterminds/semver/v3` | `opaqueInitsOk` (11 vars), `initFuncsOk` (2 `init()`) | 2/2 |  |
 | `github.com/dustin/go-humanize` | `opaqueInitsOk` (35 vars), `initFuncsOk` (1 `init()`) | 2/2 |  |
@@ -154,18 +153,18 @@ generates (`Refimpl/<pkg>/Init.lean`; packages with function models are in the t
 | `go.etcd.io/etcd/api/v3/membershippb` | `opaqueInitsOk` (3 vars), `initFuncsOk` (1 `init()`) | 2/2 |  |
 | `go.etcd.io/etcd/api/v3/mvccpb` | `opaqueInitsOk` (6 vars), `initFuncsOk` (1 `init()`) | 2/2 |  |
 | `go.etcd.io/etcd/api/v3/v3rpc/rpctypes` | `opaqueInitsOk` (96 vars) | 1/1 |  |
-| `go.etcd.io/etcd/api/v3/version` | `opaqueInitsOk` (13 vars), `initFuncsOk` (1 `init()`) | 2/2 |  |
+| `go.etcd.io/etcd/api/v3/version` | `opaqueInitsOk` (11 vars), `initFuncsOk` (1 `init()`) | 2/2 |  |
 | `go.etcd.io/etcd/client/pkg/v3/logutil` | `opaqueInitsOk` (3 vars) | 1/1 |  |
 | `go.etcd.io/etcd/client/pkg/v3/transport` | `opaqueInitsOk` (1 var) | 1/1 |  |
 | `go.etcd.io/etcd/client/pkg/v3/types` | `opaqueInitsOk` (2 vars) | 1/1 |  |
-| `go.etcd.io/etcd/client/v3` | `opaqueInitsOk` (7 vars), `initFuncsOk` (1 `init()`) | 2/2 |  |
+| `go.etcd.io/etcd/client/v3` | `opaqueInitsOk` (6 vars), `initFuncsOk` (1 `init()`) | 2/2 |  |
 | `go.etcd.io/etcd/pkg/v3/featuregate` | `opaqueInitsOk` (3 vars) | 1/1 |  |
 | `go.etcd.io/etcd/pkg/v3/ioutil` | `opaqueInitsOk` (2 vars) | 1/1 |  |
 | `go.etcd.io/etcd/server/v3/auth` | `opaqueInitsOk` (9 vars), `initFuncsOk` (1 `init()`) | 2/2 |  |
 | `go.etcd.io/etcd/server/v3/etcdserver` | `opaqueInitsOk` (9 vars), `initFuncsOk` (3 `init()`) | 2/2 |  |
 | `go.etcd.io/etcd/server/v3/etcdserver/api` | `opaqueInitsOk` (1 var), `initFuncsOk` (1 `init()`) | 2/2 |  |
-| `go.etcd.io/etcd/server/v3/etcdserver/api/membership` | `opaqueInitsOk` (4 vars), `errorsNewVarsInit` (6 vars), `initFuncsOk` (1 `init()`) | 3/3 |  |
-| `go.etcd.io/etcd/server/v3/etcdserver/api/rafthttp` | `opaqueInitsOk` (4 vars), `errorsNewVarsInit` (6 vars), `initFuncsOk` (1 `init()`) | 3/3 |  |
+| `go.etcd.io/etcd/server/v3/etcdserver/api/membership` | `opaqueInitsOk` (4 vars), `initFuncsOk` (1 `init()`) | 2/2 | its `errors.New` variables are translated and proved in etcd-grove (`f61c5c06cc`) |
+| `go.etcd.io/etcd/server/v3/etcdserver/api/rafthttp` | `errorsNewVarsInit` (6 vars), `initFuncsOk` (1 `init()`) | 2/2 | no `opaqueInitsOk` since etcd-grove `101733cb0e` (its variables translated) |
 | `go.etcd.io/etcd/server/v3/etcdserver/api/snap` | `opaqueInitsOk` (6 vars), `initFuncsOk` (1 `init()`) | 2/2 |  |
 | `go.etcd.io/etcd/server/v3/etcdserver/api/v3discovery` | `opaqueInitsOk` (7 vars) | 1/1 |  |
 | `go.etcd.io/etcd/server/v3/etcdserver/api/v3rpc` | `opaqueInitsOk` (2 vars), `initFuncsOk` (1 `init()`) | 2/2 |  |
@@ -175,17 +174,17 @@ generates (`Refimpl/<pkg>/Init.lean`; packages with function models are in the t
 | `go.etcd.io/etcd/server/v3/etcdserver/version` | `opaqueInitsOk` (3 vars) | 1/1 |  |
 | `go.etcd.io/etcd/server/v3/features` | `opaqueInitsOk` (1 var) | 1/1 |  |
 | `go.etcd.io/etcd/server/v3/lease` | `opaqueInitsOk` (6 vars), `initFuncsOk` (1 `init()`) | 2/2 |  |
-| `go.etcd.io/etcd/server/v3/lease/leasehttp` | `opaqueInitsOk` (3 vars) | 1/1 |  |
+| `go.etcd.io/etcd/server/v3/lease/leasehttp` | `opaqueInitsOk` (2 vars) | 1/1 |  |
 | `go.etcd.io/etcd/server/v3/lease/leasepb` | `opaqueInitsOk` (3 vars), `initFuncsOk` (1 `init()`) | 2/2 |  |
 | `go.etcd.io/etcd/server/v3/storage` | `opaqueInitsOk` (3 vars), `initFuncsOk` (1 `init()`) | 2/2 |  |
 | `go.etcd.io/etcd/server/v3/storage/backend` | `opaqueInitsOk` (4 vars), `initFuncsOk` (1 `init()`) | 2/2 |  |
 | `go.etcd.io/etcd/server/v3/storage/mvcc` | `opaqueInitsOk` (9 vars), `initFuncsOk` (1 `init()`) | 2/2 |  |
-| `go.etcd.io/etcd/server/v3/storage/schema` | `opaqueInitsOk` (19 vars), `initFuncsOk` (1 `init()`) | 2/2 |  |
+| `go.etcd.io/etcd/server/v3/storage/schema` | `opaqueInitsOk` (4 vars), `initFuncsOk` (1 `init()`) | 2/2 |  |
 | `go.etcd.io/etcd/server/v3/storage/wal` | `initFuncsOk` (1 `init()`) | 1/1 |  |
 | `go.etcd.io/etcd/server/v3/storage/wal/walpb` | `opaqueInitsOk` (3 vars), `initFuncsOk` (1 `init()`) | 2/2 |  |
 | `golang.org/x/crypto/bcrypt` | `opaqueInitsOk` (5 vars) | 1/1 |  |
 | `golang.org/x/sys/unix` | `opaqueInitsOk` (11 vars) | 1/1 |  |
-| `google.golang.org/grpc` | `opaqueInitsOk` (37 vars), `initFuncsOk` (6 `init()`) | 2/2 |  |
+| `google.golang.org/grpc` | `opaqueInitsOk` (38 vars), `initFuncsOk` (6 `init()`) | 2/2 |  |
 | `google.golang.org/grpc/credentials` | `opaqueInitsOk` (3 vars) | 1/1 |  |
 | `google.golang.org/grpc/grpclog` | `opaqueInitsOk` (1 var), `initFuncsOk` (1 `init()`) | 2/2 |  |
 | `google.golang.org/grpc/reflection` | `opaqueInitsOk` (1 var) | 1/1 |  |
@@ -235,19 +234,16 @@ generates (`Refimpl/<pkg>/Init.lean`; packages with function models are in the t
   compare against Perennial's chunked translation, from the toolchain Perennial translated `runtime`
   with. (`runtime`'s `opaqueInitsOk` is modelled: it needs no Go.)
 
-- **`otelgrpc.NewServerHandler` cannot be met in etcd-grove's translation as configured**, as
-  `grpc_prometheus.NewServerMetrics` could not: any Go body returns a `stats.Handler`, and Goose
-  allocates the result (`GoAlloc stats.Handler.ty`, then `Convert` into it), but etcd-grove does not
-  translate grpc's `stats` package at all, so the translated body names
-  `google_golang_org.grpc.stats.Handler.ty`, which does not exist (the generated module does not
-  compile; with the type declared but not translated, the allocation would be stuck). The Go
-  reference implementation is here (`go/third_party/otelgrpc`, v0.71.0, etcd's pin): it returns a nil
-  handler, which grpc's `StatsHandler` option ignores (`server.go`: "ignoring nil parameter in
-  grpc.StatsHandler ServerOption"), so the model of `grpcStatsHandlerOk h` would be "`h` is the nil
-  interface", under which grpc's `StatsHandler` axiom, the predicate's only consumer, holds of the
-  real grpc. Not in `etc/goose-refimpl.py`'s packages until the fix in etcd-grove: translate the types of
-  `google.golang.org/grpc/stats` (names only, `translate_types`) and import it in
-  `Code/go_opentelemetry_io/contrib/instrumentation/google_golang_org/grpc/otelgrpc.toml`.
+- **`otelgrpc.NewServerHandler` could not be met in etcd-grove's translation as configured (fixed in
+  etcd-grove `9d1d50a846`, 2026-11-19: grpc's `stats` types translated, imported by otelgrpc's
+  configuration; now modelled).** As `grpc_prometheus.NewServerMetrics` could not: any Go body returns
+  a `stats.Handler`, and Goose allocates the result (`GoAlloc stats.Handler.ty`, then `Convert` into
+  it), but etcd-grove did not translate grpc's `stats` package at all, so the translated body named
+  `google_golang_org.grpc.stats.Handler.ty`, which did not exist. The reference implementation
+  (`go/third_party/otelgrpc`, v0.71.0, etcd's pin) returns a nil handler, which grpc's `StatsHandler`
+  option ignores (`server.go`: "ignoring nil parameter in grpc.StatsHandler ServerOption"); the model
+  of `grpcStatsHandlerOk h` is "`h` is the nil interface", under which grpc's `StatsHandler` axiom, the
+  predicate's only consumer, holds of the real grpc (that axiom is grpc's, not modelled here).
 
 - **`k8s.io/utils/trace`'s `Trace.LogIfLong` spec was false of the real code (fixed in etcd-grove
   `4fcdd2aa9d`: `Step` and `LogIfLong` require `trace.fromNew t`, which `New` gives; modelled as

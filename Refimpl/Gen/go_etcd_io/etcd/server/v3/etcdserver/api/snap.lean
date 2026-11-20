@@ -19,7 +19,6 @@ noncomputable section
 
 namespace go_etcd_io.etcd.server.v3.etcdserver.api.snap
 
-
 /-- go: metrics.go:76:6 -/
 noncomputable def init.«0».impl [GooseExts] [GoGlobalContext] : val :=
   (LamV BAnon
@@ -27,6 +26,7 @@ noncomputable def init.«0».impl [GooseExts] [GoGlobalContext] : val :=
   (App (Val doExecute)
   (Val #())))
   (Val #())))
+
 
 /-- The reference implementation's bindings: each name to its translated body. -/
 class Refimpl [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where

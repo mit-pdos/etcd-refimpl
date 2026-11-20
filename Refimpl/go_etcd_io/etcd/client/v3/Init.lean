@@ -35,8 +35,7 @@ theorem go_etcd_io_etcd_client_v3.opaqueInitsOk.model_proof :
         _root_.Perennial.go_etcd_io.etcd.client.v3.ErrMutuallyExclusiveCfg.init := @initNoop,
         _root_.Perennial.go_etcd_io.etcd.client.v3.defaultWaitForReady.init := @initNoop,
         _root_.Perennial.go_etcd_io.etcd.client.v3.defaultMaxCallSendMsgSize.init := @initNoop,
-        _root_.Perennial.go_etcd_io.etcd.client.v3.defaultMaxCallRecvMsgSize.init := @initNoop,
-        _root_.Perennial.go_etcd_io.etcd.client.v3.defaultStreamMaxRetries.init := @initNoop] := by
+        _root_.Perennial.go_etcd_io.etcd.client.v3.defaultMaxCallRecvMsgSize.init := @initNoop] := by
   intro v hv
   obtain rfl : v = initNoop := by simpa using hv
   wp_start
